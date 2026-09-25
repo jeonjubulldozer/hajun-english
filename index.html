@@ -179,6 +179,22 @@
         </select>
       </div>
       <div class="field">
+        <label for="nudge">조용할 때 Lily가 먼저 말 걸기</label>
+        <select id="nudge">
+          <option value="0">안 함</option>
+          <option value="25000">25초 뒤</option>
+          <option value="40000" selected>40초 뒤</option>
+          <option value="60000">60초 뒤</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="sens">마이크 민감도 (Gemini 듣기)</label>
+        <select id="sens">
+          <option value="normal">보통</option>
+          <option value="high" selected>민감 (작게 말해도)</option>
+        </select>
+      </div>
+      <div class="field">
         <label for="tvDelay">TV로 소리 나갈 때 지연 보정</label>
         <select id="tvDelay">
           <option value="600">없음 (폰 스피커)</option>
@@ -381,7 +397,7 @@ Reply with ONLY this JSON, nothing else:
   let sample = null;
 
   const SILENCE = () => Number($("silence").value) || 5000;
-  const NUDGE_MS = 25000;
+  const NUDGE_MS = () => Number($("nudge").value);
   const apiKey = () => $("apiKey").value.trim();
 
   // ---------- brain ----------
@@ -532,7 +548,7 @@ Reply with ONLY this JSON, nothing else:
       method: "POST", signal,
       headers: { "content-type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify(/preview/.test(model) ? {
-        contents: [{ role: "user", parts: [{ text: `Say this ${style}: ${text.replace(/<long pause>/g, " ... ")}` }] }],
+        contents: [{ role: "user", parts: [{ text: text.replace(/<long pause>/g, " ... ") }] }],
         generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: $("gVoice").value } } } }
       } : {
         contents: [{ role: "user", parts: [{ text, speech_metadata: { style } }] }],
@@ -676,6 +692,7 @@ Reply with ONLY this JSON, nothing else:
   const listenEngine = () => $("listenEngine").value;
   let mic = null;
   const gCap = { on: false, buf: [], pre: [], speaking: false, lastVoice: 0, first: 0, noise: 0.01 };
+  let lastVoiceHeard = 0;
   async function ensureMic() {
     if (mic) { if (mic.ctx.state === "suspended") await mic.ctx.resume().catch(() => {}); return true; }
     try {
@@ -706,7 +723,9 @@ Reply with ONLY this JSON, nothing else:
     let sum = 0; for (let i = 0; i < input.length; i++) sum += input[i] * input[i];
     const rms = Math.sqrt(sum / input.length);
     gCap.noise = rms < gCap.noise ? gCap.noise * 0.9 + rms * 0.1 : gCap.noise * 0.995 + rms * 0.005;
-    const voiced = rms > Math.max(gCap.noise * 3.5, 0.012);
+    const sens = $("sens").value === "high" ? 2.4 : 3.5;
+    const voiced = rms > Math.max(gCap.noise * sens, $("sens").value === "high" ? 0.007 : 0.012);
+    if (rms > gCap.noise * 1.8) lastVoiceHeard = Date.now();
     $("meterBar").style.width = Math.min(100, rms * 600) + "%";
     $("meterBar").style.background = voiced ? "var(--mat-red)" : "var(--mat-blue)";
     if (!gCap.on) return;
@@ -787,7 +806,7 @@ Reply with ONLY this JSON, nothing else:
       $("meter").hidden = false;
       setState("listening"); if (!keepStatus) setStatus("");
       clearTimeout(nudgeT);
-      nudgeT = setTimeout(() => { if (state === "listening" && !gCap.speaking) sendTurn("[Hajun has been quiet for 25 seconds.]", true); }, NUDGE_MS);
+      nudgeT = setTimeout(() => { if (state === "listening" && !gCap.speaking && Date.now() - lastVoiceHeard > 8000) sendTurn("[Hajun has been quiet for a while.]", true); }, NUDGE_MS() || 3600000);
       return;
     }
     if (!SR) return;
@@ -800,8 +819,8 @@ Reply with ONLY this JSON, nothing else:
     if (!recRunning) { try { rec.start(); } catch {} }
     clearTimeout(nudgeT);
     nudgeT = setTimeout(() => {
-      if (state === "listening" && !fullText()) sendTurn("[Hajun has been quiet for 25 seconds.]", true);
-    }, NUDGE_MS);
+      if (state === "listening" && !fullText()) sendTurn("[Hajun has been quiet for a while.]", true);
+    }, NUDGE_MS() || 3600000);
   }
   function stopListening() {
     gCap.on = false; gCap.speaking = false; gCap.buf = [];
@@ -823,7 +842,7 @@ Reply with ONLY this JSON, nothing else:
         committed = ""; session = ""; interimText = ""; firstSpeechAt = 0; listenStart = Date.now(); renderHajun();
         $("hajunRaw").hidden = false; $("hajunRaw").textContent = "(TV에서 나온 Miss Lily 목소리는 무시했어요)";
         clearTimeout(nudgeT);
-        nudgeT = setTimeout(() => { if (state === "listening" && !fullText()) sendTurn("[Hajun has been quiet for 25 seconds.]", true); }, NUDGE_MS);
+        nudgeT = setTimeout(() => { if (state === "listening" && !fullText()) sendTurn("[Hajun has been quiet for a while.]", true); }, NUDGE_MS() || 3600000);
         return;
       }
       sendTurn(t, false);
@@ -839,6 +858,7 @@ Reply with ONLY this JSON, nothing else:
   // ---------- turn ----------
   let lastRaw = "";
   function sendTurn(text, isSystem) {
+    if (state === "speaking" || state === "paused" || state === "idle") return;   // never start a turn while Miss Lily is talking
     stopListening();
     if (!isSystem) { stars += 1; renderStars(); lastRaw = text; $("hajunLine").textContent = text; }
     const content = isSystem ? text : `Hajun said: "${text}"`;
@@ -922,7 +942,7 @@ Reply with ONLY this JSON, nothing else:
   $("interest").addEventListener("change", () => { prefs.interest = $("interest").value; save(); });
   $("randomTheme").addEventListener("click", () => { $("theme").value = "random"; const p = pickTheme(); $("theme").value = p.ko; prefs.theme = p.ko; save(); });
   $("voice").addEventListener("change", () => { prefs.voice = $("voice").value; save(); });
-  ["silence", "rate", "tvDelay", "listenEngine"].forEach(id => { if (prefs[id]) $(id).value = prefs[id]; $(id).addEventListener("change", () => { prefs[id] = $(id).value; save(); }); });
+  ["silence", "rate", "tvDelay", "listenEngine", "nudge", "sens"].forEach(id => { if (prefs[id]) $(id).value = prefs[id]; $(id).addEventListener("change", () => { prefs[id] = $(id).value; save(); }); });
   if (prefs.provider) $("provider").value = prefs.provider;
   fillModels();
   $("provider").addEventListener("change", () => { prefs.provider = provider(); save(); fillModels(); setDiag(); });
