@@ -25,6 +25,7 @@
   h1, .display { font-family: "Fredoka", "Nunito", "Apple SD Gothic Neo", system-ui, sans-serif; font-weight: 700; }
   button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; touch-action: manipulation; }
   button:focus-visible, input:focus-visible, select:focus-visible { outline: 4px solid var(--mat-yellow); outline-offset: 2px; }
+  a { color: var(--mat-blue); }
   [hidden] { display: none !important; }
   #app { min-height: 100%; display: flex; flex-direction: column; }
 
@@ -35,6 +36,9 @@
   .field { margin-bottom: 18px; }
   .field label { display: block; margin-bottom: 8px; }
   .field input[type=text], .field input[type=password], .field select { width: 100%; font: inherit; font-size: 1.15rem; padding: 13px 15px; border-radius: 14px; border: 2px solid var(--line); background: var(--panel); color: var(--ink); }
+  .field.key { padding: 16px; border-radius: 16px; background: var(--panel); border: 3px solid var(--mat-red); }
+  .field.key.ok { border-color: #1E8E5A; }
+  .field.key p { margin: 8px 0 0; color: var(--ink-soft); font-size: .95rem; line-height: 1.5; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   .chip { padding: 8px 14px; border-radius: 999px; background: var(--panel); border: 2px solid var(--line); }
   .row { display: flex; gap: 8px; }
@@ -61,7 +65,7 @@
 
   .board { display: grid; grid-template-columns: 1fr; gap: 12px; flex: 1; }
   @media (min-width: 900px) and (orientation: landscape) { .board { grid-template-columns: 4fr 6fr; } }
-  .stage { background: var(--mat-blue); color: #fff; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 240px; position: relative; overflow: hidden; }
+  .stage { background: var(--mat-blue); color: #fff; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 200px; position: relative; overflow: hidden; }
   .stage::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 18px; background: var(--mat-yellow); }
   .emoji { font-size: clamp(3.6rem, 10vw, 7rem); line-height: 1.15; letter-spacing: .08em; }
   .emoji.bump span { display: inline-block; animation: bump .5s ease-out; }
@@ -77,6 +81,8 @@
   .who .face { font-size: 1.7rem; }
   .line { font-family: "Fredoka", "Nunito", system-ui, sans-serif; font-weight: 600; font-size: clamp(1.5rem, 3.4vw, 2.5rem); line-height: 1.3; min-height: 1.3em; }
   .line .interim { color: var(--ink-soft); }
+  .raw { color: var(--ink-soft); font-size: 1.05rem; margin-top: 8px; }
+  .fix { color: #1E8E5A; }
   .thinking-dots::after { content: "…"; animation: blink 1s steps(3) infinite; }
   @keyframes blink { 50% { opacity: .2 } }
 
@@ -92,10 +98,23 @@
   <section id="setup">
     <div class="belt" aria-hidden="true"></div>
     <h1>하준이 영어 도장</h1>
-    <p class="sub">Miss Lily와 라이브로 말하기 · 마이크는 계속 켜져 있고, 하준이가 말을 멈추면 정해진 시간만큼 기다렸다가 Miss Lily가 대답해요</p>
+    <p class="sub">Miss Lily와 라이브로 말하기 · 하준이가 말한 문장을 바른 영어로 고쳐서 먼저 들려주고, 그다음 대답해요</p>
+
+    <div class="field key" id="apiField" hidden>
+      <label for="apiKey">① Miss Lily 두뇌 — 무료로 쓰려면 Gemini 키를 넣어요</label>
+      <div class="row" style="margin-bottom:8px">
+        <select id="provider" class="ctl" style="flex:1;padding:10px">
+          <option value="gemini" selected>Google Gemini (무료)</option>
+          <option value="anthropic">Anthropic Claude (유료)</option>
+        </select>
+        <select id="model" class="ctl" style="flex:1;padding:10px"></select>
+      </div>
+      <input id="apiKey" type="password" placeholder="API 키 붙여넣기" autocomplete="off">
+      <p id="keyHelp"></p>
+    </div>
 
     <div class="field">
-      <label for="interest">오늘 주제 (한글로 써도 돼요)</label>
+      <label for="interest">② 오늘 주제 (한글로 써도 돼요)</label>
       <input id="interest" type="text" placeholder="예: 사마귀, 유도 vs 태권도, 매미, 우주" autocomplete="off">
       <div class="chips" id="chips">
         <button class="chip" type="button">유도 vs 태권도</button>
@@ -108,7 +127,7 @@
     </div>
 
     <div class="field">
-      <label for="voice">Miss Lily 목소리 (영어 원어민 목소리만 보여요)</label>
+      <label for="voice">③ Miss Lily 목소리 (영어 원어민 목소리만 보여요)</label>
       <div class="row">
         <select id="voice" style="flex:1"></select>
         <button class="ctl" id="testVoice" type="button">🔊 테스트</button>
@@ -117,7 +136,7 @@
 
     <div class="grid2">
       <div class="field">
-        <label for="silence">하준이가 말 멈춘 뒤 기다리는 시간</label>
+        <label for="silence">말 멈춘 뒤 기다리는 시간</label>
         <select id="silence">
           <option value="3000">3초</option>
           <option value="5000" selected>5초</option>
@@ -129,19 +148,8 @@
         <label for="rate">말 속도</label>
         <select id="rate">
           <option value="0.9">조금 천천히</option>
-          <option value="1" selected>보통 (미국 아이와 대화 속도)</option>
+          <option value="1" selected>보통</option>
           <option value="1.1">빠르게</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="field" id="apiField" hidden>
-      <label for="apiKey">Anthropic API 키 (이 브라우저에만 저장돼요)</label>
-      <div class="row">
-        <input id="apiKey" type="password" placeholder="sk-ant-…" autocomplete="off" style="flex:1">
-        <select id="model" class="ctl" style="padding:10px">
-          <option value="claude-haiku-4-5-20251001" selected>Haiku (빠름)</option>
-          <option value="claude-sonnet-5">Sonnet 5</option>
         </select>
       </div>
     </div>
@@ -166,13 +174,14 @@
         <div class="caption" id="caption"></div>
       </div>
       <div class="talk">
-        <div class="bubble teacher" id="teacherBubble">
-          <div class="who"><span class="face">👩‍🏫</span> Miss Lily</div>
-          <div class="line" id="teacherLine"></div>
-        </div>
         <div class="bubble hajun">
           <div class="who"><span class="face">🧒</span> Hajun <span id="countdown" style="margin-left:auto"></span></div>
           <div class="line" id="hajunLine"></div>
+          <div class="raw" id="hajunRaw" hidden></div>
+        </div>
+        <div class="bubble teacher" id="teacherBubble">
+          <div class="who"><span class="face">👩‍🏫</span> Miss Lily</div>
+          <div class="line" id="teacherLine"></div>
         </div>
       </div>
     </div>
@@ -189,21 +198,19 @@
 (() => {
   const $ = (id) => document.getElementById(id);
 
-  const RULES = `You are Miss Lily, a warm, playful American English teacher having a LIVE spoken conversation with Hajun, a 7-year-old Korean boy. Everything you write will be read aloud by a text-to-speech voice, so write exactly how a friendly American teacher TALKS to a kid: contractions, short sentences, natural rhythm ("Whoa!", "No way!", "Okay, okay…").
+  const RULES = `You are Miss Lily, a warm, playful American English teacher having a LIVE spoken conversation with Hajun, a 7-year-old Korean boy. Everything you write is read aloud by a text-to-speech voice, so write exactly how a friendly American teacher TALKS to a kid: contractions, short sentences, natural rhythm ("Whoa!", "No way!", "Okay, okay…").
 
-Hajun understands English well but is shy about speaking and needs time to build sentences. Your job is to keep him talking and having fun.
+Hajun understands English well but is shy about speaking and needs time to build sentences. His words come from a speech recognizer, so they may be broken, repeated, or partly Korean. Your job: keep him talking, and let him hear the correct sentence every time.
 
 STORY: You and Hajun build a cartoon adventure together from TODAY'S INTEREST. Create 2-3 characters (animals, bugs, robots, or kids) with fun names. They train, race, and have friendly matches. Energetic and funny, cartoon-safe: nobody gets hurt ("bonk!", "oops!", "they both laugh"). Hajun's answers change what happens next. Roughly every 10 exchanges, wrap up the episode happily and start a fresh one — you can ask Hajun what should happen next.
 
-EACH TURN:
-- First react to what Hajun just said. Repeat his idea back in correct, natural English. Never say "wrong". If he speaks Korean or the words are garbled, cheer and model the English version ("Ohh, you mean the tiger jumps? Yes!").
-- Then move the story ONE small step.
-- End with exactly ONE simple question he can answer in a few words (who / what / which / do you like / what happens next / yes-no). Give a tiny nudge if useful: "You can say: Tiger wins!"
-- Total: at most 3 short sentences plus the question. Around 25 words.
+EACH TURN, output two things:
+1. "fix" = what Hajun just said, rewritten as ONE short, correct, natural English sentence a 7-year-old would say (max 10 words). Keep his meaning and his words where possible. If he said several things, keep the main one. If he spoke Korean, translate it into simple English. If nothing is understandable, use "". On the very first turn use "". This sentence is played to him slowly so he can repeat it.
+2. "say" = your reply. Start by cheering the idea ("Yes! The tiger is really big!"). Never say "wrong". Then move the story ONE small step. End with exactly ONE simple question he can answer in a few words (who / what / which / do you like / what happens next / yes-no). At most 3 short sentences plus the question — around 25 words.
 - If told Hajun was quiet, gently get his attention and ask an easier yes/no question.
 
 Reply with ONLY this JSON, nothing else:
-{"say":"<everything Miss Lily says, in one string>","emoji":"<2-4 emoji separated by spaces>","scene":"<caption, max 8 words>"}`;
+{"fix":"<corrected sentence or empty>","say":"<everything Miss Lily says>","emoji":"<2-4 emoji separated by spaces>","scene":"<caption, max 8 words>"}`;
 
   // ---------- prefs ----------
   const prefs = (() => { try { return JSON.parse(localStorage.getItem("dojo-live") || "{}"); } catch { return {}; } })();
@@ -221,20 +228,40 @@ Reply with ONLY this JSON, nothing else:
 
   const SILENCE = () => Number($("silence").value) || 5000;
   const NUDGE_MS = 25000;
+  const apiKey = () => $("apiKey").value.trim();
 
   // ---------- brain ----------
   function parseJSON(text) {
     try { return JSON.parse(text); } catch {}
     const m = text.match(/\{[\s\S]*\}/);
     if (m) { try { return JSON.parse(m[0]); } catch {} }
-    return { say: text.replace(/[{}"]/g, "").slice(0, 300), emoji: "🥋", scene: "" };
+    return { fix: "", say: text.replace(/[{}"]/g, "").slice(0, 300), emoji: "🥋", scene: "" };
+  }
+  const MODELS = {
+    gemini: [["gemini-3.5-flash-lite", "3.5 Flash-Lite (빠름, 기본)"], ["gemini-3.6-flash", "3.6 Flash"], ["gemini-3.8-flash", "3.8 Flash"]],
+    anthropic: [["claude-haiku-4-5-20251001", "Haiku 4.5 (빠름)"], ["claude-sonnet-5", "Sonnet 5"]]
+  };
+  const KEY_HELP = {
+    gemini: '무료: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> → 구글 로그인 → Create API key → 복사. 카드 등록 없이 하루 수백 번은 돼요. (무료 구간은 구글이 대화 내용을 품질 개선에 쓸 수 있어요)',
+    anthropic: '유료: <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com → API Keys</a>. Billing 충전이 필요해요.'
+  };
+  function provider() { return $("provider").value; }
+  function fillModels() {
+    const sel = $("model"); sel.innerHTML = "";
+    MODELS[provider()].forEach(([v, l]) => sel.append(new Option(l, v)));
+    const saved = prefs["model_" + provider()];
+    if (saved && MODELS[provider()].some(m => m[0] === saved)) sel.value = saved;
+    $("keyHelp").innerHTML = KEY_HELP[provider()];
+    $("apiKey").placeholder = provider() === "gemini" ? "AIza… 로 시작하는 키 붙여넣기" : "sk-ant-… 로 시작하는 키 붙여넣기";
+    $("apiKey").value = prefs["key_" + provider()] || "";
   }
   async function brain(msgs, signal) {
     if (mode === "claude") {
       return sample.json([{ role: "user", content: RULES }, ...msgs], { modelTier: "quick", cache: false, signal });
     }
-    const key = $("apiKey").value.trim();
+    const key = apiKey();
     if (!key) throw { code: "no_key" };
+    if (provider() === "gemini") return geminiCall(msgs, key, signal, true);
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST", signal,
       headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
@@ -242,9 +269,36 @@ Reply with ONLY this JSON, nothing else:
     });
     if (r.status === 401 || r.status === 403) throw { code: "bad_key" };
     if (r.status === 429) throw { code: "rate_limited" };
+    if (r.status === 400) { const j = await r.json().catch(() => ({})); throw { code: /credit|billing/i.test(JSON.stringify(j)) ? "no_credit" : "upstream_error" }; }
     if (!r.ok) throw { code: "upstream_error", message: String(r.status) };
     const data = await r.json();
     const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+    return parseJSON(text);
+  }
+  async function geminiCall(msgs, key, signal, withThinking) {
+    const model = $("model").value;
+    const generationConfig = { responseMimeType: "application/json", maxOutputTokens: 600, temperature: 0.9 };
+    if (withThinking) generationConfig.thinkingConfig = { thinkingLevel: "minimal" };
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: "POST", signal,
+      headers: { "content-type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: RULES }] },
+        contents: msgs.map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
+        generationConfig
+      })
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      const msg = JSON.stringify(j);
+      if (r.status === 429 || /RESOURCE_EXHAUSTED/.test(msg)) throw { code: "rate_limited" };
+      if (r.status === 401 || r.status === 403 || /API key not valid|API_KEY_INVALID|PERMISSION_DENIED/i.test(msg)) throw { code: "bad_key" };
+      if (r.status === 400 && withThinking) return geminiCall(msgs, key, signal, false);   // model didn't accept the thinking option
+      throw { code: "upstream_error", message: String(r.status) };
+    }
+    const data = await r.json();
+    const text = (((data.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text || "").join("") || "";
+    if (!text) throw { code: "empty_completion" };
     return parseJSON(text);
   }
 
@@ -277,25 +331,28 @@ Reply with ONLY this JSON, nothing else:
   }
   function currentVoice() { return voices.find(v => v.name === $("voice").value) || null; }
 
-  function speak(text, onDone) {
-    lastSpoken = text;
+  function speak(text, onDone, rateMul) {
     const v = currentVoice();
     if (!synth || !text || !v) { onDone && onDone(); return; }
     if (synth.speaking || synth.pending) synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.voice = v; u.lang = v.lang; u.rate = Number($("rate").value) || 1; u.pitch = 1.02;
+    u.voice = v; u.lang = v.lang; u.rate = (Number($("rate").value) || 1) * (rateMul || 1); u.pitch = 1.02;
     let done = false;
     const finish = () => { if (!done) { done = true; onDone && onDone(); } };
     u.onend = finish; u.onerror = finish;
-    setTimeout(finish, Math.min(30000, 1500 + text.length * 80));
+    setTimeout(finish, Math.min(30000, 1500 + text.length * 90));
     setTimeout(() => synth.speak(u), 60);
   }
 
   // ---------- speech recognition ----------
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   let rec = null, recRunning = false;
-  let finalText = "", interimText = "";
+  // Android Chrome re-sends the whole transcript in every result event, so we REBUILD the
+  // current session from index 0 each time instead of appending — and only carry text over
+  // when a recognition session actually ends.
+  let committed = "", session = "", interimText = "";
   let silenceT = null, nudgeT = null, tickT = null, deadline = 0;
+  const fullText = () => (committed + " " + session + " " + interimText).replace(/\s+/g, " ").trim();
 
   function makeRec() {
     rec = new SR();
@@ -303,12 +360,11 @@ Reply with ONLY this JSON, nothing else:
     rec.onstart = () => { recRunning = true; };
     rec.onresult = (e) => {
       let f = "", i = "";
-      for (let k = e.resultIndex; k < e.results.length; k++) {
+      for (let k = 0; k < e.results.length; k++) {
         const t = e.results[k][0].transcript;
-        if (e.results[k].isFinal) f += t; else i += t;
+        if (e.results[k].isFinal) f += t + " "; else i += t + " ";
       }
-      if (f) finalText = (finalText + " " + f).replace(/\s+/g, " ").trim();
-      interimText = i.trim();
+      session = f.trim(); interimText = i.trim();
       renderHajun();
       clearTimeout(nudgeT);
       armSilence();
@@ -316,24 +372,27 @@ Reply with ONLY this JSON, nothing else:
     rec.onerror = (e) => {
       if (e.error === "not-allowed" || e.error === "service-not-allowed") {
         wantListening = false; recRunning = false; setState("paused");
-        setStatus("마이크 권한이 막혔어요. 주소창 자물쇠 → 마이크 허용을 켜거나, 이 파일을 Edge에서 직접 열어 주세요.", true);
+        setStatus("마이크 권한이 막혔어요. 주소창 자물쇠 → 마이크 허용을 켜 주세요.", true);
       }
     };
     rec.onend = () => {
       recRunning = false;
+      if (session && !committed.endsWith(session)) committed = (committed + " " + session).trim();
+      session = ""; interimText = "";
       if (state === "listening" && wantListening) { try { rec.start(); } catch {} }   // keep the mic open
     };
   }
   function startListening() {
     if (!SR || !wantListening) return;
     if (!rec) makeRec();
-    finalText = ""; interimText = ""; renderHajun();
+    committed = ""; session = ""; interimText = ""; renderHajun();
+    $("hajunRaw").hidden = true;
     setState("listening");
     setStatus("");
     if (!recRunning) { try { rec.start(); } catch {} }
     clearTimeout(nudgeT);
     nudgeT = setTimeout(() => {
-      if (state === "listening" && !(finalText + interimText).trim()) sendTurn("[Hajun has been quiet for 25 seconds.]", true);
+      if (state === "listening" && !fullText()) sendTurn("[Hajun has been quiet for 25 seconds.]", true);
     }, NUDGE_MS);
   }
   function stopListening() {
@@ -349,20 +408,22 @@ Reply with ONLY this JSON, nothing else:
     }, 250);
     silenceT = setTimeout(() => {
       clearInterval(tickT); $("countdown").textContent = "";
-      const t = (finalText + " " + interimText).trim();
+      const t = fullText();
       if (t && state === "listening") sendTurn(t, false);
     }, SILENCE());
   }
   function renderHajun() {
     const el = $("hajunLine"); el.innerHTML = "";
-    if (finalText) el.append(finalText + " ");
+    const done = (committed + " " + session).replace(/\s+/g, " ").trim();
+    if (done) el.append(done + " ");
     if (interimText) { const s = document.createElement("span"); s.className = "interim"; s.textContent = interimText; el.append(s); }
   }
 
   // ---------- turn ----------
+  let lastRaw = "";
   function sendTurn(text, isSystem) {
     stopListening();
-    if (!isSystem) { stars += 1; renderStars(); $("hajunLine").textContent = text; }
+    if (!isSystem) { stars += 1; renderStars(); lastRaw = text; $("hajunLine").textContent = text; }
     const content = isSystem ? text : `Hajun said: "${text}"`;
     ask(content);
   }
@@ -380,14 +441,21 @@ Reply with ONLY this JSON, nothing else:
     } catch (e) {
       const code = (e && e.code) || (e && e.name === "AbortError" ? "cancelled" : "upstream_error");
       if (code === "cancelled") return;
+      $("teacherLine").classList.remove("thinking-dots");
+      if (code === "no_key" || code === "bad_key" || code === "no_credit") {
+        wantListening = false; stopListening(); setState("idle");
+        $("play").hidden = true; $("setup").hidden = false;
+        $("apiField").classList.remove("ok");
+        $("diag").innerHTML = `<span class="bad">${code === "no_key" ? "API 키를 먼저 넣어 주세요." : code === "bad_key" ? "API 키가 맞지 않아요. 다시 붙여넣어 주세요." : "API 계정에 크레딧이 없어요. 무료로 쓰려면 두뇌를 Gemini로 바꿔 주세요."}</span>`;
+        $("apiKey").focus();
+        return;
+      }
       const copy = {
-        no_key: "API 키를 넣어 주세요.", bad_key: "API 키가 맞지 않아요.",
         not_granted: "Claude 사용을 허용해야 Miss Lily가 말해요. 페이지를 다시 열고 허용해 주세요.",
         rate_limited: "너무 빨라요. 잠깐 쉬었다가 다시 해요.", refused: "이 주제는 어려워요. 다른 주제로 시작해 볼까요?",
         invalid_json: "Miss Lily가 잠깐 헷갈렸어요. 다시 보내기를 눌러 주세요.", empty_completion: "Miss Lily가 말을 잃었어요. 다시 보내기를 눌러 주세요."
       };
       setStatus(copy[code] || "연결이 잠깐 끊겼어요. 다시 보내기를 눌러 주세요.", true);
-      $("teacherLine").classList.remove("thinking-dots");
       $("sendNow").dataset.retry = content;
       setState("paused");
     }
@@ -398,10 +466,18 @@ Reply with ONLY this JSON, nothing else:
     const em = $("emoji"); em.innerHTML = ""; emo.forEach(e => { const s = document.createElement("span"); s.textContent = e + " "; em.append(s); });
     em.classList.remove("bump"); void em.offsetWidth; em.classList.add("bump");
     $("caption").textContent = d.scene || "";
+    const fix = String(d.fix || "").trim();
     const say = String(d.say).trim();
-    $("teacherLine").textContent = say;
     setState("speaking");
-    speak(say, () => { if (wantListening) setTimeout(startListening, 600); else setState("paused"); });
+    // 1) play back Hajun's sentence, corrected, a touch slower  2) then Miss Lily's reply
+    const after = () => { if (wantListening) setTimeout(startListening, 600); else setState("paused"); };
+    const sayLily = () => { $("teacherLine").textContent = say; lastSpoken = say; speak(say, after); };
+    if (fix) {
+      $("hajunLine").innerHTML = ""; const s = document.createElement("span"); s.className = "fix"; s.textContent = "✔ " + fix; $("hajunLine").append(s);
+      if (lastRaw && lastRaw.toLowerCase() !== fix.toLowerCase()) { $("hajunRaw").hidden = false; $("hajunRaw").textContent = "들린 말: " + lastRaw; }
+      $("teacherLine").textContent = "";
+      speak(fix, () => setTimeout(sayLily, 350), 0.9);
+    } else sayLily();
   }
 
   // ---------- ui helpers ----------
@@ -417,9 +493,12 @@ Reply with ONLY this JSON, nothing else:
   // ---------- wiring ----------
   $("chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) $("interest").value = b.textContent; });
   $("voice").addEventListener("change", () => { prefs.voice = $("voice").value; save(); });
-  ["silence", "rate", "model"].forEach(id => { if (prefs[id]) $(id).value = prefs[id]; $(id).addEventListener("change", () => { prefs[id] = $(id).value; save(); }); });
-  if (prefs.apiKey) $("apiKey").value = prefs.apiKey;
-  $("apiKey").addEventListener("change", () => { prefs.apiKey = $("apiKey").value.trim(); save(); });
+  ["silence", "rate"].forEach(id => { if (prefs[id]) $(id).value = prefs[id]; $(id).addEventListener("change", () => { prefs[id] = $(id).value; save(); }); });
+  if (prefs.provider) $("provider").value = prefs.provider;
+  fillModels();
+  $("provider").addEventListener("change", () => { prefs.provider = provider(); save(); fillModels(); setDiag(); });
+  $("model").addEventListener("change", () => { prefs["model_" + provider()] = $("model").value; save(); });
+  ["input", "change"].forEach(ev => $("apiKey").addEventListener(ev, () => { prefs["key_" + provider()] = apiKey(); save(); setDiag(); }));
   $("testVoice").addEventListener("click", () => { loadVoices(); if (!currentVoice()) { setDiag(); return; } speak("Hey Hajun! I'm Miss Lily. Are you ready to play?"); });
   $("replay").addEventListener("click", () => { if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) startListening(); }); });
   $("pause").addEventListener("click", () => {
@@ -429,15 +508,16 @@ Reply with ONLY this JSON, nothing else:
   $("sendNow").addEventListener("click", () => {
     const retry = $("sendNow").dataset.retry;
     if (retry && state === "paused") { delete $("sendNow").dataset.retry; wantListening = true; ask(retry); return; }
-    const t = (finalText + " " + interimText).trim();
+    const t = fullText();
     if (state === "listening" && t) sendTurn(t, false);
   });
   $("quit").addEventListener("click", () => { wantListening = false; stopListening(); synth && synth.cancel(); ctl && ctl.abort(); setState("idle"); $("play").hidden = true; $("setup").hidden = false; });
 
   $("start").addEventListener("click", () => {
+    if (mode === "api" && !apiKey()) { $("apiKey").focus(); setDiag(); return; }
     const interest = $("interest").value.trim() || "유도 vs 태권도";
     if (synth) { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); }
-    turns = []; stars = 0; renderStars(); finalText = ""; interimText = ""; renderHajun();
+    turns = []; stars = 0; renderStars(); committed = ""; session = ""; interimText = ""; lastRaw = ""; renderHajun(); $("hajunRaw").hidden = true;
     $("topic").textContent = "오늘 주제: " + interest;
     $("setup").hidden = true; $("play").hidden = false;
     wantListening = true;
@@ -448,13 +528,15 @@ Reply with ONLY this JSON, nothing else:
   function setDiag() {
     const v = currentVoice();
     const lines = [];
-    lines.push(mode === "claude" ? `<span class="ok">✔ Miss Lily 두뇌: Claude 연결됨</span>` : mode === "api" ? `<span class="ok">✔ Miss Lily 두뇌: API 키로 연결</span>` : `<span class="bad">✘ 두뇌 연결 확인 중…</span>`);
-    lines.push(SR ? `<span class="ok">✔ 마이크 인식: 이 브라우저에서 가능</span>` : `<span class="bad">✘ 이 브라우저는 음성 인식이 안 돼요 — PC의 Edge나 크롬으로 열어 주세요</span>`);
+    if (mode === "claude") lines.push(`<span class="ok">✔ Miss Lily 두뇌: Claude 연결됨</span>`);
+    else if (mode === "api") { const ok = !!apiKey(); $("apiField").classList.toggle("ok", ok); lines.push(ok ? `<span class="ok">✔ Miss Lily 두뇌: ${provider() === "gemini" ? "Gemini (무료)" : "Claude"} 키 있음</span>` : `<span class="bad">✘ API 키가 없어요 — 위 ① 칸에 붙여넣어야 Miss Lily가 말해요</span>`); }
+    else lines.push(`<span class="bad">✘ 두뇌 연결 확인 중…</span>`);
+    lines.push(SR ? `<span class="ok">✔ 마이크 인식: 이 브라우저에서 가능</span>` : `<span class="bad">✘ 이 브라우저는 음성 인식이 안 돼요 — 크롬으로 열어 주세요</span>`);
     if (!synth) lines.push(`<span class="bad">✘ 음성 엔진 없음</span>`);
-    else if (!v) lines.push(`<span class="bad">✘ 영어 원어민 목소리가 없어요. 콩글리시 목소리는 쓰지 않아요 — PC의 Edge에서 열면 Microsoft Natural 원어민 목소리가 있어요</span>`);
-    else lines.push(`<span class="ok">✔ 목소리: ${v.name}</span>` + (/Natural/i.test(v.name) ? " (원어민급)" : " — Edge 브라우저면 더 자연스러운 Natural 목소리를 쓸 수 있어요"));
+    else if (!v) lines.push(`<span class="bad">✘ 영어 원어민 목소리가 없어요 — 폰 설정 → 일반 → 텍스트 음성 변환에서 영어(미국) 음성 데이터를 설치해 주세요</span>`);
+    else lines.push(`<span class="ok">✔ 목소리: ${v.name}</span>`);
     $("diag").innerHTML = lines.join("<br>");
-    $("start").disabled = !(mode && SR && v);
+    $("start").disabled = !(mode && SR && v && (mode !== "api" || apiKey()));
   }
   if (synth) {
     $("voice").append(new Option("목소리 찾는 중…", ""));
@@ -463,9 +545,7 @@ Reply with ONLY this JSON, nothing else:
   } else { $("voice").append(new Option("음성 엔진 없음", "")); }
 
   (async () => {
-    if (window.claude && typeof window.claude.use === "function") {
-      sample = await window.claude.use("sample");
-    }
+    if (window.claude && typeof window.claude.use === "function") sample = await window.claude.use("sample");
     if (sample) mode = "claude";
     else { mode = "api"; $("apiField").hidden = false; }
     setDiag();
