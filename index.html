@@ -48,6 +48,15 @@
   .go { width: 100%; margin-top: 8px; padding: 20px; border-radius: 20px; font-size: 1.5rem; background: var(--mat-blue); color: #fff; box-shadow: 0 6px 0 var(--mat-blue-deep); }
   .go:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--mat-blue-deep); }
   .go:disabled { opacity: .5; box-shadow: none; transform: none; }
+  .modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .modeBtn { padding: 12px 6px; border-radius: 14px; background: var(--panel); border: 3px solid var(--line); font-size: 1.05rem; font-weight: 800; line-height: 1.25; }
+  .modeBtn small { font-weight: 600; color: var(--ink-soft); font-size: .8rem; }
+  .modeBtn[aria-pressed="true"] { border-color: var(--mat-blue); background: #E8F0FF; }
+  :root[data-theme="dark"] .modeBtn[aria-pressed="true"], .modeBtn[aria-pressed="true"]:where(:root:not([data-theme="light"]) *) { background: #23406F; }
+  .choices { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  @media (min-width: 640px) { .choices { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); } }
+  .choices button { padding: 16px 14px; border-radius: 16px; background: var(--panel); border: 3px solid var(--mat-yellow); font-family: "Fredoka", "Nunito", system-ui, sans-serif; font-weight: 600; font-size: clamp(1.15rem, 2.4vw, 1.6rem); line-height: 1.25; text-align: left; }
+  .choices button:disabled { opacity: .5; }
   .diag { margin-top: 16px; padding: 14px 16px; border-radius: 14px; background: var(--panel); border: 2px solid var(--line); font-size: .98rem; line-height: 1.6; }
   .diag .bad { color: var(--mat-red); }
   .diag .ok { color: #1E8E5A; }
@@ -114,7 +123,44 @@
     </div>
 
     <div class="field">
-      <label for="theme">② 오늘 수업 주제 (7~8세 영어회화 커리큘럼 기준)</label>
+      <label>② 오늘은 뭐 할까요?</label>
+      <div class="modes" id="modes">
+        <button class="modeBtn" data-mode="lesson" type="button" aria-pressed="true">🗣 영어 수업<br><small>Miss Lily와 주고받기</small></button>
+        <button class="modeBtn" data-mode="story" type="button">📖 이야기 듣기<br><small>밥 먹으며 10분</small></button>
+        <button class="modeBtn" data-mode="adventure" type="button">🛡 워리어 모험<br><small>하준이가 고르며 나아가는 이야기</small></button>
+      </div>
+    </div>
+
+    <div id="storyFields" hidden>
+      <div class="field">
+        <label for="storyTopic">이야기 주제 (칩을 누르거나 직접 써요)</label>
+        <input id="storyTopic" type="text" placeholder="예: 사마귀 왕국, 유도 대회, 우주 탐험, 공룡" autocomplete="off">
+        <div class="chips" id="storyChips">
+          <button class="chip" type="button">사마귀</button><button class="chip" type="button">매미</button><button class="chip" type="button">유도 대회</button><button class="chip" type="button">주짓수</button><button class="chip" type="button">레슬링</button><button class="chip" type="button">우주 탐험</button><button class="chip" type="button">거대한 건물 짓기</button><button class="chip" type="button">공룡</button><button class="chip" type="button">바다 깊은 곳</button><button class="chip" type="button">로봇</button>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="storyLen">길이</label><select id="storyLen"><option value="5">5분</option><option value="10" selected>10분</option><option value="15">15분</option></select></div>
+        <div class="field"><label for="storyLevel">영어 난이도</label><select id="storyLevel"><option value="easy" selected>쉬움 (짧은 문장)</option><option value="mid">보통</option></select></div>
+      </div>
+      <label class="toggle" style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><input id="storyHero" type="checkbox" checked style="width:22px;height:22px"> 하준이가 주인공으로 나오게</label>
+    </div>
+
+    <div id="adventureFields" hidden>
+      <div class="field">
+        <label for="advTopic">모험 무대 (칩을 누르거나 직접 써요)</label>
+        <input id="advTopic" type="text" placeholder="예: 곤충 숲, 유도 도장, 우주 기지" autocomplete="off">
+        <div class="chips" id="advChips">
+          <button class="chip" type="button">곤충 숲</button><button class="chip" type="button">사마귀 왕국</button><button class="chip" type="button">유도 도장</button><button class="chip" type="button">레슬링 캠프</button><button class="chip" type="button">우주 기지</button><button class="chip" type="button">바다 탐험선</button><button class="chip" type="button">산속 훈련소</button><button class="chip" type="button">학교</button>
+        </div>
+      </div>
+      <div class="field"><label for="advLen">길이</label><select id="advLen"><option value="8">짧게 (선택 8번)</option><option value="12" selected>보통 (선택 12번)</option></select></div>
+      <p class="note" style="margin:0 0 14px;color:var(--ink-soft);font-size:.95rem;line-height:1.5">세계관: 워리어 키드 — 일찍 일어나고, 훈련하고, 어려운 걸 먼저 하고, 예의 바르고, 약한 친구를 지키고, 정직하고, 하나님께 감사하는 아이. 위기마다 하준이가 영어로 선택하고, 선택에 따라 이야기가 달라져요. 한 편은 반드시 끝이 나고, 끝나면 "오늘 뭘 배웠어?"로 마무리해요.</p>
+    </div>
+
+    <div id="lessonFields">
+    <div class="field">
+      <label for="theme">오늘 수업 주제 (7~8세 영어회화 커리큘럼 기준)</label>
       <div class="row">
         <select id="theme" style="flex:1"></select>
         <button class="ctl" id="randomTheme" type="button">🎲 안 한 주제</button>
@@ -134,6 +180,8 @@
         <button class="chip" type="button">우주</button>
         <button class="chip" type="button">건축·큰 건물</button>
       </div>
+    </div>
+
     </div>
 
     <div class="field">
@@ -257,9 +305,12 @@
       </div>
     </div>
 
+    <div class="choices" id="choices"></div>
+
     <div class="bottom">
       <button class="big primary" id="pause" type="button">⏸ 잠깐 멈춤</button>
       <button class="big" id="sendNow" type="button">✅ 지금 대답 보내기</button>
+      <button class="big" id="nextChapter" type="button" hidden>⏭ 다음 장</button>
       <span class="status" id="status"></span>
     </div>
   </section>
@@ -382,6 +433,38 @@ Reply with ONLY this JSON, nothing else:
       + (sessions.length ? `\nRECENT SESSIONS (newest last):\n- ` + sessions.join("\n- ") : "");
   }
 
+  // ---------- Warrior Kid worldview (shared by adventure and, lightly, stories) ----------
+  const WARRIOR = `WORLD — "Warrior Kid": Hajun is a young warrior kid in training. His mentor is Coach Dan, a calm, strong, kind judo master and old sailor who speaks little and means it. The Warrior Kid Code:
+1. Get up early. Get after it.
+2. Discipline makes you free: do the hard thing first (training, homework), then play.
+3. Train your mind too: work hard at English and math every day.
+4. Be polite: "Yes, sir", "Yes, ma'am", "please", "thank you", look people in the eye, help Mom and Dad.
+5. Protect the weak. Never bully, never be bullied: stand tall, speak calmly, get help from a grown-up.
+6. Tell the truth. Admit mistakes and fix them.
+7. Be thankful to God: pray, keep a humble heart, love your family.
+8. Stay humble and keep training (judo, jiu-jitsu, wrestling, taekwondo) — a warrior is strong so he can be gentle.
+Choices test the Code. A lazy, rude or scared choice is never shamed: it brings a small natural consequence and a second chance ("Try again, warrior."). A brave, polite, hard-working choice earns respect and moves the story forward. Fights are training or protecting someone, never hurting anyone; nobody gets hurt.`;
+
+  const STORY_RULES = (n, words, level, hero) => `You are Miss Lily, a warm storyteller reading a story in simple English to Hajun, a 7-year-old Korean boy who understands English well. This is for LISTENING while he eats, so write for the ear: ${level === "easy" ? "very short sentences, common words" : "short sentences, some new words explained by context"}, lively sound effects, a little repetition, real dialogue, gentle humor. ${hero ? "Hajun himself is the hero of the story." : "Invent fresh characters."} Values live in the background, never preachy: courage, kindness, hard work, honesty, thankfulness to God, respect for parents. Danger is cartoon-safe.
+The story has ${n} chapters of about ${words} words each. Every chapter ends at a natural resting point (no cliffhanger tricks). Chapter ${n} gives a warm, complete ending.
+Reply with ONLY this JSON, nothing else:
+{"title":"<story title>","text":"<this chapter's text>","emoji":"<2-4 emoji separated by spaces>","scene":"<caption, max 8 words>"}`;
+
+  const ADV_RULES = (n) => `You are Miss Lily, a warm, playful American English teacher running a LIVE spoken choose-your-path adventure with Hajun, a 7-year-old Korean boy who understands English well but is shy about speaking. Everything you write is read aloud, so write how a teacher TALKS to a kid: contractions, short sentences, energy. His words come from a speech recognizer and may be broken or partly Korean.
+
+${WARRIOR}
+
+HOW A TURN WORKS:
+- "fix" = what Hajun just said, as ONE short correct English sentence (max 10 words); "" on the first turn or if nothing was understandable.
+- "say" = react to his choice (cheer it, or give the natural consequence and a second chance), then narrate the next scene in 2-4 short sentences, then end with the decision question ("What do you do?"). About 40 words.
+- "choices" = 2-3 things Hajun can SAY to choose, each a short English sentence a 7-year-old can read aloud (3-8 words), e.g. "I get up and train.", "I say sorry to Mom.". Make them real choices with different outcomes; always include one Code-worthy option, never label which is "right".
+- Every 3rd or 4th turn, instead of a choice, give a tiny challenge: repeat a polite phrase, count something, solve a small math question (like 4 + 3), or spell a short word — then continue.
+- About ${n} decisions in total. Then: a clear happy ending, one sentence about what the warrior kid did well, and ask Hajun "What did you learn today?" with "choices" empty and "ending": true. On the very next turn, thank him and set "ending": true again.
+- "remember" = new lasting facts about Hajun's real life (not the story) — usually empty here.
+
+Reply with ONLY this JSON, nothing else:
+{"fix":"","say":"","emoji":"<2-4 emoji separated by spaces>","scene":"<caption, max 8 words>","choices":["",""],"ending":false,"characters":[],"remember":[]}`;
+
   // ---------- prefs ----------
   const prefs = (() => { try { return JSON.parse(localStorage.getItem("dojo-live") || "{}"); } catch { return {}; } })();
   const save = () => { try { localStorage.setItem("dojo-live", JSON.stringify(prefs)); } catch {} };
@@ -389,6 +472,8 @@ Reply with ONLY this JSON, nothing else:
   // ---------- state ----------
   let turns = [];
   let activeRules = RULES;
+  let appMode = "lesson";     // lesson | story | adventure
+  let story = null;           // { chapters:[], n, playing, paused, idx }
   let stars = 0;
   let state = "idle";           // idle | thinking | speaking | listening | paused
   let wantListening = false;
@@ -584,7 +669,7 @@ Reply with ONLY this JSON, nothing else:
     return new Promise((res) => {
       const url = URL.createObjectURL(blob);
       let done = false; const fin = () => { if (!done) { done = true; URL.revokeObjectURL(url); res(); } };
-      player.onended = fin; player.onerror = fin;
+      player.onended = fin; player.onerror = fin; player.onpause = () => { if (story && story.stopFlag) fin(); };
       player.src = url; player.playbackRate = (blob && blob.type === "audio/mpeg") ? 1 : (Number($("rate").value) || 1);
       player.play().catch(fin);
       setTimeout(fin, 60000);
@@ -967,6 +1052,10 @@ Reply with ONLY this JSON, nothing else:
       if (lastRaw && lastRaw.toLowerCase() !== fix.toLowerCase()) { $("hajunRaw").hidden = false; $("hajunRaw").textContent = "들린 말: " + lastRaw; }
     }
     $("teacherLine").textContent = say; lastSpoken = fix ? `${fix} <long pause> ${say}` : say;
+    if (appMode === "adventure") {
+      renderChoices(d.ending ? [] : d.choices);
+      if (d.ending && !d.choices?.length && /learn/i.test(say) === false) { wantListening = false; $("stateChip").textContent = "🛡 끝"; }
+    }
     if (useCloudVoice() || useGeminiVoice()) speak(lastSpoken, after, 1, "turn");
     else if (fix) speakPhone(fix, () => setTimeout(() => speakPhone(say, after), 350), 0.9);
     else speakPhone(say, after);
@@ -975,6 +1064,7 @@ Reply with ONLY this JSON, nothing else:
   // ---------- ui helpers ----------
   function setState(s) {
     state = s;
+    document.querySelectorAll("#choices button").forEach(b => b.disabled = (s === "speaking" || s === "thinking"));
     const chip = $("stateChip"); chip.className = "state " + s;
     chip.textContent = { listening: "👂 하준이 차례", thinking: "🤔 생각 중", speaking: "🗣 Miss Lily", paused: "⏸ 멈춤", idle: "준비" }[s] || s;
     $("pause").textContent = (s === "paused") ? "▶ 다시 시작" : "⏸ 잠깐 멈춤";
@@ -983,6 +1073,20 @@ Reply with ONLY this JSON, nothing else:
   function renderStars() { const el = $("stars"); el.innerHTML = ""; for (let i = 0; i < Math.max(8, stars); i++) { const s = document.createElement("span"); s.textContent = "⭐"; if (i < stars) s.classList.add("on"); el.append(s); } }
 
   // ---------- wiring ----------
+  function setMode(m) {
+    appMode = m; prefs.mode = m; save();
+    document.querySelectorAll(".modeBtn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === m)));
+    $("lessonFields").hidden = m !== "lesson"; $("storyFields").hidden = m !== "story"; $("adventureFields").hidden = m !== "adventure";
+    $("start").textContent = m === "story" ? "이야기 들려줘!" : m === "adventure" ? "모험 시작!" : "이야기 시작!";
+    setDiag();
+  }
+  $("modes").addEventListener("click", (e) => { const b = e.target.closest(".modeBtn"); if (b) setMode(b.dataset.mode); });
+  setMode(prefs.mode || "lesson");
+  const addChip = (inputId) => (e) => { const b = e.target.closest(".chip"); if (b) { const el = $(inputId), cur = el.value.trim(); el.value = cur && !cur.includes(b.textContent) ? cur + ", " + b.textContent : b.textContent; el.dispatchEvent(new Event("change")); } };
+  $("storyChips").addEventListener("click", addChip("storyTopic"));
+  $("advChips").addEventListener("click", addChip("advTopic"));
+  ["storyTopic", "storyLen", "storyLevel", "advTopic", "advLen"].forEach(id => { if (prefs[id] != null) $(id).value = prefs[id]; $(id).addEventListener("change", () => { prefs[id] = $(id).value; save(); }); });
+  if (prefs.storyHero != null) $("storyHero").checked = prefs.storyHero; $("storyHero").addEventListener("change", () => { prefs.storyHero = $("storyHero").checked; save(); });
   $("chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) { const cur = $("interest").value.trim(); $("interest").value = cur && !cur.includes(b.textContent) ? cur + ", " + b.textContent : b.textContent; } });
   fillThemes(); themeNote(); renderMem();
   $("memAddBtn").addEventListener("click", () => { const t = $("memAdd").value.trim(); if (t) { memAdd([t]); $("memAdd").value = ""; } });
@@ -1029,6 +1133,12 @@ Reply with ONLY this JSON, nothing else:
   $("ttsRetry").addEventListener("click", () => { geminiTtsFailedAt = 0; ttsModelIdx = 0; ttsErrors = []; $("ttsRetry").hidden = true; setStatus(""); if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) setTimeout(startListening, TV_DELAY()); }, 1); });
   $("replay").addEventListener("click", () => { if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) setTimeout(startListening, TV_DELAY()); }, 1); });
   $("pause").addEventListener("click", () => {
+    if (appMode === "story" && story) {
+      if (story.done) { story.stopFlag = true; setTimeout(() => { $("start").click(); }, 50); return; }   // 🔁 from the top
+      if (story.paused) { story.paused = false; setState("speaking"); $("stateChip").textContent = `📖 ${story.idx + 1} / ${story.n}`; try { player.play().catch(() => {}); } catch {} if (synth && synth.paused) synth.resume(); }
+      else { story.paused = true; setState("paused"); try { player.pause(); } catch {} if (synth && synth.speaking) synth.pause(); }
+      return;
+    }
     if (state === "paused") { wantListening = true; startListening(); }
     else { wantListening = false; stopListening(); synth && synth.cancel(); ctl && ctl.abort(); setState("paused"); }
   });
@@ -1039,7 +1149,7 @@ Reply with ONLY this JSON, nothing else:
     const t = fullText();
     if (state === "listening" && t) sendTurn(t, false);
   });
-  $("quit").addEventListener("click", () => { wantListening = false; stopListening(); synth && synth.cancel(); ctl && ctl.abort(); setState("idle"); $("play").hidden = true; $("setup").hidden = false; });
+  $("quit").addEventListener("click", () => { if (story) { story.stopFlag = true; story.done = true; try { player.pause(); } catch {} } wantListening = false; stopListening(); synth && synth.cancel(); ctl && ctl.abort(); setState("idle"); $("play").hidden = true; $("setup").hidden = false; });
 
   $("start").addEventListener("click", async () => {
     if (mode === "api" && !apiKey()) { $("apiKey").focus(); setDiag(); return; }
@@ -1047,6 +1157,8 @@ Reply with ONLY this JSON, nothing else:
       const ok = await ensureMic();
       if (!ok) { $("listenEngine").value = "phone"; setStatus("마이크를 못 열어서 폰 인식으로 시작해요.", true); }
     }
+    if (appMode === "story") { startStoryMode(); return; }
+    if (appMode === "adventure") { startAdventureMode(); return; }
     const theme = pickTheme(); markThemeUsed(theme.ko); themeNote();
     const interest = $("interest").value.trim() || "judo, taekwondo, praying mantis, space";
     const avoid = (prefs.usedNames || []).slice(-30);
@@ -1058,10 +1170,105 @@ Reply with ONLY this JSON, nothing else:
     geminiTtsFailedAt = 0; ttsModelIdx = 0; ttsErrors = [];
     turns = []; stars = 0; renderStars(); committed = ""; session = ""; interimText = ""; lastRaw = ""; renderHajun(); $("hajunRaw").hidden = true;
     $("topic").textContent = "오늘 수업: " + theme.ko + " · " + ({talk:"대화",roleplay:"역할놀이",game:"게임",tpr:"몸으로",story:"이야기"}[theme.mode] || "");
+    document.querySelector("#teacherBubble .who").innerHTML = '<span class="face">👩‍🏫</span> Miss Lily';
+    document.querySelector(".bubble.hajun").hidden = false; $("choices").innerHTML = ""; $("nextChapter").hidden = true; $("sendNow").hidden = false; story = null;
     $("setup").hidden = true; $("play").hidden = false;
     wantListening = true;
     ask(`NEW STORY. Say hi to Hajun, introduce the characters in one breath, start the action, and ask your first easy lesson question.`);
   });
+
+  // ---------- shared: enter the play screen ----------
+  function enterPlay(topicLabel) {
+    if (synth) { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); }
+    try { player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; player.play().catch(() => {}); } catch {}
+    geminiTtsFailedAt = 0; ttsModelIdx = 0; ttsErrors = [];
+    turns = []; stars = 0; renderStars(); committed = ""; session = ""; interimText = ""; lastRaw = ""; renderHajun(); $("hajunRaw").hidden = true;
+    $("choices").innerHTML = ""; $("nextChapter").hidden = true; $("sendNow").hidden = false; $("meter").hidden = true;
+    $("topic").textContent = topicLabel;
+    $("setup").hidden = true; $("play").hidden = false;
+    setStatus("");
+  }
+
+  // ============================ STORY MODE (listen while eating) ============================
+  async function startStoryMode() {
+    if (mode === "api" && !apiKey()) { $("apiKey").focus(); setDiag(); return; }
+    const topic = $("storyTopic").value.trim() || "a praying mantis who trains judo";
+    const minutes = Number($("storyLen").value) || 10, level = $("storyLevel").value, hero = $("storyHero").checked;
+    const n = Math.max(3, Math.round(minutes / 2)), words = Math.round((minutes * 125) / n);
+    story = { chapters: [], n, idx: -1, paused: false, done: false, title: "", gen: null };
+    activeRules = STORY_RULES(n, words, level, hero) + (hero ? memBlock() : "");
+    enterPlay("📖 이야기: " + topic + " · " + minutes + "분");
+    wantListening = false;
+    $("sendNow").hidden = true; $("nextChapter").hidden = false;
+    document.querySelector("#teacherBubble .who").innerHTML = '<span class="face">📖</span> Miss Lily reads';
+    $("hajunLine").textContent = ""; document.querySelector(".bubble.hajun").hidden = true;
+    story.gen = generateChapter(1, `TOPIC: ${topic}. Write chapter 1 of ${n}.`);
+    playNextChapter();
+  }
+  async function generateChapter(i, content) {
+    const msgs = [...turns, { role: "user", content }];
+    const data = await brain(msgs, null);
+    if (!data || !data.text) throw { code: "invalid_json" };
+    turns.push({ role: "user", content }, { role: "assistant", content: JSON.stringify({ title: data.title, text: data.text }) });
+    const text = String(data.text).trim();
+    const audio = (useCloudVoice() || useGeminiVoice()) ? fetchStoryAudio(text).catch(() => null) : Promise.resolve(null);
+    return { i, title: data.title || "", text, emoji: data.emoji || "📖", scene: data.scene || "", audio };
+  }
+  async function fetchStoryAudio(text) {
+    // Cloud TTS takes ~5,000 bytes per request: split long chapters on sentence boundaries
+    const chunks = []; let cur = "";
+    for (const sent of text.split(/(?<=[.!?…"])\s+/)) { if ((cur + " " + sent).length > 1400) { chunks.push(cur.trim()); cur = sent; } else cur += " " + sent; }
+    if (cur.trim()) chunks.push(cur.trim());
+    if (useCloudVoice()) return Promise.all(chunks.map(c => cloudTtsFetch(c, Number($("rate").value) || 1)));
+    return Promise.all(chunks.map(c => geminiTtsFetch(c, "warm, gentle storyteller reading to a young child")));
+  }
+  async function playNextChapter() {
+    if (!story || story.done) return;
+    setState("thinking"); $("teacherLine").textContent = ""; $("teacherLine").classList.add("thinking-dots");
+    let ch;
+    try { ch = await story.gen; } catch (e) { $("teacherLine").classList.remove("thinking-dots"); setStatus("이야기를 못 만들었어요. ⏭ 다음 장을 눌러 다시 시도해 주세요.", true); story.gen = generateChapter(story.idx + 2, `Write chapter ${story.idx + 2} of ${story.n}. Continue the story.`); setState("paused"); return; }
+    story.idx = ch.i - 1; story.chapters.push(ch);
+    if (ch.i === 1 && ch.title) { story.title = ch.title; $("topic").textContent = "📖 " + ch.title; }
+    // start the next chapter early so it is ready when this one ends
+    if (ch.i < story.n) story.gen = generateChapter(ch.i + 1, `Write chapter ${ch.i + 1} of ${story.n}. Continue the story.`);
+    $("teacherLine").classList.remove("thinking-dots");
+    $("teacherLine").textContent = `Chapter ${ch.i}. ` + ch.text;
+    const emo = String(ch.emoji).trim().split(/\s+/).slice(0, 4); const em = $("emoji"); em.innerHTML = ""; emo.forEach(e => { const sp = document.createElement("span"); sp.textContent = e + " "; em.append(sp); });
+    $("caption").textContent = ch.scene;
+    setState("speaking"); $("stateChip").textContent = `📖 ${ch.i} / ${story.n}`;
+    lastSpoken = ch.text;
+    const blobs = await ch.audio;
+    const finish = () => { if (!story || story.done) return; if (ch.i >= story.n) { story.done = true; $("teacherLine").textContent += "\n\nThe End. 🌙"; $("stateChip").textContent = "📖 끝"; setState("paused"); $("pause").textContent = "🔁 처음부터 다시"; } else if (!story.paused) setTimeout(playNextChapter, 900); };
+    if (blobs && blobs.length) {
+      for (let k = 0; k < blobs.length; k++) { if (story.done || story.stopFlag) return; await playBlob(blobs[k]); while (story.paused && !story.stopFlag) await sleep(200); }
+      finish();
+    } else speakPhone(ch.text, finish);
+  }
+  $("nextChapter").addEventListener("click", () => { if (!story) return; if (synth) synth.cancel(); try { player.pause(); player.onended && player.onended(); } catch {} });
+
+  // ============================ ADVENTURE MODE (choose your path) ============================
+  function startAdventureMode() {
+    if (mode === "api" && !apiKey()) { $("apiKey").focus(); setDiag(); return; }
+    const topic = $("advTopic").value.trim() || "the Insect Forest";
+    const n = Number($("advLen").value) || 12;
+    const avoid = (prefs.usedNames || []).slice(-30);
+    const today = new Date(); const dateStr = `${today.getMonth() + 1}/${today.getDate()}`;
+    activeRules = ADV_RULES(n) + `\n\nTODAY: ${dateStr}\nSETTING: ${topic}` + (avoid.length ? `\nAVOID these character names (used before): ${avoid.join(", ")}` : "") + memBlock();
+    prefs.sessions = ((prefs.sessions || []).concat([{ date: dateStr, theme: "워리어 모험: " + topic }])).slice(-10); save();
+    enterPlay("🛡 워리어 모험: " + topic);
+    document.querySelector("#teacherBubble .who").innerHTML = '<span class="face">👩‍🏫</span> Miss Lily';
+    document.querySelector(".bubble.hajun").hidden = false;
+    wantListening = true;
+    ask(`NEW ADVENTURE. Open with Coach Dan waking Hajun early in ${topic}, set the scene in 2-3 sentences, and give the first choice. fix must be empty.`);
+  }
+  function renderChoices(list) {
+    const box = $("choices"); box.innerHTML = "";
+    (list || []).slice(0, 3).forEach(c => {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = "💬 " + c;
+      b.onclick = () => { if (state === "speaking" || state === "thinking") return; stopListening(); setState("speaking"); speak(c, () => { state = "listening"; sendTurn(c, false); }, 1); };
+      box.append(b);
+    });
+  }
 
   // ---------- diagnostics ----------
   function setDiag() {
@@ -1079,7 +1286,8 @@ Reply with ONLY this JSON, nothing else:
     else if (!v) lines.push(`<span class="bad">✘ 영어 원어민 목소리가 없어요 — 폰 설정 → 일반 → 텍스트 음성 변환에서 영어(미국) 음성 데이터를 설치해 주세요</span>`);
     else lines.push(`<span class="ok">✔ 목소리: ${v.name}</span>` + (/Android/i.test(navigator.userAgent) && !/network|Google/i.test(v.name) ? ` — 폰 설정 → 텍스트 음성 변환에서 "Google 음성 서비스"를 기본으로 하고 영어(미국) 고품질 음성을 설치하면 더 자연스러워요` : ""));
     $("diag").innerHTML = lines.join("<br>");
-    $("start").disabled = !(mode && (gListen ? !!navigator.mediaDevices : SR) && (v || !phoneVoiceNeeded) && (mode !== "api" || apiKey()));
+    const micOk = appMode === "story" ? true : (gListen ? !!navigator.mediaDevices : SR);
+    $("start").disabled = !(mode && micOk && (v || !phoneVoiceNeeded) && (mode !== "api" || apiKey()));
   }
   if (synth) {
     $("voice").append(new Option("목소리 찾는 중…", ""));
