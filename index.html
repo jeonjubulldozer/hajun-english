@@ -90,7 +90,7 @@
   .big { padding: 16px 22px; border-radius: 18px; font-size: 1.25rem; font-weight: 800; background: var(--panel); border: 3px solid var(--line); }
   .big.primary { background: var(--mat-red); color: #fff; border-color: var(--mat-red); box-shadow: 0 5px 0 #B23127; }
   .status { color: var(--ink-soft); min-height: 1.4em; }
-  .status.err { color: var(--mat-red); font-weight: 800; }
+  .status.err { color: var(--mat-red); font-weight: 800; font-size: 1.1rem; flex-basis: 100%; }
 </style>
 </head>
 <body>
@@ -114,15 +114,25 @@
     </div>
 
     <div class="field">
-      <label for="interest">② 오늘 주제 (한글로 써도 돼요)</label>
-      <input id="interest" type="text" placeholder="예: 사마귀, 유도 vs 태권도, 매미, 우주" autocomplete="off">
+      <label for="theme">② 오늘 수업 주제 (7~8세 영어회화 커리큘럼 기준)</label>
+      <div class="row">
+        <select id="theme" style="flex:1"></select>
+        <button class="ctl" id="randomTheme" type="button">🎲 안 한 주제</button>
+      </div>
+      <p class="note" id="themeNote" style="margin:8px 0 0;color:var(--ink-soft);font-size:.95rem;line-height:1.5"></p>
+    </div>
+
+    <div class="field">
+      <label for="interest">양념 — 하준이가 요즘 좋아하는 것 (캐릭터·장면에 섞어요)</label>
+      <input id="interest" type="text" placeholder="예: 사마귀, 유도, 우주" autocomplete="off">
       <div class="chips" id="chips">
         <button class="chip" type="button">유도 vs 태권도</button>
-        <button class="chip" type="button">주짓수 대결</button>
-        <button class="chip" type="button">레슬링 챔피언</button>
+        <button class="chip" type="button">주짓수</button>
+        <button class="chip" type="button">레슬링</button>
         <button class="chip" type="button">사마귀</button>
         <button class="chip" type="button">매미</button>
-        <button class="chip" type="button">우주 탐험</button>
+        <button class="chip" type="button">우주</button>
+        <button class="chip" type="button">건축·큰 건물</button>
       </div>
     </div>
 
@@ -196,6 +206,7 @@
       <span id="topic" style="color:var(--ink-soft)"></span>
       <span class="spacer"></span>
       <span class="state" id="stateChip">준비</span>
+      <button class="ctl" id="ttsRetry" type="button" hidden>🔊 Gemini 목소리 다시</button>
       <button class="ctl" id="replay" type="button">🔁 다시 듣기</button>
       <button class="ctl" id="quit" type="button">⏹ 끝내기</button>
     </div>
@@ -235,7 +246,7 @@
 
 Hajun understands English well but is shy about speaking and needs time to build sentences. His words come from a speech recognizer, so they may be broken, repeated, or partly Korean. Your job: keep him talking, and let him hear the correct sentence every time.
 
-STORY: You and Hajun build a cartoon adventure together from TODAY'S INTEREST. Create 2-3 characters (animals, bugs, robots, or kids) with fun names. They train, race, and have friendly matches. Energetic and funny, cartoon-safe: nobody gets hurt ("bonk!", "oops!", "they both laugh"). Hajun's answers change what happens next. Roughly every 10 exchanges, wrap up the episode happily and start a fresh one — you can ask Hajun what should happen next.
+STORY: You and Hajun build a short cartoon adventure together. Each session has a LESSON (a theme with target words and phrases, like a kids' English coursebook unit) and FLAVOR (Hajun's favorite things — use them for characters, places and jokes). Create 2-3 characters (animals, bugs, robots, or kids) with fun names. Make every story feel different: vary the place (a dojo, a jungle, a space station, a kitchen, a beach, a farm...) and the situation. Energetic and funny, cartoon-safe: nobody gets hurt ("bonk!", "oops!", "they both laugh"). Hajun's answers change what happens next. Weave the lesson's words and questions in naturally, so Hajun ends up saying them himself — ask lesson questions he can answer in 2-5 words, and model the target phrase once before you ask it. Roughly every 10 exchanges, wrap up the episode happily and start a fresh scene with the same lesson.
 
 EACH TURN, output two things:
 1. "fix" = what Hajun just said, rewritten as ONE short, correct, natural English sentence a 7-year-old would say (max 10 words). Keep his meaning and his words where possible. If he said several things, keep the main one. If he spoke Korean, translate it into simple English. If nothing is understandable, use "". On the very first turn use "". This sentence is played to him slowly so he can repeat it.
@@ -245,12 +256,78 @@ EACH TURN, output two things:
 Reply with ONLY this JSON, nothing else:
 {"fix":"<corrected sentence or empty>","say":"<everything Miss Lily says>","emoji":"<2-4 emoji separated by spaces>","scene":"<caption, max 8 words>"}`;
 
+  // 7-8세 영어회화 교재(Oxford Let's Go / Family and Friends, Cambridge Kid's Box 1-2 등)의 단원 주제를 합친 목록
+  const THEMES = [
+    ["기본 표현", [
+      ["인사와 자기소개", "Greetings and introductions: Hello! What's your name? How old are you? I'm eight. Nice to meet you."],
+      ["기분·느낌", "Feelings: How are you? I'm happy / sad / tired / scared / excited. Why?"],
+      ["색깔·모양", "Colors and shapes: What color is it? It's red. It's a circle. Blue and yellow!"],
+      ["숫자·몇 개", "Numbers and How many: How many bugs? Six bugs! Count to ten with me."],
+      ["할 수 있어요 (can)", "Abilities: Can you jump? Yes, I can. I can't fly. What can you do?"],
+      ["이건 뭐야? (what's this)", "Identifying things: What's this? It's a ball. Is it big or small? Yes, it is / No, it isn't."]
+    ]],
+    ["나와 가족", [
+      ["우리 가족", "Family: Who's this? This is my dad / mom / sister. I have a baby sister. Do you have a brother?"],
+      ["내 몸", "My body: This is my nose. I have two hands. Touch your toes! Shake your arms!"],
+      ["옷 입기", "Clothes: Put on your shoes. I'm wearing a blue shirt. Whose hat is this?"],
+      ["아플 때", "Health: What's wrong? I have a tummy ache. I have a cold. Take a rest. Feel better!"],
+      ["하루 일과·시간", "Daily routine and time: I get up at seven. I brush my teeth. What time is it? It's three o'clock."]
+    ]],
+    ["학교와 놀이", [
+      ["학교 물건", "School things: What's this? It's a pencil. Is this your bag? Open your book."],
+      ["장난감", "Toys: What's your favorite toy? I have a robot. Let's play! Can I have the car?"],
+      ["운동·취미", "Sports and hobbies: I like judo. Do you like swimming? Let's play soccer. I'm good at running."],
+      ["생일 파티", "Birthday party: Happy birthday! How old are you? Here's a present. Thank you! Let's eat cake."],
+      ["슈퍼히어로", "Superheroes: He's strong. She can fly. What's your superpower? I can run fast!"]
+    ]],
+    ["우리 주변", [
+      ["우리 집·방", "My house and rooms: Where's the cat? It's in the kitchen. Under the bed! Next to the sofa."],
+      ["음식·좋아하는 것", "Food: I like pizza. I don't like carrots. Are you hungry? Yummy! Can I have some milk?"],
+      ["날씨·계절", "Weather and seasons: How's the weather? It's sunny. It's raining. Let's go outside. I love snow!"],
+      ["동네 장소·길 찾기", "Places in town: Where's the park? Go straight. Turn left. It's next to the school."],
+      ["탈것", "Transportation: How do you go to school? By bus. A fast train! Look, a rocket!"],
+      ["직업", "Jobs: What does he do? He's a firefighter. She's a doctor. I want to be a judo champion."],
+      ["쇼핑·돈", "Shopping: How much is it? It's five dollars. Can I have this, please? Here you are."]
+    ]],
+    ["동물과 자연", [
+      ["동물·애완동물", "Animals and pets: I have a dog. Elephants are big. Do you like lions? It's fast!"],
+      ["곤충", "Insects: praying mantis, cicada, beetle, ant. It has six legs. It can jump. Where does it live?"],
+      ["바다 동물", "Sea animals: shark, octopus, dolphin. It can swim. It lives under the water. How many arms?"],
+      ["농장·동물원", "Farm and zoo: What do cows say? Moo! Let's go to the zoo. Look at the monkeys!"],
+      ["우주", "Space: planets, rockets, the moon. The sun is hot. Let's fly to Mars! 3, 2, 1, blast off!"]
+    ]],
+    ["이야기·특별한 날", [
+      ["여행·휴가", "Holidays and travel: Where are you going? I'm going to the beach. Pack your bag. Don't forget your hat!"],
+      ["특별한 날", "Special days: Halloween, Christmas, Chuseok. Trick or treat! Merry Christmas! Happy Chuseok!"],
+      ["옛날이야기", "Fairy tales: Once upon a time... three little pigs, a big bad wolf. What happens next?"]
+    ]]
+  ];
+  const THEME_LIST = THEMES.flatMap(([cat, items]) => items.map(([ko, en]) => ({ cat, ko, en })));
+  function fillThemes() {
+    const sel = $("theme"); sel.innerHTML = "";
+    sel.append(new Option("🎲 아무거나 (안 한 주제 중에서)", "random"));
+    THEMES.forEach(([cat, items]) => { const g = document.createElement("optgroup"); g.label = cat; items.forEach(([ko]) => g.append(new Option(ko, ko))); sel.append(g); });
+  }
+  function pickTheme() {
+    const v = $("theme").value;
+    if (v !== "random") return THEME_LIST.find(t => t.ko === v);
+    const used = new Set(prefs.usedThemes || []);
+    const pool = THEME_LIST.filter(t => !used.has(t.ko));
+    return (pool.length ? pool : THEME_LIST)[Math.floor(Math.random() * (pool.length ? pool : THEME_LIST).length)];
+  }
+  function markThemeUsed(ko) { const u = (prefs.usedThemes || []).filter(x => x !== ko); u.push(ko); prefs.usedThemes = u.slice(-THEME_LIST.length + 3); save(); }
+  function themeNote() {
+    const used = prefs.usedThemes || [];
+    $("themeNote").textContent = `주제 ${THEME_LIST.length}개 · 지금까지 한 것 ${used.length}개` + (used.length ? ` (최근: ${used.slice(-3).reverse().join(", ")})` : "");
+  }
+
   // ---------- prefs ----------
   const prefs = (() => { try { return JSON.parse(localStorage.getItem("dojo-live") || "{}"); } catch { return {}; } })();
   const save = () => { try { localStorage.setItem("dojo-live", JSON.stringify(prefs)); } catch {} };
 
   // ---------- state ----------
   let turns = [];
+  let activeRules = RULES;
   let stars = 0;
   let state = "idle";           // idle | thinking | speaking | listening | paused
   let wantListening = false;
@@ -290,7 +367,7 @@ Reply with ONLY this JSON, nothing else:
   }
   async function brain(msgs, signal) {
     if (mode === "claude") {
-      return sample.json([{ role: "user", content: RULES }, ...msgs], { modelTier: "quick", cache: false, signal });
+      return sample.json([{ role: "user", content: activeRules }, ...msgs], { modelTier: "quick", cache: false, signal });
     }
     const key = apiKey();
     if (!key) throw { code: "no_key" };
@@ -298,7 +375,7 @@ Reply with ONLY this JSON, nothing else:
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST", signal,
       headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-      body: JSON.stringify({ model: $("model").value, max_tokens: 300, system: RULES, messages: msgs })
+      body: JSON.stringify({ model: $("model").value, max_tokens: 300, system: activeRules, messages: msgs })
     });
     if (r.status === 401 || r.status === 403) throw { code: "bad_key" };
     if (r.status === 429) throw { code: "rate_limited" };
@@ -316,7 +393,7 @@ Reply with ONLY this JSON, nothing else:
       method: "POST", signal,
       headers: { "content-type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: RULES }] },
+        system_instruction: { parts: [{ text: activeRules }] },
         contents: msgs.map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
         generationConfig
       })
@@ -379,8 +456,8 @@ Reply with ONLY this JSON, nothing else:
 
   // ---- Gemini TTS (real neural voice; needs a Gemini key on a billed project) ----
   const player = new Audio();
-  let geminiTtsBroken = false;
-  const useGeminiVoice = () => $("voiceSource").value === "gemini" && !geminiTtsBroken;
+  let geminiTtsFailedAt = 0, geminiTtsLastError = "";
+  const useGeminiVoice = () => $("voiceSource").value === "gemini" && Date.now() - geminiTtsFailedAt > 20000;
   const geminiKey = () => (prefs.key_gemini || (provider() === "gemini" ? apiKey() : "") || "").trim();
   function b64ToBlob(b64, mime) {
     const bin = atob(b64); const u8 = new Uint8Array(bin.length);
@@ -395,7 +472,8 @@ Reply with ONLY this JSON, nothing else:
     d.setUint16(32, 2, true); d.setUint16(34, 16, true); str(36, "data"); d.setUint32(40, n, true);
     return new Blob([h, u8], { type: "audio/wav" });
   }
-  async function geminiTtsFetch(text, style, signal) {
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  async function geminiTtsFetch(text, style, signal, attempt) {
     const key = geminiKey();
     if (!key) throw { code: "no_key" };
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent`, {
@@ -406,7 +484,11 @@ Reply with ONLY this JSON, nothing else:
         generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { voice: $("gVoice").value } } }
       })
     });
-    if (!r.ok) { const j = await r.json().catch(() => ({})); throw { code: r.status === 429 ? "rate_limited" : "tts_failed", message: JSON.stringify(j).slice(0, 200) }; }
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      if ((r.status === 429 || r.status >= 500) && !attempt) { await sleep(2500); return geminiTtsFetch(text, style, signal, 1); }   // one calm retry
+      throw { code: r.status === 429 ? "rate_limited" : "tts_failed", message: (r.status + " " + ((j.error && j.error.message) || JSON.stringify(j))).slice(0, 200) };
+    }
     const j = await r.json();
     const part = (((j.candidates || [])[0] || {}).content || {}).parts?.find(p => p.inlineData);
     if (!part) throw { code: "tts_failed" };
@@ -434,8 +516,9 @@ Reply with ONLY this JSON, nothing else:
   function prefetchSpeech(fix, say) {
     prefetched = {};
     if (!useGeminiVoice()) return;
-    if (fix) prefetched.fix = geminiTtsFetch(fix, TTS_STYLE_FIX).catch(e => ({ error: e }));
-    if (say) prefetched.say = geminiTtsFetch(say, TTS_STYLE_LILY).catch(e => ({ error: e }));
+    const fetchSay = () => { if (say) prefetched.say = geminiTtsFetch(say, TTS_STYLE_LILY).catch(e => ({ error: e })); };
+    if (fix) { prefetched.fix = geminiTtsFetch(fix, TTS_STYLE_FIX).catch(e => ({ error: e })); prefetched.fix.then(fetchSay); }   // one request at a time
+    else fetchSay();
   }
   async function speak(text, onDone, rateMul, which) {
     if (!text) { onDone && onDone(); return; }
@@ -444,12 +527,15 @@ Reply with ONLY this JSON, nothing else:
         let blob = which && prefetched[which] ? await prefetched[which] : await geminiTtsFetch(text, rateMul && rateMul < 1 ? TTS_STYLE_FIX : TTS_STYLE_LILY);
         if (blob && blob.error) throw blob.error;
         if (synth && (synth.speaking || synth.pending)) synth.cancel();
+        $("ttsRetry").hidden = true;
         await playBlob(blob);
         onDone && onDone();
         return;
       } catch (e) {
-        geminiTtsBroken = true;   // don't keep paying the latency for a failing service; phone voice from here on
-        setStatus(e && e.code === "no_key" ? "Gemini 목소리엔 Gemini 키가 필요해요 — 폰 목소리로 계속해요." : e && e.code === "rate_limited" ? "Gemini 목소리 한도에 걸렸어요(결제 미등록이면 무료 한도가 아주 작아요) — 폰 목소리로 계속해요." : "Gemini 목소리를 못 가져왔어요 — 폰 목소리로 계속해요.", true);
+        geminiTtsFailedAt = Date.now(); geminiTtsLastError = ((e && e.message) || "").slice(0, 160);   // phone voice for 45 s, then try Gemini again
+        const why = e && e.code === "no_key" ? "Gemini 키가 없어요" : e && e.code === "rate_limited" ? "Gemini 목소리 한도(429): " + geminiTtsLastError : "Gemini 목소리 오류: " + geminiTtsLastError;
+        setStatus("🔇 " + why + " → 이번만 폰 목소리, 다음 차례에 다시 Gemini로 시도해요.", true);
+        $("ttsRetry").hidden = false;
       }
     }
     speakPhone(text, onDone, rateMul);
@@ -764,7 +850,13 @@ Reply with ONLY this JSON, nothing else:
   function renderStars() { const el = $("stars"); el.innerHTML = ""; for (let i = 0; i < Math.max(8, stars); i++) { const s = document.createElement("span"); s.textContent = "⭐"; if (i < stars) s.classList.add("on"); el.append(s); } }
 
   // ---------- wiring ----------
-  $("chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) $("interest").value = b.textContent; });
+  $("chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) { const cur = $("interest").value.trim(); $("interest").value = cur && !cur.includes(b.textContent) ? cur + ", " + b.textContent : b.textContent; } });
+  fillThemes(); themeNote();
+  if (prefs.theme) $("theme").value = prefs.theme;
+  if (prefs.interest) $("interest").value = prefs.interest;
+  $("theme").addEventListener("change", () => { prefs.theme = $("theme").value; save(); });
+  $("interest").addEventListener("change", () => { prefs.interest = $("interest").value; save(); });
+  $("randomTheme").addEventListener("click", () => { $("theme").value = "random"; const p = pickTheme(); $("theme").value = p.ko; prefs.theme = p.ko; save(); });
   $("voice").addEventListener("change", () => { prefs.voice = $("voice").value; save(); });
   ["silence", "rate", "tvDelay", "listenEngine"].forEach(id => { if (prefs[id]) $(id).value = prefs[id]; $(id).addEventListener("change", () => { prefs[id] = $(id).value; save(); }); });
   if (prefs.provider) $("provider").value = prefs.provider;
@@ -782,16 +874,17 @@ Reply with ONLY this JSON, nothing else:
   }
   if (prefs.voiceSource) $("voiceSource").value = prefs.voiceSource;
   if (prefs.gVoice) $("gVoice").value = prefs.gVoice;
-  $("voiceSource").addEventListener("change", () => { prefs.voiceSource = $("voiceSource").value; save(); geminiTtsBroken = false; applyVoiceSource(); });
+  $("voiceSource").addEventListener("change", () => { prefs.voiceSource = $("voiceSource").value; save(); geminiTtsFailedAt = 0; applyVoiceSource(); });
   $("gVoice").addEventListener("change", () => { prefs.gVoice = $("gVoice").value; save(); });
   $("testGVoice").addEventListener("click", async () => {
-    geminiTtsBroken = false;
+    geminiTtsFailedAt = 0;
     $("voiceNote").textContent = "목소리 가져오는 중…";
     try { player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; await player.play().catch(() => {}); } catch {}
     try { const b = await geminiTtsFetch("Hey Hajun! I'm Miss Lily. Are you ready to play?", TTS_STYLE_LILY); await playBlob(b); $("voiceNote").textContent = "✔ Gemini 목소리가 돼요."; }
-    catch (e) { $("voiceNote").textContent = e && e.code === "no_key" ? "Gemini 키가 없어요. ① 칸에 Gemini 키를 넣어 주세요." : e && e.code === "rate_limited" ? "한도에 걸렸어요. 결제 미등록이면 무료 한도가 거의 없어요 — aistudio.google.com에서 Billing 등록 후 다시 눌러 보세요." : "실패했어요: " + ((e && e.message) || "").slice(0, 120); }
+    catch (e) { $("voiceNote").textContent = e && e.code === "no_key" ? "Gemini 키가 없어요. ① 칸에 Gemini 키를 넣어 주세요." : e && e.code === "rate_limited" ? "한도(429)에 걸렸어요. 결제를 방금 등록했으면 몇 분 뒤 다시 눌러 보세요. 계속 그러면 이 메시지를 보내 주세요: " + ((e && e.message) || "").slice(0, 160) : "실패했어요: " + ((e && e.message) || "").slice(0, 160); }
   });
   applyVoiceSource();
+  $("ttsRetry").addEventListener("click", () => { geminiTtsFailedAt = 0; $("ttsRetry").hidden = true; setStatus(""); if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) setTimeout(startListening, TV_DELAY()); }); });
   $("replay").addEventListener("click", () => { if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) setTimeout(startListening, TV_DELAY()); }); });
   $("pause").addEventListener("click", () => {
     if (state === "paused") { wantListening = true; startListening(); }
@@ -812,15 +905,17 @@ Reply with ONLY this JSON, nothing else:
       const ok = await ensureMic();
       if (!ok) { $("listenEngine").value = "phone"; setStatus("마이크를 못 열어서 폰 인식으로 시작해요.", true); }
     }
-    const interest = $("interest").value.trim() || "유도 vs 태권도";
+    const theme = pickTheme(); markThemeUsed(theme.ko); themeNote();
+    const interest = $("interest").value.trim() || "judo, taekwondo, praying mantis, space";
+    activeRules = RULES + `\n\nTODAY'S LESSON: ${theme.en}\nFLAVOR (Hajun's favorite things): ${interest}`;
     if (synth) { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); }
     try { player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; player.play().catch(() => {}); } catch {}
-    geminiTtsBroken = false;
+    geminiTtsFailedAt = 0;
     turns = []; stars = 0; renderStars(); committed = ""; session = ""; interimText = ""; lastRaw = ""; renderHajun(); $("hajunRaw").hidden = true;
-    $("topic").textContent = "오늘 주제: " + interest;
+    $("topic").textContent = "오늘 수업: " + theme.ko;
     $("setup").hidden = true; $("play").hidden = false;
     wantListening = true;
-    ask(`NEW STORY. Today's interest: ${interest}. Say hi to Hajun, introduce the characters in one breath, start the action, and ask your first easy question.`);
+    ask(`NEW STORY. Say hi to Hajun, introduce the characters in one breath, start the action, and ask your first easy lesson question.`);
   });
 
   // ---------- diagnostics ----------
