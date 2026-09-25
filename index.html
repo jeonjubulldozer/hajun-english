@@ -140,7 +140,8 @@
       <label for="voiceSource">③ Miss Lily 목소리</label>
       <select id="voiceSource" style="margin-bottom:8px">
         <option value="phone" selected>폰 내장 목소리 (무료)</option>
-        <option value="gemini">Gemini 원어민 목소리 (사람 같음 · Gemini 키 + 결제 등록 필요)</option>
+        <option value="gemini">Gemini 원어민 목소리 (Gemini API · 지금 한도 버그 있음)</option>
+        <option value="cloud">Google Cloud 원어민 목소리 (같은 키·같은 결제 · 한도 버그 없음 · Cloud TTS API 켜기 필요)</option>
       </select>
       <div class="row" id="phoneVoiceRow">
         <select id="voice" style="flex:1"></select>
@@ -408,7 +409,7 @@ Reply with ONLY this JSON, nothing else:
     return { fix: "", say: text.replace(/[{}"]/g, "").slice(0, 300), emoji: "🥋", scene: "" };
   }
   const MODELS = {
-    gemini: [["gemini-3.5-flash-lite", "3.5 Flash-Lite (무료 넉넉, 기본)"], ["gemini-3.8-flash", "3.8 Flash (무료는 하루 20번뿐)"]],
+    gemini: [["gemini-3.8-flash", "3.8 Flash (잘 알아들음, 기본)"], ["gemini-3.5-flash-lite", "3.5 Flash-Lite (빠름)"]],
     anthropic: [["claude-haiku-4-5-20251001", "Haiku 4.5 (빠름)"], ["claude-sonnet-5", "Sonnet 5"]]
   };
   const KEY_HELP = {
@@ -448,7 +449,7 @@ Reply with ONLY this JSON, nothing else:
   async function geminiCall(msgs, key, signal, withThinking) {
     const model = $("model").value;
     const generationConfig = { responseMimeType: "application/json", maxOutputTokens: 600, temperature: 0.9 };
-    if (withThinking) generationConfig.thinkingConfig = { thinkingLevel: "minimal" };
+    if (withThinking) generationConfig.thinkingConfig = { thinkingLevel: /flash-lite|3\.6|3\.5-flash$/.test(model) ? "minimal" : "low" };
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST", signal,
       headers: { "content-type": "application/json", "x-goog-api-key": key },
@@ -461,6 +462,11 @@ Reply with ONLY this JSON, nothing else:
     if (!r.ok) {
       const j = await r.json().catch(() => ({}));
       const msg = JSON.stringify(j);
+      if ((r.status === 429 || /RESOURCE_EXHAUSTED/.test(msg)) && model !== "gemini-3.5-flash-lite") {   // this model is capped: finish the session on Flash-Lite
+        setStatus("🧠 " + model.replace("gemini-", "") + " 한도에 막혀서 (구글이 아직 무료 등급으로 봄) 이번 판은 Flash-Lite로 계속해요." + quotaInfo(j), true);
+        $("model").value = "gemini-3.5-flash-lite";
+        return geminiCall(msgs, key, signal, withThinking);
+      }
       if (r.status === 429 || /RESOURCE_EXHAUSTED/.test(msg)) throw { code: "rate_limited" };
       if (r.status === 401 || r.status === 403 || /API key not valid|API_KEY_INVALID|PERMISSION_DENIED/i.test(msg)) throw { code: "bad_key" };
       if (r.status === 400 && withThinking) return geminiCall(msgs, key, signal, false);   // model didn't accept the thinking option
@@ -579,10 +585,38 @@ Reply with ONLY this JSON, nothing else:
       const url = URL.createObjectURL(blob);
       let done = false; const fin = () => { if (!done) { done = true; URL.revokeObjectURL(url); res(); } };
       player.onended = fin; player.onerror = fin;
-      player.src = url; player.playbackRate = Number($("rate").value) || 1;
+      player.src = url; player.playbackRate = (blob && blob.type === "audio/mpeg") ? 1 : (Number($("rate").value) || 1);
       player.play().catch(fin);
       setTimeout(fin, 60000);
     });
+  }
+  // ---- Google Cloud Text-to-Speech (Chirp 3 HD): same key, same billing, separate quota system ----
+  async function cloudTtsFetch(text, rate, attempt) {
+    const key = geminiKey(); if (!key) throw { code: "no_key" };
+    const voiceName = attempt ? "en-US-Neural2-F" : `en-US-Chirp3-HD-${$("gVoice").value}`;
+    const r = await fetch("https://texttospeech.googleapis.com/v1/text:synthesize", {
+      method: "POST", headers: { "content-type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({ input: { text }, voice: { languageCode: "en-US", name: voiceName }, audioConfig: { audioEncoding: "MP3", speakingRate: rate || 1 } })
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({})); const msg = ((j.error && j.error.message) || "").slice(0, 200);
+      if (r.status === 400 && !attempt && /voice/i.test(msg)) return cloudTtsFetch(text, rate, 1);
+      if (r.status === 403 && /not been used|is disabled|SERVICE_DISABLED/i.test(msg)) throw { code: "cloud_off", message: msg };
+      if (r.status === 403 || /API_KEY_SERVICE_BLOCKED|restricted|PERMISSION_DENIED/i.test(msg)) throw { code: "key_restricted", message: msg };
+      throw { code: r.status === 429 ? "rate_limited" : "tts_failed", message: r.status + " " + msg };
+    }
+    const j = await r.json();
+    if (!j.audioContent) throw { code: "tts_failed", message: "empty audio" };
+    return b64ToBlob(j.audioContent, "audio/mpeg");
+  }
+  const useCloudVoice = () => $("voiceSource").value === "cloud" && Date.now() - geminiTtsFailedAt > 20000;
+  function cloudErrorCopy(e) {
+    if (!e) return "";
+    if (e.code === "no_key") return "Gemini 키가 없어요 (① 칸).";
+    if (e.code === "cloud_off") return "Cloud Text-to-Speech API가 아직 안 켜져 있어요. console.cloud.google.com → API 및 서비스 → 라이브러리 → 'Cloud Text-to-Speech API' → 사용.";
+    if (e.code === "key_restricted") return "이 키가 Gemini API에만 쓰도록 제한돼 있어요. console.cloud.google.com → API 및 서비스 → 사용자 인증 정보 → 이 키 → API 제한사항을 '키 제한 안 함'으로 → 저장. (" + (e.message || "") + ")";
+    if (e.code === "rate_limited") return "Cloud 목소리 한도 (" + (e.message || "") + ")";
+    return "Cloud 목소리 오류: " + (e.message || "");
   }
   const TTS_STYLE_LILY = "warm, playful, upbeat American teacher talking to a young child";
   const TTS_STYLE_BOTH = "warm American teacher talking to a young child: the first sentence slowly and clearly, then playful and upbeat";
@@ -590,12 +624,28 @@ Reply with ONLY this JSON, nothing else:
   let prefetched = null, prefetchText = "";
   function prefetchSpeech(fix, say) {
     prefetched = null; prefetchText = "";
-    if (!useGeminiVoice()) return;
+    if (useCloudVoice() || !useGeminiVoice()) return;
     prefetchText = fix ? `${fix} <long pause> ${say}` : say;
     prefetched = geminiTtsFetch(prefetchText, fix ? TTS_STYLE_BOTH : TTS_STYLE_LILY).catch(e => ({ error: e }));
   }
   async function speak(text, onDone, rateMul, which) {
     if (!text) { onDone && onDone(); return; }
+    if (useCloudVoice()) {
+      try {
+        const base = Number($("rate").value) || 1;
+        const parts = String(text).split("<long pause>").map(t => t.trim()).filter(Boolean);
+        const blobs = await Promise.all(parts.map((t, i) => cloudTtsFetch(t, parts.length > 1 && i === 0 ? base * 0.9 : base)));
+        if (synth && (synth.speaking || synth.pending)) synth.cancel();
+        $("ttsRetry").hidden = true; if (/^🔇/.test($("status").textContent)) setStatus("");
+        for (let i = 0; i < blobs.length; i++) { await playBlob(blobs[i]); if (i < blobs.length - 1) await sleep(350); }
+        onDone && onDone();
+        return;
+      } catch (e) {
+        geminiTtsFailedAt = Date.now(); geminiTtsLastError = cloudErrorCopy(e);
+        setStatus("🔇 " + geminiTtsLastError + " → 이번만 폰 목소리, 다음 차례에 다시 시도해요.", true);
+        $("ttsRetry").hidden = false;
+      }
+    }
     if (useGeminiVoice()) {
       try {
         let blob;
@@ -603,13 +653,14 @@ Reply with ONLY this JSON, nothing else:
         else blob = await geminiTtsFetch(text, rateMul && rateMul < 1 ? TTS_STYLE_BOTH : TTS_STYLE_LILY);
         if (blob && blob.error) throw blob.error;
         if (synth && (synth.speaking || synth.pending)) synth.cancel();
-        $("ttsRetry").hidden = true;
+        $("ttsRetry").hidden = true; if (/^🔇/.test($("status").textContent)) setStatus("");
         await playBlob(blob);
         onDone && onDone();
         return;
       } catch (e) {
         geminiTtsFailedAt = Date.now(); geminiTtsLastError = ((e && e.message) || "").slice(0, 400);
-        const why = e && e.code === "no_key" ? "Gemini 키가 없어요" : e && e.code === "rate_limited" ? "Gemini 목소리 한도(429): " + geminiTtsLastError : "Gemini 목소리 오류: " + geminiTtsLastError;
+        const freeTier = /FreeTier/.test(geminiTtsLastError);
+        const why = e && e.code === "no_key" ? "Gemini 키가 없어요" : e && e.code === "rate_limited" ? (freeTier ? "구글이 이 프로젝트를 아직 '무료 등급'으로 보고 있어요 (목소리 하루 10번). 결제가 붙었어도 반영이 안 된 상태 — AI Studio에서 새 API 키를 만들어 ① 칸에 넣어 보세요. " : "Gemini 목소리 한도(429): ") + geminiTtsLastError : "Gemini 목소리 오류: " + geminiTtsLastError;
         setStatus("🔇 " + why + " → 이번만 폰 목소리, 다음 차례에 다시 Gemini로 시도해요.", true);
         $("ttsRetry").hidden = false;
       }
@@ -762,7 +813,7 @@ Reply with ONLY this JSON, nothing else:
     const model = provider() === "gemini" ? $("model").value : "gemini-3.5-flash-lite";
     const prompt = `Transcribe this recording exactly. The speaker is Hajun, a 7-year-old Korean boy learning English, answering his English teacher. He may speak English, Korean, or a mix; write English words in English and Korean words in Korean. Do not correct or translate. Context, the teacher just said: "${echoRef.slice(0, 200)}". Reply with ONLY the transcript. If there is no clear speech, reply exactly: [silence]`;
     const generationConfig = { temperature: 0, maxOutputTokens: 200 };
-    if (withThinking) generationConfig.thinkingConfig = { thinkingLevel: "minimal" };
+    if (withThinking) generationConfig.thinkingConfig = { thinkingLevel: /flash-lite|3\.6|3\.5-flash$/.test(model) ? "minimal" : "low" };
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST", headers: { "content-type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify({ contents: [{ role: "user", parts: [{ inlineData: { mimeType: "audio/wav", data: u8ToB64(wavU8) } }, { text: prompt }] }], generationConfig })
@@ -916,7 +967,7 @@ Reply with ONLY this JSON, nothing else:
       if (lastRaw && lastRaw.toLowerCase() !== fix.toLowerCase()) { $("hajunRaw").hidden = false; $("hajunRaw").textContent = "들린 말: " + lastRaw; }
     }
     $("teacherLine").textContent = say; lastSpoken = fix ? `${fix} <long pause> ${say}` : say;
-    if (useGeminiVoice()) speak(lastSpoken, after, 1, "turn");
+    if (useCloudVoice() || useGeminiVoice()) speak(lastSpoken, after, 1, "turn");
     else if (fix) speakPhone(fix, () => setTimeout(() => speakPhone(say, after), 350), 0.9);
     else speakPhone(say, after);
   }
@@ -948,15 +999,17 @@ Reply with ONLY this JSON, nothing else:
   $("provider").addEventListener("change", () => { prefs.provider = provider(); save(); fillModels(); setDiag(); });
   $("listenEngine").addEventListener("change", setDiag);
   $("model").addEventListener("change", () => { prefs["model_" + provider()] = $("model").value; save(); });
+  $("quit").addEventListener("click", () => { fillModels(); });   // restore the chosen model after a session-only fallback
   ["input", "change"].forEach(ev => $("apiKey").addEventListener(ev, () => { prefs["key_" + provider()] = apiKey(); save(); setDiag(); }));
   $("testVoice").addEventListener("click", () => { loadVoices(); if (!currentVoice()) { setDiag(); return; } speakPhone("Hey Hajun! I'm Miss Lily. Are you ready to play?"); });
   function applyVoiceSource() {
-    const g = $("voiceSource").value === "gemini";
+    const v = $("voiceSource").value, g = v !== "phone";
     $("phoneVoiceRow").hidden = g; $("geminiVoiceRow").hidden = !g;
-    $("voiceNote").textContent = g ? "Google AI Studio에서 결제(카드)를 등록한 키여야 돼요. 1분에 12원 정도라 30분 놀면 400원쯤이에요. 실패하면 자동으로 폰 목소리로 넘어가요." : "폰 설정 → 텍스트 음성 변환에서 Google 음성 서비스 + 영어(미국) 고품질 음성을 설치하면 덜 기계 같아요.";
+    $("voiceNote").textContent = v === "cloud" ? "Gemini 키의 프로젝트에서 'Cloud Text-to-Speech API'를 한 번 켜야 해요 (🔊 테스트가 안 되면 정확한 안내가 떠요). 결제는 같은 계정, 월 무료 분량이 있어 사실상 0원에 가까워요. 실패하면 자동으로 폰 목소리로 넘어가요."
+      : g ? "Gemini API 목소리는 지금 구글 쪽 한도 버그로 하루 10번에 막히는 상태예요. 위의 'Google Cloud 원어민 목소리'를 권해요." : "폰 설정 → 텍스트 음성 변환에서 Google 음성 서비스 + 영어(미국) 고품질 음성을 설치하면 덜 기계 같아요.";
     setDiag();
   }
-  if (prefs.voiceSource) $("voiceSource").value = prefs.voiceSource;
+  $("voiceSource").value = prefs.voiceSource || "cloud";
   if (prefs.gVoice) $("gVoice").value = prefs.gVoice;
   $("voiceSource").addEventListener("change", () => { prefs.voiceSource = $("voiceSource").value; save(); geminiTtsFailedAt = 0; applyVoiceSource(); });
   $("gVoice").addEventListener("change", () => { prefs.gVoice = $("gVoice").value; save(); });
@@ -964,11 +1017,16 @@ Reply with ONLY this JSON, nothing else:
     geminiTtsFailedAt = 0; ttsModelIdx = 0; ttsErrors = [];
     $("voiceNote").textContent = "목소리 가져오는 중…";
     try { player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; await player.play().catch(() => {}); } catch {}
+    if ($("voiceSource").value === "cloud") {
+      try { const b = await cloudTtsFetch("Hey Hajun! I'm Miss Lily. Are you ready to play?", Number($("rate").value) || 1); await playBlob(b); $("voiceNote").textContent = "✔ Google Cloud 목소리가 돼요."; }
+      catch (e) { $("voiceNote").textContent = "✘ " + cloudErrorCopy(e); }
+      return;
+    }
     try { const b = await geminiTtsFetch("Hey Hajun! I'm Miss Lily. Are you ready to play?", TTS_STYLE_LILY); await playBlob(b); $("voiceNote").textContent = "✔ Gemini 목소리가 돼요 (" + TTS_MODELS[ttsModelIdx] + ")"; }
     catch (e) { $("voiceNote").textContent = e && e.code === "no_key" ? "Gemini 키가 없어요. ① 칸에 Gemini 키를 넣어 주세요." : e && e.code === "rate_limited" ? "한도(429)에 걸렸어요. 이 메시지를 그대로 보내 주세요: " + ((e && e.message) || "").slice(0, 400) : "실패했어요: " + ((e && e.message) || "").slice(0, 400); }
   });
   applyVoiceSource();
-  $("ttsRetry").addEventListener("click", () => { geminiTtsFailedAt = 0; ttsModelIdx = 0; $("ttsRetry").hidden = true; setStatus(""); if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) setTimeout(startListening, TV_DELAY()); }, 1); });
+  $("ttsRetry").addEventListener("click", () => { geminiTtsFailedAt = 0; ttsModelIdx = 0; ttsErrors = []; $("ttsRetry").hidden = true; setStatus(""); if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) setTimeout(startListening, TV_DELAY()); }, 1); });
   $("replay").addEventListener("click", () => { if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) setTimeout(startListening, TV_DELAY()); }, 1); });
   $("pause").addEventListener("click", () => {
     if (state === "paused") { wantListening = true; startListening(); }
@@ -1016,7 +1074,7 @@ Reply with ONLY this JSON, nothing else:
     if (gListen) lines.push(navigator.mediaDevices ? `<span class="ok">✔ 듣기: Gemini가 직접 (마이크 허용 창이 한 번 떠요)</span>` : `<span class="bad">✘ 이 브라우저는 마이크 녹음이 안 돼요</span>`);
     else lines.push(SR ? `<span class="ok">✔ 듣기: 폰 내장 인식</span>` : `<span class="bad">✘ 이 브라우저는 음성 인식이 안 돼요 — 크롬으로 열어 주세요</span>`);
     const phoneVoiceNeeded = $("voiceSource").value !== "gemini";
-    if (!phoneVoiceNeeded) lines.push(`<span class="ok">✔ 목소리: Gemini ${$("gVoice").value} (안 되면 폰 목소리로 자동 전환)</span>`);
+    if (!phoneVoiceNeeded) lines.push(`<span class="ok">✔ 목소리: ${$("voiceSource").value === "cloud" ? "Google Cloud" : "Gemini"} ${$("gVoice").value} (안 되면 폰 목소리로 자동 전환)</span>`);
     else if (!synth) lines.push(`<span class="bad">✘ 음성 엔진 없음</span>`);
     else if (!v) lines.push(`<span class="bad">✘ 영어 원어민 목소리가 없어요 — 폰 설정 → 일반 → 텍스트 음성 변환에서 영어(미국) 음성 데이터를 설치해 주세요</span>`);
     else lines.push(`<span class="ok">✔ 목소리: ${v.name}</span>` + (/Android/i.test(navigator.userAgent) && !/network|Google/i.test(v.name) ? ` — 폰 설정 → 텍스트 음성 변환에서 "Google 음성 서비스"를 기본으로 하고 영어(미국) 고품질 음성을 설치하면 더 자연스러워요` : ""));
