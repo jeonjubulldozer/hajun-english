@@ -196,6 +196,16 @@
       </div>
     </div>
 
+    <div class="field">
+      <label>⑤ Miss Lily가 하준이에 대해 기억하는 것 <span id="memCount" style="color:var(--ink-soft);font-weight:600"></span></label>
+      <div id="memList" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto;padding:4px 0"></div>
+      <div class="row" style="margin-top:8px">
+        <input id="memAdd" type="text" placeholder="직접 추가 (예: Hajun's sister is 4 years old)" autocomplete="off" style="flex:1">
+        <button class="ctl" id="memAddBtn" type="button">추가</button>
+      </div>
+      <p class="note" style="margin:8px 0 0;color:var(--ink-soft);font-size:.95rem;line-height:1.5">대화 중에 하준이가 말한 것(가족, 좋아하는 것, 오늘 한 일…)을 스스로 적어두고 다음에 진짜 아는 사람처럼 꺼내 써요. 이 폰에만 저장돼요.</p>
+    </div>
+
     <button class="go display" id="start" type="button">이야기 시작!</button>
     <div class="diag" id="diag">확인 중…</div>
   </section>
@@ -253,8 +263,10 @@ EACH TURN, output two things:
 2. "say" = your reply. Start by cheering the idea ("Yes! The tiger is really big!"). Never say "wrong". Then move the story ONE small step. End with exactly ONE simple question he can answer in a few words (who / what / which / do you like / what happens next / yes-no). At most 3 short sentences plus the question — around 25 words.
 - If told Hajun was quiet, gently get his attention and ask an easier yes/no question.
 
+MEMORY: You will be given WHAT YOU REMEMBER about Hajun from earlier sessions and a list of RECENT SESSIONS. Use it the way a real teacher who knows him would: refer back naturally ("How's your sister? Still loves space?"), build on it, and never recite the whole list. When Hajun tells you something new and lasting about himself (names, ages, favorites, pets, things he did, things he is good at or scared of), put it in "remember" as short English facts — only facts that are NOT already in the list. Nothing to add → empty list.
+
 Reply with ONLY this JSON, nothing else:
-{"fix":"<corrected sentence or empty>","say":"<everything Miss Lily says>","emoji":"<2-4 emoji separated by spaces>","scene":"<caption, max 8 words>","characters":["<names of any invented characters you introduced this turn, else empty>"]}`;
+{"fix":"<corrected sentence or empty>","say":"<everything Miss Lily says>","emoji":"<2-4 emoji separated by spaces>","scene":"<caption, max 8 words>","characters":["<names of any invented characters you introduced this turn, else empty>"],"remember":["<new lasting facts about Hajun learned this turn, else empty>"]}`;
 
   // 7-8세 영어회화 교재(Oxford Let's Go / Family and Friends, Cambridge Kid's Box 1-2 등)의 단원 주제를 합친 목록
   const THEMES = [
@@ -326,6 +338,31 @@ Reply with ONLY this JSON, nothing else:
   function themeNote() {
     const used = prefs.usedThemes || [];
     $("themeNote").textContent = `주제 ${THEME_LIST.length}개 · 지금까지 한 것 ${used.length}개` + (used.length ? ` (최근: ${used.slice(-3).reverse().join(", ")})` : "");
+  }
+
+  // ---------- Hajun memory (what Miss Lily remembers across sessions; stored on this phone) ----------
+  const memNorm = (t) => String(t).toLowerCase().replace(/[^\p{L}\p{N} ]+/gu, " ").replace(/\s+/g, " ").trim();
+  function memAdd(facts) {
+    const list = prefs.memory || []; const seen = new Set(list.map(memNorm));
+    for (const f of facts || []) { const t = String(f).trim(); if (t && !seen.has(memNorm(t))) { list.push(t); seen.add(memNorm(t)); } }
+    prefs.memory = list.slice(-80); save(); renderMem();
+  }
+  function memRemove(i) { const list = prefs.memory || []; list.splice(i, 1); prefs.memory = list; save(); renderMem(); }
+  function renderMem() {
+    const list = prefs.memory || []; const el = $("memList"); el.innerHTML = "";
+    $("memCount").textContent = list.length ? `(${list.length}개)` : "(아직 없음)";
+    list.forEach((f, i) => {
+      const row = document.createElement("div"); row.style.cssText = "display:flex;gap:8px;align-items:center;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:8px 12px";
+      const t = document.createElement("span"); t.style.flex = "1"; t.textContent = f;
+      const x = document.createElement("button"); x.type = "button"; x.textContent = "✕"; x.setAttribute("aria-label", "지우기"); x.style.cssText = "padding:4px 8px;color:var(--ink-soft)"; x.onclick = () => memRemove(i);
+      row.append(t, x); el.append(row);
+    });
+  }
+  function memBlock() {
+    const list = prefs.memory || [];
+    const sessions = (prefs.sessions || []).slice(-5).map(x => `${x.date} — ${x.theme}`);
+    return (list.length ? `\n\nWHAT YOU REMEMBER ABOUT HAJUN (from earlier sessions):\n- ` + list.join("\n- ") : "\n\nWHAT YOU REMEMBER ABOUT HAJUN: nothing yet — this is your first time meeting him, so get to know him.")
+      + (sessions.length ? `\nRECENT SESSIONS (newest last):\n- ` + sessions.join("\n- ") : "");
   }
 
   // ---------- prefs ----------
@@ -449,6 +486,8 @@ Reply with ONLY this JSON, nothing else:
   function currentVoice() { return voices.find(v => v.name === $("voice").value) || null; }
 
   function speakPhone(text, onDone, rateMul) {
+    text = String(text);
+    if (text.includes("<long pause>")) { const [a, b] = text.split("<long pause>"); return speakPhone(a.trim(), () => setTimeout(() => speakPhone(b.trim(), onDone, rateMul), 350), 0.9); }
     const v = currentVoice();
     if (!synth || !text || !v) { onDone && onDone(); return; }
     if (synth.speaking || synth.pending) synth.cancel();
@@ -480,8 +519,8 @@ Reply with ONLY this JSON, nothing else:
     return new Blob([h, u8], { type: "audio/wav" });
   }
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-  const TTS_MODELS = ["gemini-3.8-flash-lite-tts", "gemini-3.8-flash-tts", "gemini-2.5-flash-preview-tts"];
-  let ttsModelIdx = 0;
+  const TTS_MODELS = ["gemini-3.8-flash-lite-tts", "gemini-2.5-flash-preview-tts", "gemini-3.8-flash-tts"];
+  let ttsModelIdx = 0, ttsErrors = [];
   function quotaInfo(j) {
     try { const v = (j.error.details || []).flatMap(d => d.violations || [])[0]; return v ? ` [${v.quotaId || v.quotaMetric}${v.quotaDimensions && v.quotaDimensions.model ? " · " + v.quotaDimensions.model : ""} = ${v.quotaValue}]` : ""; } catch { return ""; }
   }
@@ -492,17 +531,22 @@ Reply with ONLY this JSON, nothing else:
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST", signal,
       headers: { "content-type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify({
+      body: JSON.stringify(/preview/.test(model) ? {
+        contents: [{ role: "user", parts: [{ text: `Say this ${style}: ${text.replace(/<long pause>/g, " ... ")}` }] }],
+        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: $("gVoice").value } } } }
+      } : {
         contents: [{ role: "user", parts: [{ text, speech_metadata: { style } }] }],
-        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: /preview/.test(model) ? { prebuiltVoiceConfig: { voiceName: $("gVoice").value } } : { voice: $("gVoice").value } } }
+        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { voice: $("gVoice").value } } }
       })
     });
     if (!r.ok) {
       const j = await r.json().catch(() => ({}));
       const info = quotaInfo(j);
       if ((r.status === 429 || r.status >= 500) && !attempt) { await sleep(2500); return geminiTtsFetch(text, style, signal, 1); }   // one calm retry
-      if (r.status === 429 && ttsModelIdx < TTS_MODELS.length - 1) { ttsModelIdx += 1; return geminiTtsFetch(text, style, signal, 0); }  // quotas are per model: try the next TTS model
-      throw { code: r.status === 429 ? "rate_limited" : "tts_failed", message: (r.status + " " + model + info + " " + ((j.error && j.error.message) || "")).slice(0, 260) };
+      ttsErrors.push(model.replace("gemini-", "") + ": " + r.status + info + " " + ((j.error && j.error.message) || "").slice(0, 80));
+      if (ttsModelIdx < TTS_MODELS.length - 1) { ttsModelIdx += 1; return geminiTtsFetch(text, style, signal, 0); }   // quotas are per model: try the next TTS model
+      ttsModelIdx = 0;
+      throw { code: r.status === 429 ? "rate_limited" : "tts_failed", message: ttsErrors.slice(-TTS_MODELS.length).join(" | ").slice(0, 400) };
     }
     const j = await r.json();
     const part = (((j.candidates || [])[0] || {}).content || {}).parts?.find(p => p.inlineData);
@@ -525,21 +569,22 @@ Reply with ONLY this JSON, nothing else:
     });
   }
   const TTS_STYLE_LILY = "warm, playful, upbeat American teacher talking to a young child";
-  const TTS_STYLE_FIX = "speaking slowly and clearly, warm";
-  // prefetch: start both TTS requests as soon as the text arrives
-  let prefetched = {};
+  const TTS_STYLE_BOTH = "warm American teacher talking to a young child: the first sentence slowly and clearly, then playful and upbeat";
+  // One TTS request per turn: the corrected sentence and Miss Lily's reply go out together with a pause between.
+  let prefetched = null, prefetchText = "";
   function prefetchSpeech(fix, say) {
-    prefetched = {};
+    prefetched = null; prefetchText = "";
     if (!useGeminiVoice()) return;
-    const fetchSay = () => { if (say) prefetched.say = geminiTtsFetch(say, TTS_STYLE_LILY).catch(e => ({ error: e })); };
-    if (fix) { prefetched.fix = geminiTtsFetch(fix, TTS_STYLE_FIX).catch(e => ({ error: e })); prefetched.fix.then(fetchSay); }   // one request at a time
-    else fetchSay();
+    prefetchText = fix ? `${fix} <long pause> ${say}` : say;
+    prefetched = geminiTtsFetch(prefetchText, fix ? TTS_STYLE_BOTH : TTS_STYLE_LILY).catch(e => ({ error: e }));
   }
   async function speak(text, onDone, rateMul, which) {
     if (!text) { onDone && onDone(); return; }
     if (useGeminiVoice()) {
       try {
-        let blob = which && prefetched[which] ? await prefetched[which] : await geminiTtsFetch(text, rateMul && rateMul < 1 ? TTS_STYLE_FIX : TTS_STYLE_LILY);
+        let blob;
+        if (which === "turn" && prefetched) blob = await prefetched;
+        else blob = await geminiTtsFetch(text, rateMul && rateMul < 1 ? TTS_STYLE_BOTH : TTS_STYLE_LILY);
         if (blob && blob.error) throw blob.error;
         if (synth && (synth.speaking || synth.pending)) synth.cancel();
         $("ttsRetry").hidden = true;
@@ -547,7 +592,7 @@ Reply with ONLY this JSON, nothing else:
         onDone && onDone();
         return;
       } catch (e) {
-        geminiTtsFailedAt = Date.now(); geminiTtsLastError = ((e && e.message) || "").slice(0, 160);   // phone voice for 45 s, then try Gemini again
+        geminiTtsFailedAt = Date.now(); geminiTtsLastError = ((e && e.message) || "").slice(0, 400);
         const why = e && e.code === "no_key" ? "Gemini 키가 없어요" : e && e.code === "rate_limited" ? "Gemini 목소리 한도(429): " + geminiTtsLastError : "Gemini 목소리 오류: " + geminiTtsLastError;
         setStatus("🔇 " + why + " → 이번만 폰 목소리, 다음 차례에 다시 Gemini로 시도해요.", true);
         $("ttsRetry").hidden = false;
@@ -735,11 +780,12 @@ Reply with ONLY this JSON, nothing else:
 
   function startListening() {
     if (!wantListening) return;
+    const keepStatus = /^🔇/.test($("status").textContent);
     if (listenEngine() === "gemini" && mic) {
       gCap.on = true; gCap.buf = []; gCap.pre = []; gCap.speaking = false; gCap.first = 0; gCap.lastVoice = 0;
       committed = ""; session = ""; interimText = ""; firstSpeechAt = 0; listenStart = Date.now();
-      $("hajunLine").textContent = ""; $("hajunRaw").hidden = true; $("meter").hidden = false;
-      setState("listening"); setStatus("");
+      $("meter").hidden = false;
+      setState("listening"); if (!keepStatus) setStatus("");
       clearTimeout(nudgeT);
       nudgeT = setTimeout(() => { if (state === "listening" && !gCap.speaking) sendTurn("[Hajun has been quiet for 25 seconds.]", true); }, NUDGE_MS);
       return;
@@ -747,11 +793,10 @@ Reply with ONLY this JSON, nothing else:
     if (!SR) return;
     $("meter").hidden = true;
     if (!rec) makeRec();
-    committed = ""; session = ""; interimText = ""; renderHajun();
+    committed = ""; session = ""; interimText = "";
     listenStart = Date.now(); firstSpeechAt = 0;
-    $("hajunRaw").hidden = true;
     setState("listening");
-    setStatus("");
+    if (!keepStatus) setStatus("");
     if (!recRunning) { try { rec.start(); } catch {} }
     clearTimeout(nudgeT);
     nudgeT = setTimeout(() => {
@@ -807,6 +852,7 @@ Reply with ONLY this JSON, nothing else:
     try {
       const data = await brain(msgs, ctl.signal);
       if (!data || typeof data !== "object" || !data.say) throw { code: "invalid_json" };
+      if (Array.isArray(data.remember) && data.remember.length) memAdd(data.remember.map(String).filter(x => x.length < 140));
       if (Array.isArray(data.characters) && data.characters.length) { const u = (prefs.usedNames || []).filter(n => !data.characters.includes(n)); prefs.usedNames = u.concat(data.characters.map(String)).slice(-40); save(); }
       turns.push({ role: "user", content }, { role: "assistant", content: JSON.stringify(data) });
       while (turns.length > 20) turns.splice(0, 2);
@@ -844,15 +890,15 @@ Reply with ONLY this JSON, nothing else:
     echoRef = say; fixRef = fix;
     prefetchSpeech(fix, say);
     setState("speaking");
-    // 1) play back Hajun's sentence, corrected, a touch slower  2) then Miss Lily's reply
     const after = () => { if (wantListening) setTimeout(startListening, TV_DELAY()); else setState("paused"); };
-    const sayLily = () => { $("teacherLine").textContent = say; lastSpoken = say; speak(say, after, 1, "say"); };
     if (fix) {
-      $("hajunLine").innerHTML = ""; const s = document.createElement("span"); s.className = "fix"; s.textContent = "✔ " + fix; $("hajunLine").append(s);
+      $("hajunLine").innerHTML = ""; const sp = document.createElement("span"); sp.className = "fix"; sp.textContent = "✔ " + fix; $("hajunLine").append(sp);
       if (lastRaw && lastRaw.toLowerCase() !== fix.toLowerCase()) { $("hajunRaw").hidden = false; $("hajunRaw").textContent = "들린 말: " + lastRaw; }
-      $("teacherLine").textContent = "";
-      speak(fix, () => setTimeout(sayLily, 350), 0.9, "fix");
-    } else sayLily();
+    }
+    $("teacherLine").textContent = say; lastSpoken = fix ? `${fix} <long pause> ${say}` : say;
+    if (useGeminiVoice()) speak(lastSpoken, after, 1, "turn");
+    else if (fix) speakPhone(fix, () => setTimeout(() => speakPhone(say, after), 350), 0.9);
+    else speakPhone(say, after);
   }
 
   // ---------- ui helpers ----------
@@ -867,7 +913,9 @@ Reply with ONLY this JSON, nothing else:
 
   // ---------- wiring ----------
   $("chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) { const cur = $("interest").value.trim(); $("interest").value = cur && !cur.includes(b.textContent) ? cur + ", " + b.textContent : b.textContent; } });
-  fillThemes(); themeNote();
+  fillThemes(); themeNote(); renderMem();
+  $("memAddBtn").addEventListener("click", () => { const t = $("memAdd").value.trim(); if (t) { memAdd([t]); $("memAdd").value = ""; } });
+  $("memAdd").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("memAddBtn").click(); } });
   if (prefs.theme) $("theme").value = prefs.theme;
   if (prefs.interest) $("interest").value = prefs.interest;
   $("theme").addEventListener("change", () => { prefs.theme = $("theme").value; save(); });
@@ -893,15 +941,15 @@ Reply with ONLY this JSON, nothing else:
   $("voiceSource").addEventListener("change", () => { prefs.voiceSource = $("voiceSource").value; save(); geminiTtsFailedAt = 0; applyVoiceSource(); });
   $("gVoice").addEventListener("change", () => { prefs.gVoice = $("gVoice").value; save(); });
   $("testGVoice").addEventListener("click", async () => {
-    geminiTtsFailedAt = 0; ttsModelIdx = 0;
+    geminiTtsFailedAt = 0; ttsModelIdx = 0; ttsErrors = [];
     $("voiceNote").textContent = "목소리 가져오는 중…";
     try { player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; await player.play().catch(() => {}); } catch {}
     try { const b = await geminiTtsFetch("Hey Hajun! I'm Miss Lily. Are you ready to play?", TTS_STYLE_LILY); await playBlob(b); $("voiceNote").textContent = "✔ Gemini 목소리가 돼요 (" + TTS_MODELS[ttsModelIdx] + ")"; }
-    catch (e) { $("voiceNote").textContent = e && e.code === "no_key" ? "Gemini 키가 없어요. ① 칸에 Gemini 키를 넣어 주세요." : e && e.code === "rate_limited" ? "한도(429)에 걸렸어요. 결제를 방금 등록했으면 몇 분 뒤 다시 눌러 보세요. 계속 그러면 이 메시지를 보내 주세요: " + ((e && e.message) || "").slice(0, 160) : "실패했어요: " + ((e && e.message) || "").slice(0, 160); }
+    catch (e) { $("voiceNote").textContent = e && e.code === "no_key" ? "Gemini 키가 없어요. ① 칸에 Gemini 키를 넣어 주세요." : e && e.code === "rate_limited" ? "한도(429)에 걸렸어요. 이 메시지를 그대로 보내 주세요: " + ((e && e.message) || "").slice(0, 400) : "실패했어요: " + ((e && e.message) || "").slice(0, 400); }
   });
   applyVoiceSource();
-  $("ttsRetry").addEventListener("click", () => { geminiTtsFailedAt = 0; $("ttsRetry").hidden = true; setStatus(""); if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) setTimeout(startListening, TV_DELAY()); }); });
-  $("replay").addEventListener("click", () => { if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) setTimeout(startListening, TV_DELAY()); }); });
+  $("ttsRetry").addEventListener("click", () => { geminiTtsFailedAt = 0; ttsModelIdx = 0; $("ttsRetry").hidden = true; setStatus(""); if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) setTimeout(startListening, TV_DELAY()); }, 1); });
+  $("replay").addEventListener("click", () => { if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) setTimeout(startListening, TV_DELAY()); }, 1); });
   $("pause").addEventListener("click", () => {
     if (state === "paused") { wantListening = true; startListening(); }
     else { wantListening = false; stopListening(); synth && synth.cancel(); ctl && ctl.abort(); setState("paused"); }
@@ -924,10 +972,12 @@ Reply with ONLY this JSON, nothing else:
     const theme = pickTheme(); markThemeUsed(theme.ko); themeNote();
     const interest = $("interest").value.trim() || "judo, taekwondo, praying mantis, space";
     const avoid = (prefs.usedNames || []).slice(-30);
-    activeRules = RULES + `\n\nTODAY'S LESSON: ${theme.en}\nACTIVITY: ${ACTIVITY[theme.mode](theme.detail)}\nFLAVOR (Hajun's favorite things): ${interest}` + (avoid.length ? `\nAVOID these character names (used before): ${avoid.join(", ")}` : "");
+    const today = new Date(); const dateStr = `${today.getMonth() + 1}/${today.getDate()}`;
+    activeRules = RULES + `\n\nTODAY: ${dateStr}\nTODAY'S LESSON: ${theme.en}\nACTIVITY: ${ACTIVITY[theme.mode](theme.detail)}\nFLAVOR (Hajun's favorite things): ${interest}` + (avoid.length ? `\nAVOID these character names (used before): ${avoid.join(", ")}` : "") + memBlock();
+    prefs.sessions = ((prefs.sessions || []).concat([{ date: dateStr, theme: theme.ko + " (" + theme.en.split(":")[0] + ")" }])).slice(-10); save();
     if (synth) { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); }
     try { player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; player.play().catch(() => {}); } catch {}
-    geminiTtsFailedAt = 0; ttsModelIdx = 0;
+    geminiTtsFailedAt = 0; ttsModelIdx = 0; ttsErrors = [];
     turns = []; stars = 0; renderStars(); committed = ""; session = ""; interimText = ""; lastRaw = ""; renderHajun(); $("hajunRaw").hidden = true;
     $("topic").textContent = "오늘 수업: " + theme.ko + " · " + ({talk:"대화",roleplay:"역할놀이",game:"게임",tpr:"몸으로",story:"이야기"}[theme.mode] || "");
     $("setup").hidden = true; $("play").hidden = false;
