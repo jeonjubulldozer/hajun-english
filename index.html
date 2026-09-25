@@ -150,6 +150,14 @@
       <p class="note" id="voiceNote" style="margin:8px 0 0;color:var(--ink-soft);font-size:.95rem;line-height:1.5"></p>
     </div>
 
+    <div class="field">
+      <label for="listenEngine">④ 하준이 말 알아듣기 (음성 인식)</label>
+      <select id="listenEngine">
+        <option value="phone" selected>폰 내장 인식 (무료 · 빠름 · 정확도 보통)</option>
+        <option value="gemini">Gemini가 직접 듣기 (정확 · 아이 발음·한국어 섞여도 OK · Gemini 키)</option>
+      </select>
+    </div>
+
     <div class="grid2">
       <div class="field">
         <label for="silence">말 멈춘 뒤 기다리는 시간</label>
@@ -158,6 +166,14 @@
           <option value="5000" selected>5초</option>
           <option value="7000">7초</option>
           <option value="10000">10초</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="tvDelay">TV로 소리 나갈 때 지연 보정</label>
+        <select id="tvDelay">
+          <option value="600">없음 (폰 스피커)</option>
+          <option value="1500" selected>보통 (미러링)</option>
+          <option value="2500">큼 (소리가 늦게 나오면)</option>
         </select>
       </div>
       <div class="field">
@@ -193,6 +209,7 @@
         <div class="bubble hajun">
           <div class="who"><span class="face">🧒</span> Hajun <span id="countdown" style="margin-left:auto"></span></div>
           <div class="line" id="hajunLine"></div>
+          <div id="meter" hidden style="height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:6px"><div id="meterBar" style="height:100%;width:0;background:var(--mat-blue);transition:width .08s"></div></div>
           <div class="raw" id="hajunRaw" hidden></div>
         </div>
         <div class="bubble teacher" id="teacherBubble">
@@ -447,6 +464,22 @@ Reply with ONLY this JSON, nothing else:
   // replaces it, a repeated fragment is dropped, and a genuinely new phrase is appended.
   let committed = "", session = "", interimText = "";
   let silenceT = null, nudgeT = null, tickT = null, deadline = 0;
+  // Echo guard: the TV (or speaker) can still be playing Miss Lily's line when the mic opens, and the
+  // recognizer happily transcribes her. Speech that starts right after the mic opens AND mostly matches
+  // her last reply is treated as her own voice and dropped. Hajun repeating the corrected sentence is
+  // never dropped.
+  let echoRef = "", fixRef = "", listenStart = 0, firstSpeechAt = 0;
+  const TV_DELAY = () => Number($("tvDelay").value) || 1500;
+  function isEcho(text) {
+    const b = norm(text); if (!b) return false;
+    if (fixRef && (b === norm(fixRef) || norm(fixRef).includes(b))) return false;
+    if (!echoRef || !firstSpeechAt || firstSpeechAt - listenStart > TV_DELAY() + 2500) return false;
+    const a = norm(echoRef);
+    if (a.includes(b)) return true;
+    const set = new Set(a.split(" ")), words = b.split(" ");
+    const hits = words.filter(w => set.has(w)).length;
+    return words.length >= 3 && hits / words.length >= 0.6;
+  }
   const norm = (t) => t.toLowerCase().replace(/[^\p{L}\p{N}' ]+/gu, " ").replace(/\s+/g, " ").trim();
   function mergeInto(acc, t) {
     t = t.trim(); if (!t) return acc;
@@ -473,6 +506,7 @@ Reply with ONLY this JSON, nothing else:
     rec.onstart = () => { recRunning = true; };
     rec.onresult = (e) => {
       const m = mergeResults(e.results);
+      if (!firstSpeechAt && m.text) firstSpeechAt = Date.now();
       if (m.lastFinal) { session = m.text; interimText = ""; }
       else { session = ""; interimText = m.text; }
       renderHajun();
@@ -492,10 +526,128 @@ Reply with ONLY this JSON, nothing else:
       if (state === "listening" && wantListening) { try { rec.start(); } catch {} }   // keep the mic open
     };
   }
+  // ---- Gemini listening: capture PCM ourselves, detect the pause, send the clip to Gemini to transcribe ----
+  const listenEngine = () => $("listenEngine").value;
+  let mic = null;
+  const gCap = { on: false, buf: [], pre: [], speaking: false, lastVoice: 0, first: 0, noise: 0.01 };
+  async function ensureMic() {
+    if (mic) { if (mic.ctx.state === "suspended") await mic.ctx.resume().catch(() => {}); return true; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      await ctx.resume().catch(() => {});
+      const src = ctx.createMediaStreamSource(stream);
+      const proc = ctx.createScriptProcessor(4096, 1, 1);
+      const sink = ctx.createGain(); sink.gain.value = 0;
+      src.connect(proc); proc.connect(sink); sink.connect(ctx.destination);
+      proc.onaudioprocess = onAudio;
+      mic = { ctx, stream, src, proc, rate: ctx.sampleRate };
+      return true;
+    } catch (e) { return false; }
+  }
+  function downsample(input, from, to) {
+    const ratio = from / to, n = Math.floor(input.length / ratio), out = new Int16Array(n);
+    for (let i = 0; i < n; i++) {
+      const a = Math.floor(i * ratio), b = Math.min(input.length, Math.floor((i + 1) * ratio));
+      let sum = 0; for (let k = a; k < b; k++) sum += input[k];
+      const v = Math.max(-1, Math.min(1, sum / (b - a || 1)));
+      out[i] = v < 0 ? v * 32768 : v * 32767;
+    }
+    return out;
+  }
+  function onAudio(e) {
+    const input = e.inputBuffer.getChannelData(0);
+    let sum = 0; for (let i = 0; i < input.length; i++) sum += input[i] * input[i];
+    const rms = Math.sqrt(sum / input.length);
+    gCap.noise = rms < gCap.noise ? gCap.noise * 0.9 + rms * 0.1 : gCap.noise * 0.995 + rms * 0.005;
+    const voiced = rms > Math.max(gCap.noise * 3.5, 0.012);
+    $("meterBar").style.width = Math.min(100, rms * 600) + "%";
+    $("meterBar").style.background = voiced ? "var(--mat-red)" : "var(--mat-blue)";
+    if (!gCap.on) return;
+    const ds = downsample(input, mic.rate, 16000);
+    const now = Date.now();
+    if (!gCap.speaking) {
+      gCap.pre.push(ds); if (gCap.pre.length > 6) gCap.pre.shift();      // keep ~0.5 s before the first word
+      if (voiced) {
+        gCap.speaking = true; gCap.first = now; gCap.lastVoice = now; firstSpeechAt = now;
+        gCap.buf = gCap.pre.slice(); gCap.pre = [];
+        clearTimeout(nudgeT);
+        $("hajunLine").innerHTML = '<span class="interim">🎙 말하는 중…</span>';
+      }
+    } else {
+      gCap.buf.push(ds);
+      if (voiced) { gCap.lastVoice = now; deadline = now + SILENCE(); }
+      if (!tickT) tickT = setInterval(() => { const sec = Math.max(0, Math.ceil((deadline - Date.now()) / 1000)); $("countdown").textContent = sec > 0 ? `⏳ ${sec}` : ""; }, 250);
+      if (now - gCap.lastVoice > SILENCE() || now - gCap.first > 45000) finalizeCapture();
+    }
+  }
+  function wavFromChunks(chunks) {
+    const n = chunks.reduce((a, c) => a + c.length, 0), h = new ArrayBuffer(44), d = new DataView(h);
+    const str = (o, t) => { for (let i = 0; i < t.length; i++) d.setUint8(o + i, t.charCodeAt(i)); };
+    str(0, "RIFF"); d.setUint32(4, 36 + n * 2, true); str(8, "WAVE"); str(12, "fmt "); d.setUint32(16, 16, true);
+    d.setUint16(20, 1, true); d.setUint16(22, 1, true); d.setUint32(24, 16000, true); d.setUint32(28, 32000, true);
+    d.setUint16(32, 2, true); d.setUint16(34, 16, true); str(36, "data"); d.setUint32(40, n * 2, true);
+    const out = new Uint8Array(44 + n * 2); out.set(new Uint8Array(h), 0);
+    let off = 44; for (const c of chunks) { out.set(new Uint8Array(c.buffer, c.byteOffset, c.byteLength), off); off += c.byteLength; }
+    return out;
+  }
+  function u8ToB64(u8) { let bin = ""; for (let i = 0; i < u8.length; i += 0x8000) bin += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(bin); }
+  async function transcribeGemini(wavU8, withThinking) {
+    const key = geminiKey(); if (!key) throw { code: "no_key" };
+    const model = provider() === "gemini" ? $("model").value : "gemini-3.5-flash-lite";
+    const prompt = `Transcribe this recording exactly. The speaker is Hajun, a 7-year-old Korean boy learning English, answering his English teacher. He may speak English, Korean, or a mix; write English words in English and Korean words in Korean. Do not correct or translate. Context, the teacher just said: "${echoRef.slice(0, 200)}". Reply with ONLY the transcript. If there is no clear speech, reply exactly: [silence]`;
+    const generationConfig = { temperature: 0, maxOutputTokens: 200 };
+    if (withThinking) generationConfig.thinkingConfig = { thinkingLevel: "minimal" };
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: "POST", headers: { "content-type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({ contents: [{ role: "user", parts: [{ inlineData: { mimeType: "audio/wav", data: u8ToB64(wavU8) } }, { text: prompt }] }], generationConfig })
+    });
+    if (!r.ok) {
+      if (r.status === 400 && withThinking) return transcribeGemini(wavU8, false);
+      const j = await r.json().catch(() => ({}));
+      throw { code: r.status === 429 ? "rate_limited" : "stt_failed", message: JSON.stringify(j).slice(0, 200) };
+    }
+    const j = await r.json();
+    return ((((j.candidates || [])[0] || {}).content || {}).parts || []).map(p => p.text || "").join("").trim();
+  }
+  async function finalizeCapture() {
+    if (!gCap.on) return;
+    gCap.on = false; clearInterval(tickT); tickT = null; $("countdown").textContent = ""; clearTimeout(nudgeT);
+    const chunks = gCap.buf; gCap.buf = []; gCap.speaking = false;
+    if (!chunks.length) { if (wantListening) startListening(); return; }
+    setState("thinking"); $("hajunLine").innerHTML = '<span class="interim">✍ 받아 적는 중…</span>';
+    let text = "";
+    try { text = await transcribeGemini(wavFromChunks(chunks), true); }
+    catch (e) {
+      setStatus(e.code === "no_key" ? "Gemini 듣기엔 Gemini 키가 필요해요 — 폰 인식으로 바꿔요." : e.code === "rate_limited" ? "Gemini 듣기 한도에 걸렸어요 — 폰 인식으로 바꿔요." : "Gemini 듣기 실패 — 폰 인식으로 바꿔요.", true);
+      $("listenEngine").value = "phone"; if (wantListening) startListening(); return;
+    }
+    text = text.replace(/^["'\s]+|["'\s]+$/g, "");
+    if (!text || /^\[?silence\]?$/i.test(text)) { $("hajunLine").textContent = ""; if (wantListening) startListening(); return; }
+    if (isEcho(text)) {
+      $("hajunLine").textContent = ""; $("hajunRaw").hidden = false; $("hajunRaw").textContent = "(TV에서 나온 Miss Lily 목소리는 무시했어요)";
+      if (wantListening) startListening(); return;
+    }
+    sendTurn(text, false);
+  }
+  const hasSpeech = () => listenEngine() === "gemini" ? gCap.speaking : !!fullText();
+
   function startListening() {
-    if (!SR || !wantListening) return;
+    if (!wantListening) return;
+    if (listenEngine() === "gemini" && mic) {
+      gCap.on = true; gCap.buf = []; gCap.pre = []; gCap.speaking = false; gCap.first = 0; gCap.lastVoice = 0;
+      committed = ""; session = ""; interimText = ""; firstSpeechAt = 0; listenStart = Date.now();
+      $("hajunLine").textContent = ""; $("hajunRaw").hidden = true; $("meter").hidden = false;
+      setState("listening"); setStatus("");
+      clearTimeout(nudgeT);
+      nudgeT = setTimeout(() => { if (state === "listening" && !gCap.speaking) sendTurn("[Hajun has been quiet for 25 seconds.]", true); }, NUDGE_MS);
+      return;
+    }
+    if (!SR) return;
+    $("meter").hidden = true;
     if (!rec) makeRec();
     committed = ""; session = ""; interimText = ""; renderHajun();
+    listenStart = Date.now(); firstSpeechAt = 0;
     $("hajunRaw").hidden = true;
     setState("listening");
     setStatus("");
@@ -506,7 +658,8 @@ Reply with ONLY this JSON, nothing else:
     }, NUDGE_MS);
   }
   function stopListening() {
-    clearTimeout(silenceT); clearTimeout(nudgeT); clearInterval(tickT); $("countdown").textContent = "";
+    gCap.on = false; gCap.speaking = false; gCap.buf = [];
+    clearTimeout(silenceT); clearTimeout(nudgeT); clearInterval(tickT); tickT = null; $("countdown").textContent = "";
     if (rec && recRunning) { try { rec.stop(); } catch {} }
   }
   function armSilence() {
@@ -519,7 +672,15 @@ Reply with ONLY this JSON, nothing else:
     silenceT = setTimeout(() => {
       clearInterval(tickT); $("countdown").textContent = "";
       const t = fullText();
-      if (t && state === "listening") sendTurn(t, false);
+      if (!t || state !== "listening") return;
+      if (isEcho(t)) {   // that was Miss Lily coming back through the TV, not Hajun
+        committed = ""; session = ""; interimText = ""; firstSpeechAt = 0; listenStart = Date.now(); renderHajun();
+        $("hajunRaw").hidden = false; $("hajunRaw").textContent = "(TV에서 나온 Miss Lily 목소리는 무시했어요)";
+        clearTimeout(nudgeT);
+        nudgeT = setTimeout(() => { if (state === "listening" && !fullText()) sendTurn("[Hajun has been quiet for 25 seconds.]", true); }, NUDGE_MS);
+        return;
+      }
+      sendTurn(t, false);
     }, SILENCE());
   }
   function renderHajun() {
@@ -578,10 +739,11 @@ Reply with ONLY this JSON, nothing else:
     $("caption").textContent = d.scene || "";
     const fix = String(d.fix || "").trim();
     const say = String(d.say).trim();
+    echoRef = say; fixRef = fix;
     prefetchSpeech(fix, say);
     setState("speaking");
     // 1) play back Hajun's sentence, corrected, a touch slower  2) then Miss Lily's reply
-    const after = () => { if (wantListening) setTimeout(startListening, 600); else setState("paused"); };
+    const after = () => { if (wantListening) setTimeout(startListening, TV_DELAY()); else setState("paused"); };
     const sayLily = () => { $("teacherLine").textContent = say; lastSpoken = say; speak(say, after, 1, "say"); };
     if (fix) {
       $("hajunLine").innerHTML = ""; const s = document.createElement("span"); s.className = "fix"; s.textContent = "✔ " + fix; $("hajunLine").append(s);
@@ -604,10 +766,11 @@ Reply with ONLY this JSON, nothing else:
   // ---------- wiring ----------
   $("chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) $("interest").value = b.textContent; });
   $("voice").addEventListener("change", () => { prefs.voice = $("voice").value; save(); });
-  ["silence", "rate"].forEach(id => { if (prefs[id]) $(id).value = prefs[id]; $(id).addEventListener("change", () => { prefs[id] = $(id).value; save(); }); });
+  ["silence", "rate", "tvDelay", "listenEngine"].forEach(id => { if (prefs[id]) $(id).value = prefs[id]; $(id).addEventListener("change", () => { prefs[id] = $(id).value; save(); }); });
   if (prefs.provider) $("provider").value = prefs.provider;
   fillModels();
   $("provider").addEventListener("change", () => { prefs.provider = provider(); save(); fillModels(); setDiag(); });
+  $("listenEngine").addEventListener("change", setDiag);
   $("model").addEventListener("change", () => { prefs["model_" + provider()] = $("model").value; save(); });
   ["input", "change"].forEach(ev => $("apiKey").addEventListener(ev, () => { prefs["key_" + provider()] = apiKey(); save(); setDiag(); }));
   $("testVoice").addEventListener("click", () => { loadVoices(); if (!currentVoice()) { setDiag(); return; } speakPhone("Hey Hajun! I'm Miss Lily. Are you ready to play?"); });
@@ -629,7 +792,7 @@ Reply with ONLY this JSON, nothing else:
     catch (e) { $("voiceNote").textContent = e && e.code === "no_key" ? "Gemini 키가 없어요. ① 칸에 Gemini 키를 넣어 주세요." : e && e.code === "rate_limited" ? "한도에 걸렸어요. 결제 미등록이면 무료 한도가 거의 없어요 — aistudio.google.com에서 Billing 등록 후 다시 눌러 보세요." : "실패했어요: " + ((e && e.message) || "").slice(0, 120); }
   });
   applyVoiceSource();
-  $("replay").addEventListener("click", () => { if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) startListening(); }); });
+  $("replay").addEventListener("click", () => { if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) setTimeout(startListening, TV_DELAY()); }); });
   $("pause").addEventListener("click", () => {
     if (state === "paused") { wantListening = true; startListening(); }
     else { wantListening = false; stopListening(); synth && synth.cancel(); ctl && ctl.abort(); setState("paused"); }
@@ -637,13 +800,18 @@ Reply with ONLY this JSON, nothing else:
   $("sendNow").addEventListener("click", () => {
     const retry = $("sendNow").dataset.retry;
     if (retry && state === "paused") { delete $("sendNow").dataset.retry; wantListening = true; ask(retry); return; }
+    if (listenEngine() === "gemini") { if (state === "listening" && gCap.speaking) finalizeCapture(); return; }
     const t = fullText();
     if (state === "listening" && t) sendTurn(t, false);
   });
   $("quit").addEventListener("click", () => { wantListening = false; stopListening(); synth && synth.cancel(); ctl && ctl.abort(); setState("idle"); $("play").hidden = true; $("setup").hidden = false; });
 
-  $("start").addEventListener("click", () => {
+  $("start").addEventListener("click", async () => {
     if (mode === "api" && !apiKey()) { $("apiKey").focus(); setDiag(); return; }
+    if (listenEngine() === "gemini") {
+      const ok = await ensureMic();
+      if (!ok) { $("listenEngine").value = "phone"; setStatus("마이크를 못 열어서 폰 인식으로 시작해요.", true); }
+    }
     const interest = $("interest").value.trim() || "유도 vs 태권도";
     if (synth) { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); }
     try { player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; player.play().catch(() => {}); } catch {}
@@ -662,14 +830,16 @@ Reply with ONLY this JSON, nothing else:
     if (mode === "claude") lines.push(`<span class="ok">✔ Miss Lily 두뇌: Claude 연결됨</span>`);
     else if (mode === "api") { const ok = !!apiKey(); $("apiField").classList.toggle("ok", ok); lines.push(ok ? `<span class="ok">✔ Miss Lily 두뇌: ${provider() === "gemini" ? "Gemini (무료)" : "Claude"} 키 있음</span>` : `<span class="bad">✘ API 키가 없어요 — 위 ① 칸에 붙여넣어야 Miss Lily가 말해요</span>`); }
     else lines.push(`<span class="bad">✘ 두뇌 연결 확인 중…</span>`);
-    lines.push(SR ? `<span class="ok">✔ 마이크 인식: 이 브라우저에서 가능</span>` : `<span class="bad">✘ 이 브라우저는 음성 인식이 안 돼요 — 크롬으로 열어 주세요</span>`);
+    const gListen = $("listenEngine").value === "gemini";
+    if (gListen) lines.push(navigator.mediaDevices ? `<span class="ok">✔ 듣기: Gemini가 직접 (마이크 허용 창이 한 번 떠요)</span>` : `<span class="bad">✘ 이 브라우저는 마이크 녹음이 안 돼요</span>`);
+    else lines.push(SR ? `<span class="ok">✔ 듣기: 폰 내장 인식</span>` : `<span class="bad">✘ 이 브라우저는 음성 인식이 안 돼요 — 크롬으로 열어 주세요</span>`);
     const phoneVoiceNeeded = $("voiceSource").value !== "gemini";
     if (!phoneVoiceNeeded) lines.push(`<span class="ok">✔ 목소리: Gemini ${$("gVoice").value} (안 되면 폰 목소리로 자동 전환)</span>`);
     else if (!synth) lines.push(`<span class="bad">✘ 음성 엔진 없음</span>`);
     else if (!v) lines.push(`<span class="bad">✘ 영어 원어민 목소리가 없어요 — 폰 설정 → 일반 → 텍스트 음성 변환에서 영어(미국) 음성 데이터를 설치해 주세요</span>`);
     else lines.push(`<span class="ok">✔ 목소리: ${v.name}</span>` + (/Android/i.test(navigator.userAgent) && !/network|Google/i.test(v.name) ? ` — 폰 설정 → 텍스트 음성 변환에서 "Google 음성 서비스"를 기본으로 하고 영어(미국) 고품질 음성을 설치하면 더 자연스러워요` : ""));
     $("diag").innerHTML = lines.join("<br>");
-    $("start").disabled = !(mode && SR && (v || !phoneVoiceNeeded) && (mode !== "api" || apiKey()));
+    $("start").disabled = !(mode && (gListen ? !!navigator.mediaDevices : SR) && (v || !phoneVoiceNeeded) && (mode !== "api" || apiKey()));
   }
   if (synth) {
     $("voice").append(new Option("목소리 찾는 중…", ""));
