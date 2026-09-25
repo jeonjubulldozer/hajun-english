@@ -127,11 +127,27 @@
     </div>
 
     <div class="field">
-      <label for="voice">③ Miss Lily 목소리 (영어 원어민 목소리만 보여요)</label>
-      <div class="row">
+      <label for="voiceSource">③ Miss Lily 목소리</label>
+      <select id="voiceSource" style="margin-bottom:8px">
+        <option value="phone" selected>폰 내장 목소리 (무료)</option>
+        <option value="gemini">Gemini 원어민 목소리 (사람 같음 · Gemini 키 + 결제 등록 필요)</option>
+      </select>
+      <div class="row" id="phoneVoiceRow">
         <select id="voice" style="flex:1"></select>
         <button class="ctl" id="testVoice" type="button">🔊 테스트</button>
       </div>
+      <div class="row" id="geminiVoiceRow" hidden>
+        <select id="gVoice" style="flex:1">
+          <option value="Sulafat" selected>Sulafat — 따뜻한 여성</option>
+          <option value="Leda">Leda — 젊은 여성</option>
+          <option value="Aoede">Aoede — 산뜻한 여성</option>
+          <option value="Zephyr">Zephyr — 밝은 여성</option>
+          <option value="Achird">Achird — 친근한</option>
+          <option value="Kore">Kore — 또렷한 여성</option>
+        </select>
+        <button class="ctl" id="testGVoice" type="button">🔊 테스트</button>
+      </div>
+      <p class="note" id="voiceNote" style="margin:8px 0 0;color:var(--ink-soft);font-size:.95rem;line-height:1.5"></p>
     </div>
 
     <div class="grid2">
@@ -238,7 +254,7 @@ Reply with ONLY this JSON, nothing else:
     return { fix: "", say: text.replace(/[{}"]/g, "").slice(0, 300), emoji: "🥋", scene: "" };
   }
   const MODELS = {
-    gemini: [["gemini-3.5-flash-lite", "3.5 Flash-Lite (빠름, 기본)"], ["gemini-3.6-flash", "3.6 Flash"], ["gemini-3.8-flash", "3.8 Flash"]],
+    gemini: [["gemini-3.5-flash-lite", "3.5 Flash-Lite (무료 넉넉, 기본)"], ["gemini-3.8-flash", "3.8 Flash (무료는 하루 20번뿐)"]],
     anthropic: [["claude-haiku-4-5-20251001", "Haiku 4.5 (빠름)"], ["claude-sonnet-5", "Sonnet 5"]]
   };
   const KEY_HELP = {
@@ -331,7 +347,7 @@ Reply with ONLY this JSON, nothing else:
   }
   function currentVoice() { return voices.find(v => v.name === $("voice").value) || null; }
 
-  function speak(text, onDone, rateMul) {
+  function speakPhone(text, onDone, rateMul) {
     const v = currentVoice();
     if (!synth || !text || !v) { onDone && onDone(); return; }
     if (synth.speaking || synth.pending) synth.cancel();
@@ -344,27 +360,121 @@ Reply with ONLY this JSON, nothing else:
     setTimeout(() => synth.speak(u), 60);
   }
 
+  // ---- Gemini TTS (real neural voice; needs a Gemini key on a billed project) ----
+  const player = new Audio();
+  let geminiTtsBroken = false;
+  const useGeminiVoice = () => $("voiceSource").value === "gemini" && !geminiTtsBroken;
+  const geminiKey = () => (prefs.key_gemini || (provider() === "gemini" ? apiKey() : "") || "").trim();
+  function b64ToBlob(b64, mime) {
+    const bin = atob(b64); const u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return new Blob([u8], { type: mime });
+  }
+  function pcmToWav(u8, rate) {   // wrap headerless 16-bit mono PCM, in case the API returns L16
+    const h = new ArrayBuffer(44), d = new DataView(h), n = u8.length;
+    const str = (o, t) => { for (let i = 0; i < t.length; i++) d.setUint8(o + i, t.charCodeAt(i)); };
+    str(0, "RIFF"); d.setUint32(4, 36 + n, true); str(8, "WAVE"); str(12, "fmt "); d.setUint32(16, 16, true);
+    d.setUint16(20, 1, true); d.setUint16(22, 1, true); d.setUint32(24, rate, true); d.setUint32(28, rate * 2, true);
+    d.setUint16(32, 2, true); d.setUint16(34, 16, true); str(36, "data"); d.setUint32(40, n, true);
+    return new Blob([h, u8], { type: "audio/wav" });
+  }
+  async function geminiTtsFetch(text, style, signal) {
+    const key = geminiKey();
+    if (!key) throw { code: "no_key" };
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent`, {
+      method: "POST", signal,
+      headers: { "content-type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text, speech_metadata: { style } }] }],
+        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { voice: $("gVoice").value } } }
+      })
+    });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw { code: r.status === 429 ? "rate_limited" : "tts_failed", message: JSON.stringify(j).slice(0, 200) }; }
+    const j = await r.json();
+    const part = (((j.candidates || [])[0] || {}).content || {}).parts?.find(p => p.inlineData);
+    if (!part) throw { code: "tts_failed" };
+    const mime = part.inlineData.mimeType || "audio/wav";
+    if (/wav/i.test(mime)) return b64ToBlob(part.inlineData.data, "audio/wav");
+    const rate = Number((mime.match(/rate=(\d+)/) || [])[1]) || 24000;
+    const bin = atob(part.inlineData.data); const u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return pcmToWav(u8, rate);
+  }
+  function playBlob(blob) {
+    return new Promise((res) => {
+      const url = URL.createObjectURL(blob);
+      let done = false; const fin = () => { if (!done) { done = true; URL.revokeObjectURL(url); res(); } };
+      player.onended = fin; player.onerror = fin;
+      player.src = url; player.playbackRate = Number($("rate").value) || 1;
+      player.play().catch(fin);
+      setTimeout(fin, 60000);
+    });
+  }
+  const TTS_STYLE_LILY = "warm, playful, upbeat American teacher talking to a young child";
+  const TTS_STYLE_FIX = "speaking slowly and clearly, warm";
+  // prefetch: start both TTS requests as soon as the text arrives
+  let prefetched = {};
+  function prefetchSpeech(fix, say) {
+    prefetched = {};
+    if (!useGeminiVoice()) return;
+    if (fix) prefetched.fix = geminiTtsFetch(fix, TTS_STYLE_FIX).catch(e => ({ error: e }));
+    if (say) prefetched.say = geminiTtsFetch(say, TTS_STYLE_LILY).catch(e => ({ error: e }));
+  }
+  async function speak(text, onDone, rateMul, which) {
+    if (!text) { onDone && onDone(); return; }
+    if (useGeminiVoice()) {
+      try {
+        let blob = which && prefetched[which] ? await prefetched[which] : await geminiTtsFetch(text, rateMul && rateMul < 1 ? TTS_STYLE_FIX : TTS_STYLE_LILY);
+        if (blob && blob.error) throw blob.error;
+        if (synth && (synth.speaking || synth.pending)) synth.cancel();
+        await playBlob(blob);
+        onDone && onDone();
+        return;
+      } catch (e) {
+        geminiTtsBroken = true;   // don't keep paying the latency for a failing service; phone voice from here on
+        setStatus(e && e.code === "no_key" ? "Gemini 목소리엔 Gemini 키가 필요해요 — 폰 목소리로 계속해요." : e && e.code === "rate_limited" ? "Gemini 목소리 한도에 걸렸어요(결제 미등록이면 무료 한도가 아주 작아요) — 폰 목소리로 계속해요." : "Gemini 목소리를 못 가져왔어요 — 폰 목소리로 계속해요.", true);
+      }
+    }
+    speakPhone(text, onDone, rateMul);
+  }
+
   // ---------- speech recognition ----------
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   let rec = null, recRunning = false;
-  // Android Chrome re-sends the whole transcript in every result event, so we REBUILD the
-  // current session from index 0 each time instead of appending — and only carry text over
-  // when a recognition session actually ends.
+  // Android Chrome pushes a NEW result entry for every update, and each entry repeats the whole
+  // utterance so far ("yes I'm", "yes I'm ready", "yes I'm ready to play"...). Desktop Chrome gives one
+  // entry per utterance instead. mergeResults() handles both: an entry that extends the text so far
+  // replaces it, a repeated fragment is dropped, and a genuinely new phrase is appended.
   let committed = "", session = "", interimText = "";
   let silenceT = null, nudgeT = null, tickT = null, deadline = 0;
-  const fullText = () => (committed + " " + session + " " + interimText).replace(/\s+/g, " ").trim();
+  const norm = (t) => t.toLowerCase().replace(/[^\p{L}\p{N}' ]+/gu, " ").replace(/\s+/g, " ").trim();
+  function mergeInto(acc, t) {
+    t = t.trim(); if (!t) return acc;
+    const a = norm(acc), b = norm(t);
+    if (!a) return t;
+    if (b === a || a.endsWith(b) || a.includes(" " + b + " ")) return acc;   // repeat
+    if (b.startsWith(a)) return t;                                             // cumulative growth
+    const aw = a.split(" "), bw = b.split(" "), tw = t.split(/\s+/);
+    for (let n = Math.min(aw.length, bw.length); n >= 3; n--) {               // partial overlap at the seam (3+ words)
+      if (aw.slice(-n).join(" ") === bw.slice(0, n).join(" ")) return acc + " " + tw.slice(n).join(" ");
+    }
+    return acc + " " + t;
+  }
+  function mergeResults(results) {
+    let acc = "", lastFinal = true;
+    for (let k = 0; k < results.length; k++) { acc = mergeInto(acc, results[k][0].transcript || ""); lastFinal = !!results[k].isFinal; }
+    return { text: acc.trim(), lastFinal };
+  }
+  const fullText = () => mergeInto(committed, session + " " + interimText).replace(/\s+/g, " ").trim();
 
   function makeRec() {
     rec = new SR();
     rec.lang = "en-US"; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
     rec.onstart = () => { recRunning = true; };
     rec.onresult = (e) => {
-      let f = "", i = "";
-      for (let k = 0; k < e.results.length; k++) {
-        const t = e.results[k][0].transcript;
-        if (e.results[k].isFinal) f += t + " "; else i += t + " ";
-      }
-      session = f.trim(); interimText = i.trim();
+      const m = mergeResults(e.results);
+      if (m.lastFinal) { session = m.text; interimText = ""; }
+      else { session = ""; interimText = m.text; }
       renderHajun();
       clearTimeout(nudgeT);
       armSilence();
@@ -377,7 +487,7 @@ Reply with ONLY this JSON, nothing else:
     };
     rec.onend = () => {
       recRunning = false;
-      if (session && !committed.endsWith(session)) committed = (committed + " " + session).trim();
+      committed = mergeInto(committed, session + " " + interimText).trim();
       session = ""; interimText = "";
       if (state === "listening" && wantListening) { try { rec.start(); } catch {} }   // keep the mic open
     };
@@ -414,7 +524,7 @@ Reply with ONLY this JSON, nothing else:
   }
   function renderHajun() {
     const el = $("hajunLine"); el.innerHTML = "";
-    const done = (committed + " " + session).replace(/\s+/g, " ").trim();
+    const done = mergeInto(committed, session).trim();
     if (done) el.append(done + " ");
     if (interimText) { const s = document.createElement("span"); s.className = "interim"; s.textContent = interimText; el.append(s); }
   }
@@ -468,15 +578,16 @@ Reply with ONLY this JSON, nothing else:
     $("caption").textContent = d.scene || "";
     const fix = String(d.fix || "").trim();
     const say = String(d.say).trim();
+    prefetchSpeech(fix, say);
     setState("speaking");
     // 1) play back Hajun's sentence, corrected, a touch slower  2) then Miss Lily's reply
     const after = () => { if (wantListening) setTimeout(startListening, 600); else setState("paused"); };
-    const sayLily = () => { $("teacherLine").textContent = say; lastSpoken = say; speak(say, after); };
+    const sayLily = () => { $("teacherLine").textContent = say; lastSpoken = say; speak(say, after, 1, "say"); };
     if (fix) {
       $("hajunLine").innerHTML = ""; const s = document.createElement("span"); s.className = "fix"; s.textContent = "✔ " + fix; $("hajunLine").append(s);
       if (lastRaw && lastRaw.toLowerCase() !== fix.toLowerCase()) { $("hajunRaw").hidden = false; $("hajunRaw").textContent = "들린 말: " + lastRaw; }
       $("teacherLine").textContent = "";
-      speak(fix, () => setTimeout(sayLily, 350), 0.9);
+      speak(fix, () => setTimeout(sayLily, 350), 0.9, "fix");
     } else sayLily();
   }
 
@@ -499,7 +610,25 @@ Reply with ONLY this JSON, nothing else:
   $("provider").addEventListener("change", () => { prefs.provider = provider(); save(); fillModels(); setDiag(); });
   $("model").addEventListener("change", () => { prefs["model_" + provider()] = $("model").value; save(); });
   ["input", "change"].forEach(ev => $("apiKey").addEventListener(ev, () => { prefs["key_" + provider()] = apiKey(); save(); setDiag(); }));
-  $("testVoice").addEventListener("click", () => { loadVoices(); if (!currentVoice()) { setDiag(); return; } speak("Hey Hajun! I'm Miss Lily. Are you ready to play?"); });
+  $("testVoice").addEventListener("click", () => { loadVoices(); if (!currentVoice()) { setDiag(); return; } speakPhone("Hey Hajun! I'm Miss Lily. Are you ready to play?"); });
+  function applyVoiceSource() {
+    const g = $("voiceSource").value === "gemini";
+    $("phoneVoiceRow").hidden = g; $("geminiVoiceRow").hidden = !g;
+    $("voiceNote").textContent = g ? "Google AI Studio에서 결제(카드)를 등록한 키여야 돼요. 1분에 12원 정도라 30분 놀면 400원쯤이에요. 실패하면 자동으로 폰 목소리로 넘어가요." : "폰 설정 → 텍스트 음성 변환에서 Google 음성 서비스 + 영어(미국) 고품질 음성을 설치하면 덜 기계 같아요.";
+    setDiag();
+  }
+  if (prefs.voiceSource) $("voiceSource").value = prefs.voiceSource;
+  if (prefs.gVoice) $("gVoice").value = prefs.gVoice;
+  $("voiceSource").addEventListener("change", () => { prefs.voiceSource = $("voiceSource").value; save(); geminiTtsBroken = false; applyVoiceSource(); });
+  $("gVoice").addEventListener("change", () => { prefs.gVoice = $("gVoice").value; save(); });
+  $("testGVoice").addEventListener("click", async () => {
+    geminiTtsBroken = false;
+    $("voiceNote").textContent = "목소리 가져오는 중…";
+    try { player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; await player.play().catch(() => {}); } catch {}
+    try { const b = await geminiTtsFetch("Hey Hajun! I'm Miss Lily. Are you ready to play?", TTS_STYLE_LILY); await playBlob(b); $("voiceNote").textContent = "✔ Gemini 목소리가 돼요."; }
+    catch (e) { $("voiceNote").textContent = e && e.code === "no_key" ? "Gemini 키가 없어요. ① 칸에 Gemini 키를 넣어 주세요." : e && e.code === "rate_limited" ? "한도에 걸렸어요. 결제 미등록이면 무료 한도가 거의 없어요 — aistudio.google.com에서 Billing 등록 후 다시 눌러 보세요." : "실패했어요: " + ((e && e.message) || "").slice(0, 120); }
+  });
+  applyVoiceSource();
   $("replay").addEventListener("click", () => { if (state === "listening") stopListening(); setState("speaking"); speak(lastSpoken, () => { if (wantListening) startListening(); }); });
   $("pause").addEventListener("click", () => {
     if (state === "paused") { wantListening = true; startListening(); }
@@ -517,6 +646,8 @@ Reply with ONLY this JSON, nothing else:
     if (mode === "api" && !apiKey()) { $("apiKey").focus(); setDiag(); return; }
     const interest = $("interest").value.trim() || "유도 vs 태권도";
     if (synth) { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); }
+    try { player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; player.play().catch(() => {}); } catch {}
+    geminiTtsBroken = false;
     turns = []; stars = 0; renderStars(); committed = ""; session = ""; interimText = ""; lastRaw = ""; renderHajun(); $("hajunRaw").hidden = true;
     $("topic").textContent = "오늘 주제: " + interest;
     $("setup").hidden = true; $("play").hidden = false;
@@ -532,11 +663,13 @@ Reply with ONLY this JSON, nothing else:
     else if (mode === "api") { const ok = !!apiKey(); $("apiField").classList.toggle("ok", ok); lines.push(ok ? `<span class="ok">✔ Miss Lily 두뇌: ${provider() === "gemini" ? "Gemini (무료)" : "Claude"} 키 있음</span>` : `<span class="bad">✘ API 키가 없어요 — 위 ① 칸에 붙여넣어야 Miss Lily가 말해요</span>`); }
     else lines.push(`<span class="bad">✘ 두뇌 연결 확인 중…</span>`);
     lines.push(SR ? `<span class="ok">✔ 마이크 인식: 이 브라우저에서 가능</span>` : `<span class="bad">✘ 이 브라우저는 음성 인식이 안 돼요 — 크롬으로 열어 주세요</span>`);
-    if (!synth) lines.push(`<span class="bad">✘ 음성 엔진 없음</span>`);
+    const phoneVoiceNeeded = $("voiceSource").value !== "gemini";
+    if (!phoneVoiceNeeded) lines.push(`<span class="ok">✔ 목소리: Gemini ${$("gVoice").value} (안 되면 폰 목소리로 자동 전환)</span>`);
+    else if (!synth) lines.push(`<span class="bad">✘ 음성 엔진 없음</span>`);
     else if (!v) lines.push(`<span class="bad">✘ 영어 원어민 목소리가 없어요 — 폰 설정 → 일반 → 텍스트 음성 변환에서 영어(미국) 음성 데이터를 설치해 주세요</span>`);
-    else lines.push(`<span class="ok">✔ 목소리: ${v.name}</span>`);
+    else lines.push(`<span class="ok">✔ 목소리: ${v.name}</span>` + (/Android/i.test(navigator.userAgent) && !/network|Google/i.test(v.name) ? ` — 폰 설정 → 텍스트 음성 변환에서 "Google 음성 서비스"를 기본으로 하고 영어(미국) 고품질 음성을 설치하면 더 자연스러워요` : ""));
     $("diag").innerHTML = lines.join("<br>");
-    $("start").disabled = !(mode && SR && v && (mode !== "api" || apiKey()));
+    $("start").disabled = !(mode && SR && (v || !phoneVoiceNeeded) && (mode !== "api" || apiKey()));
   }
   if (synth) {
     $("voice").append(new Option("목소리 찾는 중…", ""));
