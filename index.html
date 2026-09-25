@@ -1265,6 +1265,7 @@ Reply with ONLY this JSON, nothing else:
     const box = $("choices"); box.innerHTML = "";
     (list || []).slice(0, 3).forEach(c => {
       const b = document.createElement("button"); b.type = "button"; b.textContent = "💬 " + c;
+      b.disabled = (state === "speaking" || state === "thinking");   // greyed out until Miss Lily finishes talking
       b.onclick = () => { if (state === "speaking" || state === "thinking") return; stopListening(); setState("speaking"); speak(c, () => { state = "listening"; sendTurn(c, false); }, 1); };
       box.append(b);
     });
