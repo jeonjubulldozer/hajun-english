@@ -9,6 +9,8 @@
 <title>하준이 영어 도장 — Miss Lily Live</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<script defer src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/bundle.min.js"></script>
 <style>
   :root {
     box-sizing: border-box;
@@ -213,7 +215,7 @@
       <label for="listenEngine">④ 하준이 말 알아듣기 (음성 인식)</label>
       <select id="listenEngine">
         <option value="phone" selected>폰 내장 인식 (무료 · 빠름 · 정확도 보통)</option>
-        <option value="gemini">Gemini가 직접 듣기 (정확 · 아이 발음·한국어 섞여도 OK · Gemini 키)</option>
+        <option value="gemini">Gemini가 직접 듣기 (정확 · 소음 무시 · 아이 발음·한국어 섞여도 OK)</option>
       </select>
     </div>
 
@@ -221,8 +223,9 @@
       <div class="field">
         <label for="silence">말 멈춘 뒤 기다리는 시간</label>
         <select id="silence">
+          <option value="2000" selected>2초</option>
           <option value="3000">3초</option>
-          <option value="5000" selected>5초</option>
+          <option value="5000">5초</option>
           <option value="7000">7초</option>
           <option value="10000">10초</option>
         </select>
@@ -827,7 +830,7 @@ Reply with ONLY this JSON, nothing else:
   // ---- Gemini listening: capture PCM ourselves, detect the pause, send the clip to Gemini to transcribe ----
   const listenEngine = () => $("listenEngine").value;
   let mic = null;
-  const gCap = { on: false, buf: [], pre: [], speaking: false, lastVoice: 0, first: 0, noise: 0.01 };
+  const gCap = { on: false, buf: [], pre: [], speaking: false, lastVoice: 0, first: 0, noise: 0.01, segments: [], firstEnd: 0, lastEnd: 0 };
   let lastVoiceHeard = 0;
   async function ensureMic() {
     if (mic) { if (mic.ctx.state === "suspended") await mic.ctx.resume().catch(() => {}); return true; }
@@ -896,7 +899,7 @@ Reply with ONLY this JSON, nothing else:
   async function transcribeGemini(wavU8, withThinking) {
     const key = geminiKey(); if (!key) throw { code: "no_key" };
     const model = provider() === "gemini" ? $("model").value : "gemini-3.5-flash-lite";
-    const prompt = `Transcribe this recording exactly. The speaker is Hajun, a 7-year-old Korean boy learning English, answering his English teacher. He may speak English, Korean, or a mix; write English words in English and Korean words in Korean. Do not correct or translate. Context, the teacher just said: "${echoRef.slice(0, 200)}". Reply with ONLY the transcript. If there is no clear speech, reply exactly: [silence]`;
+    const prompt = `Transcribe this recording exactly. The speaker is Hajun, a 7-year-old Korean boy learning English, answering his English teacher. He may speak English, Korean, or a mix; write English words in English and Korean words in Korean. Do not correct or translate. The room is noisy: ignore background sounds, a TV, adults talking, and a toddler babbling or crying — transcribe ONLY the 7-year-old boy answering the question. Context, the teacher just said: "${echoRef.slice(0, 200)}". Reply with ONLY the transcript. If the boy says nothing clear, reply exactly: [silence]`;
     const generationConfig = { temperature: 0, maxOutputTokens: 200 };
     if (withThinking) generationConfig.thinkingConfig = { thinkingLevel: /flash-lite|3\.6|3\.5-flash$/.test(model) ? "minimal" : "low" };
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
@@ -916,6 +919,55 @@ Reply with ONLY this JSON, nothing else:
     gCap.on = false; clearInterval(tickT); tickT = null; $("countdown").textContent = ""; clearTimeout(nudgeT);
     const chunks = gCap.buf; gCap.buf = []; gCap.speaking = false;
     if (!chunks.length) { if (wantListening) startListening(); return; }
+    await transcribeAndSend(chunks);
+  }
+  // ---- Silero VAD (a real speech detector: ignores rustling, clattering, TV hiss; only speech counts) ----
+  let svad = null, svadOk = false, vadRemaining = 0;
+  const VAD_CDN = { base: "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/", onnx: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/" };
+  async function ensureVad() {
+    if (svadOk) return true;
+    if (!window.vad || !window.vad.MicVAD) return false;
+    try {
+      svad = await window.vad.MicVAD.new({
+        model: "v5", baseAssetPath: VAD_CDN.base, onnxWASMBasePath: VAD_CDN.onnx,
+        positiveSpeechThreshold: $("sens").value === "high" ? 0.45 : 0.6, negativeSpeechThreshold: 0.3,
+        minSpeechMs: 450, redemptionMs: 900, preSpeechPadMs: 400,
+        pauseStream: async () => {}, resumeStream: async (st) => st,                 // keep the mic open between turns
+        onFrameProcessed: (p) => { $("meterBar").style.width = Math.round((p.isSpeech || 0) * 100) + "%"; $("meterBar").style.background = (p.isSpeech || 0) > 0.45 ? "var(--mat-red)" : "var(--mat-blue)"; },
+        onSpeechRealStart: () => {                                                    // real speech: pause the countdown while it goes on
+          if (!gCap.on) return;
+          gCap.speaking = true; lastVoiceHeard = Date.now(); if (!firstSpeechAt) firstSpeechAt = Date.now();
+          clearTimeout(nudgeT); vadRemaining = Math.max(0, deadline - Date.now()); clearTimeout(silenceT); clearInterval(tickT); tickT = null; $("countdown").textContent = "";
+          $("hajunLine").innerHTML = '<span class="interim">🎙 말하는 중…</span>';
+        },
+        onVADMisfire: () => { if (gCap.on && gCap.segments.length && vadRemaining) armVadCountdown(vadRemaining); },   // a blip of noise: countdown resumes where it was
+        onSpeechEnd: (audio) => {
+          if (!gCap.on) return;
+          gCap.segments.push(audio); gCap.lastEnd = Date.now(); if (!gCap.firstEnd) gCap.firstEnd = gCap.lastEnd;
+          if (gCap.lastEnd - gCap.firstEnd > SILENCE() * 3 + 4000) { finalizeVad(); return; }   // nobody can hold the turn hostage: hard cap
+          armVadCountdown(SILENCE());
+        }
+      });
+      svadOk = true; return true;
+    } catch (e) { svadOk = false; return false; }
+  }
+  function armVadCountdown(ms) {
+    clearTimeout(silenceT); clearInterval(tickT);
+    deadline = Date.now() + ms; vadRemaining = 0;
+    tickT = setInterval(() => { const sec = Math.max(0, Math.ceil((deadline - Date.now()) / 1000)); $("countdown").textContent = sec > 0 ? `⏳ ${sec}` : ""; }, 200);
+    silenceT = setTimeout(() => { clearInterval(tickT); tickT = null; $("countdown").textContent = ""; finalizeVad(); }, ms);
+  }
+  function floatToInt16(f32) { const out = new Int16Array(f32.length); for (let i = 0; i < f32.length; i++) { const v = Math.max(-1, Math.min(1, f32[i])); out[i] = v < 0 ? v * 32768 : v * 32767; } return out; }
+  async function finalizeVad() {
+    if (!gCap.on) return;
+    gCap.on = false; clearTimeout(silenceT); clearInterval(tickT); tickT = null; $("countdown").textContent = ""; clearTimeout(nudgeT);
+    try { svad && svad.pause(); } catch {}
+    const segs = gCap.segments; gCap.segments = []; gCap.speaking = false;
+    if (!segs.length) { if (wantListening) startListening(); return; }
+    const chunks = segs.map(floatToInt16);
+    await transcribeAndSend(chunks);
+  }
+  async function transcribeAndSend(chunks) {
     setState("thinking"); $("hajunLine").innerHTML = '<span class="interim">✍ 받아 적는 중…</span>';
     let text = "";
     try { text = await transcribeGemini(wavFromChunks(chunks), true); }
@@ -929,13 +981,23 @@ Reply with ONLY this JSON, nothing else:
       $("hajunLine").textContent = ""; $("hajunRaw").hidden = false; $("hajunRaw").textContent = "(TV에서 나온 Miss Lily 목소리는 무시했어요)";
       if (wantListening) startListening(); return;
     }
-    sendTurn(text, false);
+    state = "listening"; sendTurn(text, false);
   }
   const hasSpeech = () => listenEngine() === "gemini" ? gCap.speaking : !!fullText();
 
   function startListening() {
     if (!wantListening) return;
     const keepStatus = /^🔇/.test($("status").textContent);
+    if (listenEngine() === "gemini" && svadOk) {
+      gCap.on = true; gCap.segments = []; gCap.firstEnd = 0; gCap.lastEnd = 0; gCap.speaking = false; vadRemaining = 0;
+      committed = ""; session = ""; interimText = ""; firstSpeechAt = 0; listenStart = Date.now();
+      $("meter").hidden = false;
+      setState("listening"); if (!keepStatus) setStatus("");
+      try { svad.start(); } catch {}
+      clearTimeout(nudgeT);
+      nudgeT = setTimeout(() => { if (state === "listening" && !gCap.speaking && !gCap.segments.length && Date.now() - lastVoiceHeard > 8000) sendTurn("[Hajun has been quiet for a while.]", true); }, NUDGE_MS() || 3600000);
+      return;
+    }
     if (listenEngine() === "gemini" && mic) {
       gCap.on = true; gCap.buf = []; gCap.pre = []; gCap.speaking = false; gCap.first = 0; gCap.lastVoice = 0;
       committed = ""; session = ""; interimText = ""; firstSpeechAt = 0; listenStart = Date.now();
@@ -959,7 +1021,8 @@ Reply with ONLY this JSON, nothing else:
     }, NUDGE_MS() || 3600000);
   }
   function stopListening() {
-    gCap.on = false; gCap.speaking = false; gCap.buf = [];
+    gCap.on = false; gCap.speaking = false; gCap.buf = []; gCap.segments = [];
+    try { svadOk && svad.pause(); } catch {}
     clearTimeout(silenceT); clearTimeout(nudgeT); clearInterval(tickT); tickT = null; $("countdown").textContent = "";
     if (rec && recRunning) { try { rec.stop(); } catch {} }
   }
@@ -1097,6 +1160,7 @@ Reply with ONLY this JSON, nothing else:
   $("interest").addEventListener("change", () => { prefs.interest = $("interest").value; save(); });
   $("randomTheme").addEventListener("click", () => { $("theme").value = "random"; const p = pickTheme(); $("theme").value = p.ko; prefs.theme = p.ko; save(); });
   $("voice").addEventListener("change", () => { prefs.voice = $("voice").value; save(); });
+  if (!prefs.silenceMigrated) { if (prefs.silence === "5000" || !prefs.silence) prefs.silence = "2000"; prefs.silenceMigrated = true; save(); }
   ["silence", "rate", "tvDelay", "listenEngine", "nudge", "sens"].forEach(id => { if (prefs[id]) $(id).value = prefs[id]; $(id).addEventListener("change", () => { prefs[id] = $(id).value; save(); }); });
   if (prefs.provider) $("provider").value = prefs.provider;
   fillModels();
@@ -1145,7 +1209,7 @@ Reply with ONLY this JSON, nothing else:
   $("sendNow").addEventListener("click", () => {
     const retry = $("sendNow").dataset.retry;
     if (retry && state === "paused") { delete $("sendNow").dataset.retry; wantListening = true; ask(retry); return; }
-    if (listenEngine() === "gemini") { if (state === "listening" && gCap.speaking) finalizeCapture(); return; }
+    if (listenEngine() === "gemini") { if (state !== "listening") return; if (svadOk) { if (gCap.segments.length) finalizeVad(); } else if (gCap.speaking) finalizeCapture(); return; }
     const t = fullText();
     if (state === "listening" && t) sendTurn(t, false);
   });
@@ -1154,8 +1218,12 @@ Reply with ONLY this JSON, nothing else:
   $("start").addEventListener("click", async () => {
     if (mode === "api" && !apiKey()) { $("apiKey").focus(); setDiag(); return; }
     if (listenEngine() === "gemini") {
-      const ok = await ensureMic();
-      if (!ok) { $("listenEngine").value = "phone"; setStatus("마이크를 못 열어서 폰 인식으로 시작해요.", true); }
+      const okVad = await ensureVad();
+      if (!okVad) {
+        const ok = await ensureMic();
+        if (!ok) { $("listenEngine").value = "phone"; setStatus("마이크를 못 열어서 폰 인식으로 시작해요.", true); }
+        else setStatus("음성 감지 모델을 못 불러와서 단순 소리 감지로 들어요 (인터넷 확인).", true);
+      }
     }
     if (appMode === "story") { startStoryMode(); return; }
     if (appMode === "adventure") { startAdventureMode(); return; }
@@ -1247,7 +1315,7 @@ Reply with ONLY this JSON, nothing else:
   $("nextChapter").addEventListener("click", () => { if (!story) return; if (synth) synth.cancel(); try { player.pause(); player.onended && player.onended(); } catch {} });
 
   // ============================ ADVENTURE MODE (choose your path) ============================
-  function startAdventureMode() {
+  async function startAdventureMode() {
     if (mode === "api" && !apiKey()) { $("apiKey").focus(); setDiag(); return; }
     const topic = $("advTopic").value.trim() || "the Insect Forest";
     const n = Number($("advLen").value) || 12;
@@ -1256,6 +1324,7 @@ Reply with ONLY this JSON, nothing else:
     activeRules = ADV_RULES(n) + `\n\nTODAY: ${dateStr}\nSETTING: ${topic}` + (avoid.length ? `\nAVOID these character names (used before): ${avoid.join(", ")}` : "") + memBlock();
     prefs.sessions = ((prefs.sessions || []).concat([{ date: dateStr, theme: "워리어 모험: " + topic }])).slice(-10); save();
     enterPlay("🛡 워리어 모험: " + topic);
+    if (listenEngine() === "gemini" && !svadOk && !mic) { if (!(await ensureVad())) { if (!(await ensureMic())) $("listenEngine").value = "phone"; } }
     document.querySelector("#teacherBubble .who").innerHTML = '<span class="face">👩‍🏫</span> Miss Lily';
     document.querySelector(".bubble.hajun").hidden = false;
     wantListening = true;
@@ -1279,7 +1348,7 @@ Reply with ONLY this JSON, nothing else:
     else if (mode === "api") { const ok = !!apiKey(); $("apiField").classList.toggle("ok", ok); lines.push(ok ? `<span class="ok">✔ Miss Lily 두뇌: ${provider() === "gemini" ? "Gemini (무료)" : "Claude"} 키 있음</span>` : `<span class="bad">✘ API 키가 없어요 — 위 ① 칸에 붙여넣어야 Miss Lily가 말해요</span>`); }
     else lines.push(`<span class="bad">✘ 두뇌 연결 확인 중…</span>`);
     const gListen = $("listenEngine").value === "gemini";
-    if (gListen) lines.push(navigator.mediaDevices ? `<span class="ok">✔ 듣기: Gemini가 직접 (마이크 허용 창이 한 번 떠요)</span>` : `<span class="bad">✘ 이 브라우저는 마이크 녹음이 안 돼요</span>`);
+    if (gListen) lines.push(navigator.mediaDevices ? `<span class="ok">✔ 듣기: Gemini가 직접 + 음성 감지 모델 (소음은 무시, 말소리만)</span>` : `<span class="bad">✘ 이 브라우저는 마이크 녹음이 안 돼요</span>`);
     else lines.push(SR ? `<span class="ok">✔ 듣기: 폰 내장 인식</span>` : `<span class="bad">✘ 이 브라우저는 음성 인식이 안 돼요 — 크롬으로 열어 주세요</span>`);
     const phoneVoiceNeeded = $("voiceSource").value !== "gemini";
     if (!phoneVoiceNeeded) lines.push(`<span class="ok">✔ 목소리: ${$("voiceSource").value === "cloud" ? "Google Cloud" : "Gemini"} ${$("gVoice").value} (안 되면 폰 목소리로 자동 전환)</span>`);
