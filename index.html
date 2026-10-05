@@ -245,6 +245,10 @@
 
     <div class="field">
       <label for="voiceSource">③ Miss Lily 목소리</label>
+      <select id="accent" style="margin-bottom:8px">
+        <option value="us" selected>🇺🇸 미국 영어 발음</option>
+        <option value="gb">🇬🇧 영국 영어 발음</option>
+      </select>
       <select id="voiceSource" style="margin-bottom:8px">
         <option value="phone" selected>폰 내장 목소리 (무료)</option>
         <option value="gemini">Gemini 원어민 목소리 (Gemini API · 지금 한도 버그 있음)</option>
@@ -654,7 +658,7 @@ Reply with ONLY this JSON, nothing else:
   }
   async function brain(msgs, signal) {
     if (mode === "claude") {
-      return sample.json([{ role: "user", content: activeRules }, ...msgs], { modelTier: "quick", cache: false, signal });
+      return sample.json([{ role: "user", content: activeRules + accentNote() }, ...msgs], { modelTier: "quick", cache: false, signal });
     }
     const key = apiKey();
     if (!key) throw { code: "no_key" };
@@ -662,7 +666,7 @@ Reply with ONLY this JSON, nothing else:
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST", signal,
       headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-      body: JSON.stringify({ model: $("model").value, max_tokens: 300, system: activeRules, messages: msgs })
+      body: JSON.stringify({ model: $("model").value, max_tokens: 300, system: activeRules + accentNote(), messages: msgs })
     });
     if (r.status === 401 || r.status === 403) throw { code: "bad_key" };
     if (r.status === 429) throw { code: "rate_limited" };
@@ -680,7 +684,7 @@ Reply with ONLY this JSON, nothing else:
       method: "POST", signal,
       headers: { "content-type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: activeRules }] },
+        system_instruction: { parts: [{ text: activeRules + accentNote() }] },
         contents: msgs.map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
         generationConfig
       })
@@ -715,8 +719,17 @@ Reply with ONLY this JSON, nothing else:
     voices = all.filter(isEn);
     const sel = $("voice"); sel.innerHTML = "";
     if (!voices.length) { sel.append(new Option("영어 원어민 목소리 없음", "")); return true; }
+    const wantGB = $("accent") && $("accent").value === "gb";
     const rank = (v) => {
-      const n = v.name, us = /en[-_]US/i.test(v.lang);
+      const n = v.name, us = /en[-_]US/i.test(v.lang), gb = /en[-_]GB/i.test(v.lang);
+      if (wantGB) {
+        if (gb && /Natural/i.test(n) && /Sonia|Libby|Maisie|Mia/i.test(n)) return 0;
+        if (gb && /Natural/i.test(n)) return 1;
+        if (gb && /network/i.test(n)) return 2;
+        if (gb && /Google UK English Female|Serena|Kate|Stephanie|Martha/i.test(n)) return 3;
+        if (gb) return 4;
+        return 10 + (us ? 0 : 1);
+      }
       if (/Natural/i.test(n) && us && /Aria|Jenny|Ava|Emma|Michelle/i.test(n)) return 0;
       if (/Natural/i.test(n) && us) return 1;
       if (/Natural/i.test(n)) return 2;
@@ -728,7 +741,8 @@ Reply with ONLY this JSON, nothing else:
     };
     voices.sort((a, b) => rank(a) - rank(b));
     voices.forEach(v => sel.append(new Option(`${v.name} (${v.lang})`, v.name)));
-    sel.value = (prefs.voice && voices.some(v => v.name === prefs.voice)) ? prefs.voice : voices[0].name;
+    const saved = prefs.voice && voices.find(v => v.name === prefs.voice);
+    sel.value = (saved && (/en[-_]GB/i.test(saved.lang) === wantGB)) ? saved.name : voices[0].name;
     return true;
   }
   function currentVoice() { return voices.find(v => v.name === $("voice").value) || null; }
@@ -773,7 +787,15 @@ Reply with ONLY this JSON, nothing else:
   function quotaInfo(j) {
     try { const v = (j.error.details || []).flatMap(d => d.violations || [])[0]; return v ? ` [${v.quotaId || v.quotaMetric}${v.quotaDimensions && v.quotaDimensions.model ? " · " + v.quotaDimensions.model : ""} = ${v.quotaValue}]` : ""; } catch { return ""; }
   }
+  const accent = () => ($("accent").value === "gb" ? "gb" : "us");
+  const accentLocale = () => accent() === "gb" ? "en-GB" : "en-US";
+  function accentNote() {
+    return accent() === "gb"
+      ? `\n\nACCENT & DIALECT: You are a teacher from southern England. Use natural British English everywhere — vocabulary (mum, biscuit, football, holiday, rubbish, garden, trousers, sweets, lift), spelling (colour, favourite, mum) and expressions ("Brilliant!", "Well done!", "Lovely!", "Shall we…?"). The "fix" sentence must use British vocabulary too.`
+      : `\n\nACCENT & DIALECT: Use natural American English (mom, cookie, soccer, vacation).`;
+  }
   async function geminiTtsFetch(text, style, signal, attempt) {
+    style = (style || "") + (accent() === "gb" ? ", with a natural, clear Southern British (London) accent" : ", with a natural American accent");
     const key = geminiKey();
     if (!key) throw { code: "no_key" };
     const model = TTS_MODELS[ttsModelIdx];
@@ -821,10 +843,11 @@ Reply with ONLY this JSON, nothing else:
   // ---- Google Cloud Text-to-Speech (Chirp 3 HD): same key, same billing, separate quota system ----
   async function cloudTtsFetch(text, rate, attempt) {
     const key = geminiKey(); if (!key) throw { code: "no_key" };
-    const voiceName = attempt ? "en-US-Neural2-F" : `en-US-Chirp3-HD-${$("gVoice").value}`;
+    const loc = accentLocale();
+    const voiceName = attempt ? (loc === "en-GB" ? "en-GB-Neural2-A" : "en-US-Neural2-F") : `${loc}-Chirp3-HD-${$("gVoice").value}`;
     const r = await fetch("https://texttospeech.googleapis.com/v1/text:synthesize", {
       method: "POST", headers: { "content-type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify({ input: { text }, voice: { languageCode: "en-US", name: voiceName }, audioConfig: { audioEncoding: "MP3", speakingRate: rate || 1 } })
+      body: JSON.stringify({ input: { text }, voice: { languageCode: loc, name: voiceName }, audioConfig: { audioEncoding: "MP3", speakingRate: rate || 1 } })
     });
     if (!r.ok) {
       const j = await r.json().catch(() => ({})); const msg = ((j.error && j.error.message) || "").slice(0, 200);
@@ -1380,6 +1403,8 @@ Reply with ONLY this JSON, nothing else:
   $("quit").addEventListener("click", () => { fillModels(); });   // restore the chosen model after a session-only fallback
   ["input", "change"].forEach(ev => $("apiKey").addEventListener(ev, () => { prefs["key_" + provider()] = apiKey(); save(); setDiag(); }));
   $("testVoice").addEventListener("click", () => { loadVoices(); if (!currentVoice()) { setDiag(); return; } speakPhone("Hey Hajun! I'm Miss Lily. Are you ready to play?"); });
+  if (prefs.accent) { $("accent").value = prefs.accent; loadVoices(); }
+  $("accent").addEventListener("change", () => { prefs.accent = $("accent").value; save(); loadVoices(); setDiag(); });
   function applyVoiceSource() {
     const v = $("voiceSource").value, g = v !== "phone";
     $("phoneVoiceRow").hidden = g; $("geminiVoiceRow").hidden = !g;
@@ -1639,7 +1664,7 @@ Reply with ONLY this JSON, nothing else:
   async function pronCheck(wav, target, heard, practice) {
     const parts = [];
     if (wav) parts.push({ inlineData: { mimeType: "audio/wav", data: u8ToB64(wav) } });
-    parts.push({ text: `TASK: PRONUNCIATION CHECK for Hajun, a 7-year-old Korean boy learning English. Be kind; judge like a friendly teacher of young kids, not a strict exam — only mark a word not ok if a native listener would really have trouble with it. Target sentence: "${target}". ${heard ? `The speech recognizer heard: "${heard}".` : ""} ${wav ? (practice ? "The recording is Hajun trying to say the target sentence." : "The recording is Hajun's original answer; he meant the target sentence.") : "There is no recording: mark every word ok and give stars 0; only explain grammar."}
+    parts.push({ text: `TASK: PRONUNCIATION CHECK for Hajun, a 7-year-old Korean boy learning English. Be kind; judge like a friendly teacher of young kids, not a strict exam — only mark a word not ok if a native listener would really have trouble with it. Accept British or American pronunciation equally. Target sentence: "${target}". ${heard ? `The speech recognizer heard: "${heard}".` : ""} ${wav ? (practice ? "The recording is Hajun trying to say the target sentence." : "The recording is Hajun's original answer; he meant the target sentence.") : "There is no recording: mark every word ok and give stars 0; only explain grammar."}
 Reply ONLY with JSON: {"words":[{"w":"<each word of the target sentence, in order>","ok":true,"tip_ko":"<only if not ok: a very short Korean tip a parent can say, e.g. 'th는 혀끝을 이 사이에'>"}],"stars":<0-3, 3 = clear and close to the target>,"praise_ko":"<one short Korean encouragement>","grammar_ko":"<if what he said differs from the target: one short Korean explanation of the grammar point, else empty>"}` });
     return gemJSON(parts, { model: audioModel() });
   }
@@ -1941,7 +1966,7 @@ Give 3-5 phrases and up to 5 words.` }]);
     else if (gListen) lines.push(navigator.mediaDevices ? `<span class="ok">✔ 듣기: Gemini가 직접 + 음성 감지 모델 (소음은 무시, 말소리만)</span>` : `<span class="bad">✘ 이 브라우저는 마이크 녹음이 안 돼요</span>`);
     else lines.push(SR ? `<span class="ok">✔ 듣기: 폰 내장 인식</span>` : `<span class="bad">✘ 이 브라우저는 음성 인식이 안 돼요 — 크롬으로 열어 주세요</span>`);
     const phoneVoiceNeeded = $("voiceSource").value === "phone";
-    if (!phoneVoiceNeeded) lines.push(`<span class="ok">✔ 목소리: ${$("voiceSource").value === "cloud" ? "Google Cloud" : "Gemini"} ${$("gVoice").value} (안 되면 폰 목소리로 자동 전환)</span>`);
+    if (!phoneVoiceNeeded) lines.push(`<span class="ok">✔ 목소리: ${$("voiceSource").value === "cloud" ? "Google Cloud" : "Gemini"} ${$("gVoice").value} · ${accent() === "gb" ? "🇬🇧 영국" : "🇺🇸 미국"} 발음 (안 되면 폰 목소리로 자동 전환)</span>`);
     else if (!synth) lines.push(`<span class="bad">✘ 음성 엔진 없음</span>`);
     else if (!v) lines.push(`<span class="bad">✘ 영어 원어민 목소리가 없어요 — 폰 설정 → 일반 → 텍스트 음성 변환에서 영어(미국) 음성 데이터를 설치해 주세요</span>`);
     else lines.push(`<span class="ok">✔ 목소리: ${v.name}</span>` + (/Android/i.test(navigator.userAgent) && !/network|Google/i.test(v.name) ? ` — 폰 설정 → 텍스트 음성 변환에서 "Google 음성 서비스"를 기본으로 하고 영어(미국) 고품질 음성을 설치하면 더 자연스러워요` : ""));
