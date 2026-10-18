@@ -104,6 +104,9 @@ input[type=range] { accent-color: var(--lamp); width: 100%; margin: 4px 0 0; }
 .small { padding: 7px 12px; font-size: 13.5px; flex: none; }
 .ghost:disabled { opacity: .6; }
 input.text { width: 100%; background: var(--night); color: var(--moon); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.elpanel { border: 1px solid var(--line); border-radius: 12px; background: var(--ink); padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+.vbtns { display: flex; gap: 6px; flex: none; }
+.chosen { color: var(--lamp); border-color: var(--lamp); font-weight: 600; }
 .bank { display: flex; flex-direction: column; gap: 8px; }
 .install { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; margin-top: 6px; }
 .installbtn { border-color: var(--lamp); color: var(--lamp); font-weight: 600; }
@@ -159,7 +162,7 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
   <header>
     <div class="when" id="when"></div>
     <h1>밤의 쉼표<span class="comma">,</span></h1>
-    <p class="lede">감사와 기도, 명상과 이야기, 하준이 영어 잠자리까지 열여섯 가지 세션이에요. 캄, 헤드스페이스, 마보, 할로우가 잠들기 명상을 만드는 방식을 따라 만들었어요. 목소리는 구글 제미나이 성우 목소리를 처음 한 번 받아 와서 휴대폰에 저장해 두고, 음악과 빗소리, 파도 소리는 그 자리에서 만들어 틀어요.</p>
+    <p class="lede">감사와 기도, 명상과 이야기, 하준이 영어 잠자리까지 열일곱 가지 세션이에요. 캄, 헤드스페이스, 마보, 할로우가 잠들기 명상을 만드는 방식을 따라 만들었어요. 목소리는 일레븐랩스나 구글 제미나이 성우 목소리를 처음 한 번 받아 와서 휴대폰에 저장해 두고, 음악과 빗소리, 파도 소리는 그 자리에서 만들어 틀어요.</p>
     <div class="install" id="install">
       <button class="ghost installbtn" id="installBtn" type="button">휴대폰에 앱으로 설치하기</button>
       <p class="hint" id="installHint">설치하면 홈 화면에 달 아이콘이 생기고, 주소창 없이 앱처럼 열려요.</p>
@@ -180,6 +183,28 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
     <div>
       <div class="fieldlabel">읽어 주는 목소리 · 들어 보고 고르세요</div>
       <div class="voices" id="voices" role="radiogroup" aria-label="목소리 고르기"></div>
+    </div>
+    <div class="elpanel" id="elPanel" hidden>
+      <div class="field">
+        <label class="fieldlabel" for="elkey">일레븐랩스 API 키</label>
+        <input class="text" id="elkey" type="password" autocomplete="off" placeholder="sk_… 로 시작하는 키">
+        <p class="hint">elevenlabs.io에 로그인 → 개발자(Developers) 메뉴 → API 키 만들기 → 복사해서 여기에 붙여 넣어요. 키는 이 휴대폰에만 저장돼요.</p>
+      </div>
+      <div class="field">
+        <label class="fieldlabel" for="elModel">음성 모델</label>
+        <select id="elModel"></select>
+      </div>
+      <div>
+        <div class="fieldlabel" id="elTabsL">성우 고르기</div>
+        <div class="chips" id="elTabs" role="group" aria-labelledby="elTabsL">
+          <button class="chip" type="button" data-lang="ko" aria-pressed="true">한국어 목소리</button>
+          <button class="chip" type="button" data-lang="en" aria-pressed="false">하준이 영어 목소리</button>
+        </div>
+      </div>
+      <button class="ghost" id="elFind" type="button">성우 목록 불러오기</button>
+      <p class="hint" id="elChosen"></p>
+      <p class="hint" id="elState" aria-live="polite"></p>
+      <div class="voices" id="elList"></div>
     </div>
     <div class="settings" id="phoneOpts" hidden>
       <div class="field">
@@ -263,6 +288,56 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
 /* 세션 대본. [문장, 뒤에 쉬는 초, 'f'=간격 고정] / {ph:단계 이름} / {pool:[...], n:[최소,최대], p:쉬는 초} */
 const F = 'f';
 const SESSIONS = [
+  {
+    id: 'morning', group: 'faith', awake: true, title: '5분 감사 기도',
+    desc: '좋으신 하나님, 나를 늘 좋은 곳으로 이끄시는 하나님을 떠올리고, 내 삶의 복을 세고, 이겨낼 힘을 주시고 곁에서 지키시는 하나님께 감사하는 짧은 기도예요. 잠드는 용이 아니라 깨어서 하는 기도라 아침이나 하루 중 언제든 좋아요.',
+    ref: '짧은 감사 묵상 · 기도',
+    durs: [5, 10], def: 5, music: 'piano', nature: 'none', end: 'fade', narr: 0.85, grow: 1.3,
+    doneMsg: '좋으신 하나님과 함께, 좋은 하루 보내세요.',
+    script: [
+      { ph: '머무르기' },
+      ['편안한 자세로 앉아, 눈을 감아 볼게요.', 4],
+      ['숨을 깊게 들이쉬고, 천천히 내쉬어요.', 6],
+      ['지금부터 {min}분, 좋으신 하나님 앞에 머물러요.', 6],
+      { ph: '좋으신 하나님' },
+      ['여호와께 감사하라. 그는 선하시며 그 인자하심이 영원함이로다.', 8],
+      ['하나님은 좋으신 분이에요. 어제도, 오늘도, 앞으로도.', 10],
+      { ph: '이끄시는 하나님' },
+      ['돌아보면, 하나님은 늘 나를 좋은 곳으로 이끄셨어요.', 4],
+      ['그때는 몰랐던 길도, 지나고 보니 선한 길이었지요. 그런 순간 하나를 떠올려 보세요.', 16],
+      ['우리가 알거니와 하나님을 사랑하는 자, 곧 그의 뜻대로 부르심을 입은 자들에게는 모든 것이 합력하여 선을 이루느니라.', 10],
+      { ph: '내 삶의 복' },
+      ['이제 내 삶에 주신 복을 떠올려 볼게요.', 4],
+      {
+        pool: [
+          '함께 사는 가족, 아이들의 웃음소리가 복이에요.',
+          '운동하고 땀 흘릴 수 있는 튼튼한 몸이 복이에요.',
+          '나에게 맡겨진 일, 누군가를 도울 수 있는 일이 복이에요.',
+          '나를 낳고 길러 주신 부모님이 복이에요.',
+          '곁에서 함께 웃어 주는 좋은 사람들이 복이에요.',
+          '날마다 새 하루가 주어진다는 것이 복이에요.',
+          '함께 기도하는 믿음의 식구들이 복이에요.',
+          '배우고 깨닫고 자랄 수 있는 마음이 복이에요.',
+          '지금 숨 쉬고 있는 이 생명이 복이에요.'
+        ], n: [3, 6], p: 9
+      },
+      ['내 잔이 넘치나이다. 받은 복이 참 많아요.', 10],
+      { ph: '이겨낼 힘' },
+      ['오늘 마주할 어려움이 있다면, 잠시 떠올려 보세요.', 8],
+      ['하나님은 그것을 이겨낼 힘을 이미 주셨어요.', 4],
+      ['내게 능력 주시는 자 안에서 내가 모든 것을 할 수 있느니라.', 10],
+      { ph: '지키시는 하나님' },
+      ['두려워하지 말라. 내가 너와 함께 함이라. 놀라지 말라. 나는 네 하나님이 됨이라. 내가 너를 굳세게 하리라. 참으로 너를 도와 주리라.', 8],
+      ['하나님은 지금도 내 곁에 계세요. 오늘 어디를 가든, 그 손이 나를 붙들고 지키세요.', 12],
+      { ph: '기도' },
+      ['함께 기도할게요.', 3],
+      ['좋으신 하나님, 저를 늘 좋은 곳으로 이끌어 주셔서 감사합니다.', 4, F],
+      ['제 삶에 부어 주신 많은 복을 기억합니다.', 4, F],
+      ['어떤 일 앞에서도 이겨낼 힘을 주시고, 언제나 곁에서 지켜 주시니 두렵지 않습니다.', 4, F],
+      ['받은 복을 나누며, 감사하며 살게 하소서. 예수님의 이름으로 기도합니다.', 3, F],
+      ['아멘.', 0]
+    ]
+  },
   {
     id: 'gratitude', group: 'faith', title: '감사하며 잠들기',
     desc: '오늘 고마웠던 것을 하나씩 떠올려요. 말 사이가 점점 길어지고 목소리가 잦아들다가, 마지막엔 음악만 남아요. 떠올릴 거리는 들을 때마다 조금씩 바뀌어요.',
@@ -883,7 +958,7 @@ const SESSIONS = [
   }
 ];
 const GROUPS = [
-  ['faith', '감사와 기도', '좋으신 하나님께 감사하며 잠들어요'],
+  ['faith', '감사와 기도', '좋으신 하나님께 감사하며 기도하고 잠들어요'],
   ['rest', '몸과 마음 쉬기', '명상, 이야기, 낮잠, 소리'],
   ['kids', '하준이 영어 잠자리', 'English bedtime for kids']
 ];
@@ -898,7 +973,7 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
-const prefs = Object.assign({ gvoice: 'Sulafat', gkey: '', voice: '', rate: 0.85, pitch: 0.95, voiceVol: 1, musicVol: 0.55, subs: false, keep: false, durs: {}, snd: {}, mus: {}, nat: {} }, store.get('swim.prefs', {}));
+const prefs = Object.assign({ gvoice: 'Sulafat', gkey: '', elKey: '', elKo: null, elEn: null, elModel: 'eleven_v4', lastGemini: 'Sulafat', voice: '', rate: 0.85, pitch: 0.95, voiceVol: 1, musicVol: 0.55, subs: false, keep: false, durs: {}, snd: {}, mus: {}, nat: {} }, store.get('swim.prefs', {}));
 const savePrefs = () => store.set('swim.prefs', prefs);
 
 const MUSIC = { pad: '잔잔한 앰비언트', piano: '포근한 피아노', harp: '별빛 하프', hymn: '찬송 오르간', musicbox: '오르골 자장가', shuffle: '그날그날 다르게', none: '음악 없음' };
@@ -912,6 +987,7 @@ function recommendId() {
   const h = new Date().getHours();
   if (h >= 11 && h < 18) return 'nap';
   if (h >= 0 && h < 5) return 'sos';
+  if (h >= 5 && h < 11) return 'morning';
   return 'gratitude';
 }
 function renderWhen() {
@@ -1044,15 +1120,16 @@ const STYLES = {
   prayer: 'Voice direction: a Korean woman leading a warm bedtime prayer of thanksgiving and reading Scripture, speaking Korean. Very slow, soft and low, tender and reverent, full of gratitude, peace and quiet hope, close to the microphone, almost a whisper but clear. Unhurried breaths between phrases. Never bright, preachy or dramatic.',
   story: 'Voice direction: a Korean woman telling a gentle bedtime story, speaking Korean. Slow, soft and warm, softly descriptive, close to the microphone, calm and intimate, like reading to someone drifting off to sleep. Never dramatic or cheerful.',
   kid: 'Voice direction: a warm, gentle American mom tucking her seven-year-old son into bed, speaking English. Slow, soft, cozy and loving, simple clear words, close to the microphone, calm and reassuring. Never loud, excited or sing-song.',
+  morning: 'Voice direction: a Korean woman leading a short prayer of thanksgiving, speaking Korean. Calm, warm and gently hopeful, unhurried and peaceful, soft but awake and clear, not a whisper and not sleepy. Quiet confidence in a good God, full of gratitude, close to the microphone. Never bright, preachy or dramatic.',
   wake: 'Voice direction: a Korean woman gently waking someone from a short nap, speaking Korean. Soft and warm, a little brighter than a whisper, still slow and kind.'
 };
 const STYLE_LATE = ' Now even slower and quieter, drowsy, letting the ends of phrases fade softly.';
 const TTS_MODELS = ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts', 'gemini-2.5-flash-preview-tts'];
 let ttsModelIdx = 0, ttsExhaustedAt = 0;
 const sleepMs = (ms) => new Promise(r => setTimeout(r, ms));
-const clipKey = (voice, tier, text) => voice + '|' + tier + '|' + text;
+const clipKey = (voice, tier, text) => String(voice).startsWith('el:') ? voice + '|' + text : voice + '|' + tier + '|' + text;
 const FAITH = ['prayer', 'goodgod', 'blessings', 'blessword'];
-function kindOf(s) { return s.lang === 'en' ? 'kid' : FAITH.includes(s.id) ? 'prayer' : s.id === 'story' ? 'story' : 'calm'; }
+function kindOf(s) { return s.lang === 'en' ? 'kid' : s.awake ? 'morning' : FAITH.includes(s.id) ? 'prayer' : s.id === 'story' ? 'story' : 'calm'; }
 function fillText(t, T) { return t.replace('{min}', String(T)); }
 function styleFor(tier) { const [kind, late] = tier.split('-'); return (STYLES[kind] || STYLES.calm) + (late ? STYLE_LATE : ''); }
 function dojoKey() { try { const d = JSON.parse(localStorage.getItem('dojo-live') || '{}'); return String(d.key_gemini || '').trim(); } catch (e) { return ''; } }
@@ -1156,6 +1233,10 @@ async function cloudSynth(text, voice, key, tier) {
 }
 function errCopy(e) {
   if (!e) return '';
+  if (e.code === 'el_key') return '일레븐랩스 키가 없거나 맞지 않아요. 키를 다시 붙여 넣어 주세요.';
+  if (e.code === 'el_quota') return '일레븐랩스 크레딧을 다 썼어요. elevenlabs.io에서 요금제를 올리거나 다음 달까지 기다려 주세요.';
+  if (e.code === 'el_blocked') return '일레븐랩스가 무료 계정의 사용을 막았어요. 유료 요금제(Starter)로 올리면 풀려요.';
+  if (e.code === 'el_paid') return '이 목소리는 일레븐랩스 유료 요금제에서만 쓸 수 있어요. (' + (e.message || '') + ')';
   if (e.code === 'no_key') return '제미나이 키가 없어요. 위 칸에 붙여 넣어 주세요.';
   if (e.code === 'bad_key') return '제미나이 키가 맞지 않아요. 키를 다시 확인해 주세요.';
   if (e.code === 'rate_limited') return '제미나이 목소리 사용 한도에 잠시 걸렸어요. 조금 뒤에 다시 하면 이어서 받아 와요. (' + (e.message || '') + ')';
@@ -1178,18 +1259,161 @@ function initSettings() {
     speechSynthesis.addEventListener ? speechSynthesis.addEventListener('voiceschanged', loadVoices) : (speechSynthesis.onvoiceschanged = loadVoices);
   } else { const sel = $('#voice'); sel.innerHTML = '<option value="">사용할 수 없음</option>'; sel.disabled = true; }
   renderVoices();
+  initEleven();
   renderKey();
   $('#gkey').addEventListener('input', (e) => { prefs.gkey = e.target.value.trim(); savePrefs(); renderKey(true); });
   $('#bankBtn').addEventListener('click', toggleBank);
   refreshBankState();
 }
+/* ---------- 일레븐랩스 성우 목소리 ---------- */
+const EL_API = 'https://api.elevenlabs.io';
+const EL_MODELS = { eleven_v4: 'v4 · 가장 자연스러움', eleven_multilingual_v2: 'v2 · 안정적, 조금 천천히' };
+const EL_WORDS = { calm: '차분함', soft: '부드러움', warm: '따뜻함', gentle: '다정함', soothing: '편안함', relaxed: '편안함', mature: '성숙함', confident: '또렷함', casual: '친근함', professional: '전문 성우', deep: '낮은 톤', young: '젊은', middle_aged: '중년', old: '나이 든', narrative_story: '낭독', conversational: '대화', informative_educational: '설명', characters_animation: '캐릭터', social_media: 'SNS', entertainment_tv: '방송', advertisement: '광고', meditation: '명상', audiobook: '오디오북' };
+const SOFT_HINT = /calm|soft|warm|gentle|sooth|relax|medit|sleep|narrat|audiobook/i;
+let elTab = 'ko', elCache = { ko: null, en: null };
+function elHeaders(extra) { return Object.assign({ 'xi-api-key': (prefs.elKey || '').trim() }, extra || {}); }
+async function elError(r) {
+  const j = await r.json().catch(() => ({}));
+  const d = j.detail || {}; const st = String(d.status || d.code || ''), msg = String(d.message || (typeof j.detail === 'string' ? j.detail : '') || '').slice(0, 160);
+  if (/quota|credit/i.test(st + msg)) return { code: 'el_quota', fatal: true, message: msg };
+  if (r.status === 401 && /unusual|abuse/i.test(st + msg)) return { code: 'el_blocked', fatal: true, message: msg };
+  if (r.status === 401) return { code: 'el_key', fatal: true, message: msg };
+  if (r.status === 402 || /paid|subscription|tier/i.test(st + msg)) return { code: 'el_paid', fatal: true, message: msg };
+  if (r.status === 429) return { code: 'rate_limited', message: msg };
+  return { code: 'tts_failed', message: 'ElevenLabs ' + r.status + ' ' + msg };
+}
+async function elSynth(text, voiceId, model) {
+  if (!(prefs.elKey || '').trim()) throw { code: 'el_key', fatal: true };
+  const vs = model === 'eleven_multilingual_v2'
+    ? { stability: 0.6, similarity_boost: 0.75, style: 0, use_speaker_boost: true, speed: 0.88 }
+    : { stability: 0.5, similarity_boost: 0.75 };
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let r;
+    try {
+      r = await fetch(`${EL_API}/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_44100_128`, {
+        method: 'POST', headers: elHeaders({ 'content-type': 'application/json', accept: 'audio/mpeg' }),
+        body: JSON.stringify({ text, model_id: model, voice_settings: vs })
+      });
+    } catch (e) { throw { code: 'network', message: '인터넷 연결을 확인해 주세요.' }; }
+    if (r.ok) return await r.arrayBuffer();
+    const err = await elError(r);
+    if ((err.code === 'rate_limited' || r.status >= 500) && attempt === 0) { await sleepMs(3000); continue; }
+    throw err;
+  }
+}
+function isEl(v) { return String(v).startsWith('el:'); }
+function voiceFor(lang) {
+  if (prefs.gvoice === 'eleven') {
+    const c = lang === 'en' ? prefs.elEn : prefs.elKo;
+    if (c && c.id && (prefs.elKey || '').trim()) return 'el:' + c.id + ':' + (prefs.elModel || 'eleven_v4');
+    return prefs.lastGemini || 'Sulafat';
+  }
+  return prefs.gvoice;
+}
+function synthAny(text, tier, v) {
+  if (isEl(v)) { const [, id, model] = v.split(':'); return elSynth(text, id, model); }
+  return synth(text, tier, v);
+}
+function langOfTier(tier) { return String(tier).startsWith('kid') ? 'en' : 'ko'; }
+function elWords(v) {
+  const bits = [v.age, v.descriptive, v.use_case].filter(Boolean).map(x => EL_WORDS[x] || x.replace(/_/g, ' '));
+  return [...new Set(bits)].join(' · ');
+}
+async function elLoad(lang) {
+  const st = $('#elState'), list = $('#elList');
+  if (!(prefs.elKey || '').trim()) { st.textContent = '먼저 위 칸에 일레븐랩스 API 키를 붙여 넣어 주세요.'; list.innerHTML = ''; return; }
+  if (!elCache[lang]) {
+    st.textContent = '목소리 목록을 불러오는 중…';
+    const q = lang === 'en' ? 'language=en&accent=american&gender=female' : 'language=ko&gender=female';
+    try {
+      const r = await fetch(`${EL_API}/v1/shared-voices?${q}&page_size=40&sort=usage_character_count_1y`, { headers: elHeaders() });
+      if (!r.ok) { const e = await elError(r); st.textContent = errCopy(e); return; }
+      const j = await r.json();
+      const vs = (j.voices || []).slice();
+      vs.sort((a, b) => (SOFT_HINT.test([b.descriptive, b.use_case, b.description].join(' ')) ? 1 : 0) - (SOFT_HINT.test([a.descriptive, a.use_case, a.description].join(' ')) ? 1 : 0));
+      elCache[lang] = vs;
+    } catch (e) { st.textContent = '목록을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'; return; }
+  }
+  renderElList(lang);
+}
+function renderElList(lang) {
+  const st = $('#elState'), list = $('#elList'), vs = elCache[lang] || [];
+  const chosen = lang === 'en' ? prefs.elEn : prefs.elKo;
+  st.textContent = vs.length ? (lang === 'en' ? '하준이 영어 세션을 읽을 미국 여자 성우예요.' : '한국어 여자 성우예요. 차분한 목소리를 위에 모았어요.') + ' "샘플"은 크레딧 없이 들을 수 있어요.' : '조건에 맞는 목소리가 없어요.';
+  list.innerHTML = '';
+  vs.forEach((v) => {
+    const row = document.createElement('div'); row.className = 'vrow';
+    const info = document.createElement('div'); info.className = 'vpick';
+    const n = document.createElement('span'); n.className = 'vname'; n.textContent = v.name;
+    const t = document.createElement('span'); t.className = 'vsub'; t.textContent = elWords(v);
+    info.append(n, t);
+    const btns = document.createElement('div'); btns.className = 'vbtns';
+    const pv = document.createElement('button'); pv.type = 'button'; pv.className = 'ghost small'; pv.textContent = '샘플';
+    pv.addEventListener('click', () => {
+      const vl = (v.verified_languages || []).find(x => x.language === lang && x.preview_url);
+      const url = (vl && vl.preview_url) || v.preview_url; if (!url) return;
+      if (sampleAudio) { try { sampleAudio.pause(); } catch (e) {} }
+      sampleAudio = new Audio(url); sampleAudio.play().catch(() => hint('샘플을 틀지 못했어요.'));
+    });
+    const pick = document.createElement('button'); pick.type = 'button'; pick.className = 'ghost small';
+    const isChosen = chosen && chosen.src === v.voice_id;
+    pick.textContent = isChosen ? '✓ 고름' : '이 목소리로';
+    if (isChosen) pick.classList.add('chosen');
+    pick.addEventListener('click', () => elChoose(lang, v, pick));
+    btns.append(pv, pick); row.append(info, btns); list.appendChild(row);
+  });
+}
+async function elChoose(lang, v, btn) {
+  btn.disabled = true; btn.textContent = '추가하는 중…';
+  let id = v.voice_id;
+  if (!v.is_added_by_user) {
+    try {
+      const r = await fetch(`${EL_API}/v1/voices/add/${encodeURIComponent(v.public_owner_id)}/${encodeURIComponent(v.voice_id)}`, {
+        method: 'POST', headers: elHeaders({ 'content-type': 'application/json' }), body: JSON.stringify({ new_name: '밤의 쉼표 ' + v.name })
+      });
+      if (!r.ok) { const e = await elError(r); btn.disabled = false; btn.textContent = '이 목소리로'; $('#elState').textContent = errCopy(e); return; }
+      const j = await r.json().catch(() => ({})); if (j.voice_id) id = j.voice_id;
+      v.is_added_by_user = true;
+    } catch (e) { btn.disabled = false; btn.textContent = '이 목소리로'; $('#elState').textContent = '목소리를 추가하지 못했어요. 인터넷 연결을 확인해 주세요.'; return; }
+  }
+  const c = { id, src: v.voice_id, name: v.name };
+  if (lang === 'en') prefs.elEn = c; else prefs.elKo = c;
+  savePrefs(); renderElList(lang); renderElChosen(); refreshBankState();
+}
+function renderElChosen() {
+  const ko = prefs.elKo ? prefs.elKo.name : '아직 안 고름', en = prefs.elEn ? prefs.elEn.name : '아직 안 고름 (제미나이 목소리로 읽어요)';
+  $('#elChosen').textContent = `한국어: ${ko} · 하준이 영어: ${en}`;
+}
+function initEleven() {
+  $('#elkey').value = prefs.elKey || '';
+  $('#elkey').addEventListener('input', (e) => { prefs.elKey = e.target.value.trim(); savePrefs(); elCache = { ko: null, en: null }; refreshBankState(); });
+  const ms = $('#elModel');
+  Object.entries(EL_MODELS).forEach(([k, v]) => { const o = document.createElement('option'); o.value = k; o.textContent = v; ms.appendChild(o); });
+  ms.value = EL_MODELS[prefs.elModel] ? prefs.elModel : 'eleven_v4';
+  ms.addEventListener('change', () => { prefs.elModel = ms.value; savePrefs(); refreshBankState(); });
+  document.querySelectorAll('#elTabs .chip').forEach((b) => b.addEventListener('click', () => {
+    elTab = b.dataset.lang;
+    document.querySelectorAll('#elTabs .chip').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    elLoad(elTab);
+  }));
+  $('#elFind').addEventListener('click', () => elLoad(elTab));
+  renderElChosen();
+  $('#elPanel').hidden = prefs.gvoice !== 'eleven';
+}
+
+/* ---------- 목소리 고르기 ---------- */
 function renderVoices() {
   const box = $('#voices'); box.innerHTML = '';
-  GVOICES.concat([['phone', '휴대폰 기본 목소리', '기계음 · 인터넷 없이']]).forEach(([id, name, sub]) => {
+  [['eleven', '일레븐랩스 성우 목소리', '사람 목소리와 가장 비슷 · 키 필요']]
+    .concat(GVOICES.map(([id, name]) => [id, '제미나이 ' + name, id]))
+    .concat([['phone', '휴대폰 기본 목소리', '기계음 · 인터넷 없이']]).forEach(([id, name, sub]) => {
     const row = document.createElement('div'); row.className = 'vrow';
     const lab = document.createElement('label'); lab.className = 'vpick';
     const r = document.createElement('input'); r.type = 'radio'; r.name = 'gv'; r.value = id; r.id = 'gv-' + id; r.checked = prefs.gvoice === id;
-    r.addEventListener('change', () => { prefs.gvoice = id; savePrefs(); $('#phoneOpts').hidden = id !== 'phone'; refreshBankState(); });
+    r.addEventListener('change', () => {
+      prefs.gvoice = id; if (GVOICES.some(g => g[0] === id)) prefs.lastGemini = id; savePrefs();
+      $('#phoneOpts').hidden = id !== 'phone'; $('#elPanel').hidden = id !== 'eleven'; refreshBankState();
+    });
     const t = document.createElement('span'); t.className = 'vname'; t.textContent = name;
     const s2 = document.createElement('span'); s2.className = 'vsub'; s2.textContent = sub;
     lab.append(r, t, s2);
@@ -1215,11 +1439,16 @@ async function playSample(id, btn) {
     if (!TTS) { hint('이 브라우저에서는 휴대폰 기본 목소리를 쓸 수 없어요.'); return; }
     speechSynthesis.speak(makeUtter(SAMPLE_TEXT, 0)); return;
   }
-  const k = clipKey(id, 'sample', SAMPLE_TEXT);
+  let v = id;
+  if (id === 'eleven') {
+    if (!prefs.elKo || !(prefs.elKey || '').trim()) { hint('아래 일레븐랩스 칸에서 키를 넣고 한국어 목소리를 먼저 골라 주세요.'); return; }
+    v = 'el:' + prefs.elKo.id + ':' + (prefs.elModel || 'eleven_v4');
+  }
+  const k = clipKey(v, 'sample', SAMPLE_TEXT);
   let buf = await IDB.get(k);
   if (!buf) {
     const old = btn.textContent; btn.textContent = '만드는 중…'; btn.disabled = true;
-    try { buf = await synth(SAMPLE_TEXT, 'calm', id); await IDB.put(k, buf); } catch (e) { hint(errCopy(e)); }
+    try { buf = await synthAny(SAMPLE_TEXT, 'calm', v); await IDB.put(k, buf); } catch (e) { hint(errCopy(e)); }
     btn.textContent = old; btn.disabled = false;
     if (!buf) return;
   }
@@ -1232,7 +1461,7 @@ function allLines() {
     const kind = kindOf(s), L = s.script.length;
     s.durs.forEach((T) => {
       s.script.forEach((st, j) => {
-        const tier = kind + (j / L > 0.62 ? '-late' : '');
+        const tier = kind + (!s.awake && j / L > 0.62 ? '-late' : '');
         if (Array.isArray(st)) { const t = fillText(st[0], T); out.set(tier + '|' + t, { say: t, tier }); }
         else if (st.pool) st.pool.forEach(t => (Array.isArray(t) ? t.map(x => x[0]) : [t]).forEach(x => out.set(tier + '|' + x, { say: x, tier })));
       });
@@ -1241,45 +1470,53 @@ function allLines() {
   });
   return [...out.values()];
 }
+function bankLines() {   // 지금 고른 목소리 기준으로, 겹치는 문장은 한 번만
+  const m = new Map();
+  allLines().forEach((l) => { const v = voiceFor(langOfTier(l.tier)); if (v === 'phone') return; const k = clipKey(v, l.tier, l.say); if (!m.has(k)) m.set(k, Object.assign({ v, k }, l)); });
+  return [...m.values()];
+}
 let bankRun = null;
 async function refreshBankState() {
-  const v = prefs.gvoice, el = $('#bankState'), btn = $('#bankBtn');
-  if (v === 'phone') { el.textContent = ''; btn.hidden = true; return; }
+  const el = $('#bankState'), btn = $('#bankBtn');
+  if (prefs.gvoice === 'phone') { el.textContent = ''; btn.hidden = true; return; }
   btn.hidden = false;
-  const keys = new Set(await IDB.keys());
-  const lines = allLines();
-  const have = lines.filter(l => keys.has(clipKey(v, l.tier, l.say))).length;
   if (bankRun) return;
-  el.textContent = `이 목소리로 받아 둔 문장 ${have} / ${lines.length}` + (have === lines.length ? ' · 전부 준비됐어요. 인터넷 없이도 들을 수 있어요.' : ' · 안 받아 둔 세션은 처음 들을 때 저절로 받아 와요.');
+  const keys = new Set(await IDB.keys());
+  const lines = bankLines();
+  const left = lines.filter(l => !keys.has(l.k));
+  const have = lines.length - left.length;
+  const elChars = left.filter(l => isEl(l.v)).reduce((a, l) => a + l.say.length, 0);
+  el.textContent = `이 목소리로 받아 둔 문장 ${have} / ${lines.length}` + (!left.length ? ' · 전부 준비됐어요. 인터넷 없이도 들을 수 있어요.' : ' · 안 받아 둔 세션은 처음 들을 때 저절로 받아 와요.') + (elChars ? ` 남은 걸 다 받으면 일레븐랩스 크레딧이 약 ${elChars.toLocaleString()} 들어요.` : '');
 }
 async function toggleBank() {
   if (bankRun) { bankRun.stop = true; return; }
-  const v = prefs.gvoice; if (v === 'phone') return;
+  if (prefs.gvoice === 'phone') return;
   const me = bankRun = { stop: false };
   const btn = $('#bankBtn'); btn.textContent = '그만 받기'; hint('');
   const keys = new Set(await IDB.keys());
-  const todo = allLines().filter(l => !keys.has(clipKey(v, l.tier, l.say)));
+  const todo = bankLines().filter(l => !keys.has(l.k));
   let n = 0;
   for (const l of todo) {
     if (me.stop) break;
     $('#bankState').textContent = `받아 오는 중 ${++n} / ${todo.length} · 화면을 켜 두세요`;
-    try { const buf = await synth(l.say, l.tier, v); await IDB.put(clipKey(v, l.tier, l.say), buf); }
+    try { const buf = await synthAny(l.say, l.tier, l.v); await IDB.put(l.k, buf); }
     catch (e) { hint(errCopy(e)); if (e.fatal) break; await sleepMs(3000); }
   }
   bankRun = null; btn.textContent = '목소리 전부 미리 받아 두기';
   refreshBankState();
 }
 
-/* ---------- 세션 재생 중 녹음 준비 ---------- */
+/* ---------- 세션 재생 중 목소리 준비 ---------- */
 function setNote(t) { const el = $('#pNote'); if (el) el.textContent = t; }
 function startPrefetch(run, items) {
   run.clips = new Map();
-  const v = prefs.gvoice; if (v === 'phone') return;
+  const v = run.voice = voiceFor(run.s.lang); if (v === 'phone') return;
   const order = [];
   items.forEach((it) => {
     const k = clipKey(v, it.tier, it.say);
     if (!run.clips.has(k)) { let resolve; const p = new Promise(r => { resolve = r; }); run.clips.set(k, { p, resolve }); order.push([k, it]); }
   });
+  const backup = prefs.lastGemini || 'Sulafat';
   (async () => {
     const cached = new Set(await IDB.keys());
     const need = order.filter(([k]) => !cached.has(k)).length;
@@ -1288,10 +1525,25 @@ function startPrefetch(run, items) {
       const ent = run.clips.get(k);
       if (run.stopped) { ent.resolve(null); continue; }
       let buf = cached.has(k) ? await IDB.get(k) : null;
-      if (!buf && !run.noGen) {
+      if (!buf && isEl(v) && run.elFailed) {   // 일레븐랩스가 막히면 제미나이 목소리로 이어서
+        const bk = clipKey(backup, it.tier, it.say);
+        buf = await IDB.get(bk);
+        if (!buf && !run.noGen) { try { buf = await synth(it.say, it.tier, backup); IDB.put(bk, buf); } catch (e) { run.noGen = true; buf = null; } }
+      } else if (!buf && !run.noGen) {
         setNote(`목소리 받아 오는 중 ${++made} / ${need} · 이 세션은 처음 한 번만 해요`);
-        try { buf = await synth(it.say, it.tier, v); IDB.put(k, buf); }
-        catch (e) { run.genErr = e; if (e.fatal || e.code === 'network') run.noGen = true; setNote(errCopy(e) + ' 남은 부분은 휴대폰 기본 목소리로 읽어요.'); buf = null; }
+        try { buf = await synthAny(it.say, it.tier, v); IDB.put(k, buf); }
+        catch (e) {
+          run.genErr = e;
+          if (isEl(v)) {
+            run.elFailed = true;
+            setNote(errCopy(e) + ' 남은 부분은 제미나이 목소리로 읽어요.');
+            const bk = clipKey(backup, it.tier, it.say);
+            try { buf = (await IDB.get(bk)) || await synth(it.say, it.tier, backup); IDB.put(bk, buf); } catch (e2) { run.noGen = true; buf = null; }
+          } else {
+            if (e.fatal || e.code === 'network') run.noGen = true;
+            setNote(errCopy(e) + ' 남은 부분은 휴대폰 기본 목소리로 읽어요.'); buf = null;
+          }
+        }
       }
       ent.resolve(buf);
     }
@@ -1304,15 +1556,15 @@ async function playClip(run, buf, prog) {
   try { ab = await E.ctx.decodeAudioData(buf.slice(0)); } catch (e) { return; }
   if (run.stopped) return;
   const src = E.ctx.createBufferSource(); src.buffer = ab;
-  const g = E.ctx.createGain(); g.gain.value = clamp(prefs.voiceVol * (1 - 0.3 * prog), 0.05, 1) * 1.15;
+  const g = E.ctx.createGain(); g.gain.value = clamp(prefs.voiceVol * (1 - (run.s.awake ? 0.05 : 0.3) * prog), 0.05, 1) * 1.15;
   src.connect(g); g.connect(E.voice);
   const ended = new Promise(r => { src.onended = r; });
   src.start();
   await Promise.race([ended, run.wait(ab.duration + 1.5)]);
 }
 async function say(run, item, prog) {
-  const v = prefs.gvoice;
-  if (v !== 'phone' && run.clips) {
+  const v = run.voice;
+  if (v && v !== 'phone' && run.clips) {
     const ent = run.clips.get(clipKey(v, item.tier, item.say));
     const buf = ent ? await ent.p : null;
     if (run.stopped) return;
@@ -1740,7 +1992,7 @@ function buildPlan(s, T) {
   const ti = s.durs.length > 1 ? clamp(s.durs.indexOf(T) / (s.durs.length - 1), 0, 1) : 1;
   const out = [], kind = kindOf(s), L = s.script.length;
   s.script.forEach((st, j) => {
-    const tier = kind + (j / L > 0.62 ? '-late' : '');
+    const tier = kind + (!s.awake && j / L > 0.62 ? '-late' : '');
     if (Array.isArray(st)) out.push({ say: fillText(st[0], T), p: st[1] || 0, fix: st[2] === 'f', tier });
     else if (st.ph) out.push({ ph: st.ph });
     else if (st.pool) {
@@ -1770,7 +2022,7 @@ function speakChunk(run, text, prog) {
   if (!TTS) return run.wait(Math.max(2.2, text.length / 6.5));
   return new Promise((res) => {
     let u;
-    try { u = makeUtter(text, prog, run.s.lang); } catch (e) { res(); return; }
+    try { u = makeUtter(text, run.s.awake ? prog * 0.2 : prog, run.s.lang); } catch (e) { res(); return; }
     let done = false;
     const fin = () => { if (done) return; done = true; clearTimeout(to); res(); };
     u.onend = fin; u.onerror = fin;
@@ -1802,7 +2054,7 @@ async function runSession(run) {
   setNote('');
   startPrefetch(run, plan.filter(x => x.say).concat((s.wake || []).filter(Array.isArray).map(st => ({ say: st[0], tier: 'wake' }))));
   const N = Math.max(1, plan.length - 1);
-  const deadline = s.end === 'wake' ? Tsec - 60 : (T ? Tsec - 45 : Infinity);
+  const deadline = s.end === 'wake' ? Tsec - 60 : (T && !s.awake ? Tsec - 45 : Infinity);
   setPhase(run, plan.length && plan[0].ph ? plan[0].ph : '');
   await run.wait(s.narr ? LEAD : 2);
   for (let i = 0; i < plan.length; i++) {
@@ -1851,7 +2103,7 @@ async function runSession(run) {
   await run.waitFor(() => run.elapsed() >= Tsec || prefs.keep);
   if (run.stopped) return;
   if (prefs.keep) { run.engine.fadeIn(6); setPhase(run, '음악만'); return runTailKeep(run); }
-  finish(run, '푹 쉬셨어요.');
+  finish(run, run.s.doneMsg || '푹 쉬셨어요.');
 }
 async function runTailKeep(run) {
   await run.waitFor(() => !prefs.keep);
@@ -1859,7 +2111,7 @@ async function runTailKeep(run) {
   run.engine.fadeOut(60);
   setPhase(run, '천천히 꺼지는 중');
   await run.wait(61);
-  if (!run.stopped) finish(run, '푹 쉬셨어요.');
+  if (!run.stopped) finish(run, run.s.doneMsg || '푹 쉬셨어요.');
 }
 
 /* ---------- 플레이어 화면 ---------- */
