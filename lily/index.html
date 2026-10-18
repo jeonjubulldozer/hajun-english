@@ -411,7 +411,14 @@ const st = load("lily2");
 function saveSt() { try { localStorage.setItem("lily2", JSON.stringify(st)); } catch {} }
 (() => { const s = shared(); const d = { voice: s.gVoice || "Sulafat", accent: s.accent || "us", turn: "auto", silence: "900", out: "tv", rate: "0.9", readEngine: s.voiceSource === "gemini" ? "gemini" : s.voiceSource === "phone" ? "phone" : "cloud", model: "gemini-3.8-live", talkMode: "free", talkLen: "10" };
   for (const k in d) if (st[k] == null) st[k] = d[k]; st.progress = st.progress || {}; st.myBooks = st.myBooks || []; st.wordKo = st.wordKo || {}; saveSt(); })();
-const gkey = () => String(shared().key_gemini || "").trim();
+// the key may live in any of the family apps on this phone (영어 도장, 밤의 쉼표, 곤충 도장)
+function gkey() {
+  const s = shared(); if (s.key_gemini) return String(s.key_gemini).trim();
+  for (const k of ["swim.prefs", "insect-dojo.prefs"]) { try { const o = JSON.parse(localStorage.getItem(k) || "{}"); if (o.gkey) return String(o.gkey).trim(); } catch {} }
+  try { for (let i = 0; i < localStorage.length; i++) { const m = (localStorage.getItem(localStorage.key(i)) || "").match(/AIza[0-9A-Za-z_\-]{30,}/); if (m) return m[0]; } } catch {}
+  return "";
+}
+const UA = navigator.userAgent, ANDROID = /Android/i.test(UA), INCHROME = /Chrome\//.test(UA) && !/SamsungBrowser|; wv\)|EdgA|OPR|Whale|NAVER|KAKAOTALK|Instagram|FBAN/i.test(UA);
 const loc = () => st.accent === "gb" ? "en-GB" : "en-US";
 const tvDelay = () => st.out === "tv" ? 1300 : 300;
 
@@ -658,7 +665,8 @@ async function keepAwake(on) { try { if (on && "wakeLock" in navigator && !wakeL
 const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 function renderHome() {
   const d = new Date(); $("today").textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일`;
-  $("keyWarn").hidden = !!gkey(); $("key").value = gkey();
+  const kw = $("keyWarn"); kw.hidden = !!gkey() && !(ANDROID && !INCHROME); $("key").value = gkey();
+  if (ANDROID && !INCHROME) { kw.innerHTML = ""; kw.append(mk("div", "", "이 앱은 크롬에서 열어야 마이크·읽기 따라가기·키가 제대로 돼요.")); const a = mk("a", "", "크롬으로 열기 ↗"); a.href = "intent://" + location.host + location.pathname + "#Intent;scheme=https;package=com.android.chrome;end"; a.style.fontWeight = "600"; kw.append(a); }
   const s = shared().stats, box = $("stats"); box.innerHTML = "";
   if (s && s.total && s.total.sessions) {
     let streak = 0; const day = new Date(); if (!s.days[dayKey(day)]) day.setDate(day.getDate() - 1); while (s.days[dayKey(day)]) { streak++; day.setDate(day.getDate() - 1); }
