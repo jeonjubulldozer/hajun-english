@@ -1,0 +1,1432 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f1e6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1016" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>하준이 영어 도장</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 밤의 쉼표와 같은 결: 조용한 한 줄 기둥, 세리프 제목, 램프 같은 호박색 하나. 낮에는 종이색, 밤(다크 모드)에는 밤의 쉼표 색. 영어 본문은 처음 읽는 아이용 글꼴(Andika). */
+:root {
+  --paper: #f6f1e6; --card: #fffbf3; --ink: #1d2130; --muted: #646874; --line: #e3dac8;
+  --accent: #a95d12; --accent-ink: #ffffff; --accent-soft: #f6e3c9; --glow-rgb: 226, 163, 90;
+  --good: #2b7149; --good-soft: #dcefe1; --good-rgb: 63, 160, 104; --hajun: #fff0c4; --bad: #a8402c;
+  --warn-bg: #fbefd9; --warn-line: #e1b878; --warn-fg: #5d3a0c;
+  --f-display: 'Gowun Batang', 'Nanum Myeongjo', 'AppleMyungjo', serif;
+  --f-body: 'IBM Plex Sans KR', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --f-read: 'Andika', 'IBM Plex Sans KR', system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0d1016; --card: #151a23; --ink: #ece6da; --muted: #9aa1ac; --line: #262d39;
+    --accent: #e2b074; --accent-ink: #1b1307; --accent-soft: #2a2316; --good: #8fd1a6; --good-soft: #17301f; --hajun: #2b2715; --bad: #f09a86;
+    --warn-bg: #221a10; --warn-line: #6b4f2a; --warn-fg: #f1dab8; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0d1016; --card: #151a23; --ink: #ece6da; --muted: #9aa1ac; --line: #262d39;
+  --accent: #e2b074; --accent-ink: #1b1307; --accent-soft: #2a2316; --good: #8fd1a6; --good-soft: #17301f; --hajun: #2b2715; --bad: #f09a86;
+  --warn-bg: #221a10; --warn-line: #6b4f2a; --warn-fg: #f1dab8; color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); }
+[hidden] { display: none !important; }
+body {
+  font-family: var(--f-body); font-size: 16px; line-height: 1.6; -webkit-tap-highlight-color: transparent;
+  padding: calc(env(safe-area-inset-top, 0px) + 18px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 40px) max(16px, env(safe-area-inset-left, 0px));
+}
+button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+a { color: var(--accent); }
+.screen { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 34px; line-height: 1.2; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--f-display); font-weight: 700; font-size: 22px; margin: 0; line-height: 1.3; }
+.when { font-size: 13px; color: var(--muted); letter-spacing: .02em; }
+.lede { margin: 6px 0 0; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: 13.5px; }
+.banner { border: 1px solid var(--warn-line); background: var(--warn-bg); color: var(--warn-fg); border-radius: 12px; padding: 12px 14px; font-size: 14.5px; }
+.banner.err { border-color: var(--bad); }
+
+/* home */
+.doors { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 560px) { .doors { grid-template-columns: 1fr 1fr; } }
+.door { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; gap: 6px; padding: 20px 20px 18px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); position: relative; overflow: hidden; min-height: 150px; }
+.door:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.door .ic { font-size: 34px; line-height: 1; }
+.door .t { font-family: var(--f-display); font-size: 23px; font-weight: 700; }
+.door .d { color: var(--muted); font-size: 14.5px; }
+.door::after { content: ""; position: absolute; right: -40px; top: -40px; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--glow-rgb), .35), rgba(var(--glow-rgb), 0) 70%); }
+.door:active { transform: translateY(1px); }
+.stats { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 14px; color: var(--muted); }
+.stats b { color: var(--ink); font-weight: 600; }
+.list { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.list a, .list button.rowbtn { all: unset; box-sizing: border-box; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 4px; border-bottom: 1px solid var(--line); }
+.list a span:last-child, .list button.rowbtn span:last-child { color: var(--muted); font-size: 13.5px; }
+details.settings { border-top: 1px solid var(--line); padding-top: 6px; }
+details.settings > summary { cursor: pointer; list-style: none; padding: 12px 4px; font-family: var(--f-display); font-size: 20px; font-weight: 700; }
+details.settings > summary::-webkit-details-marker { display: none; }
+details.settings > summary::after { content: " ＋"; color: var(--muted); font-family: var(--f-body); font-size: 16px; }
+details.settings[open] > summary::after { content: " －"; }
+.form { display: flex; flex-direction: column; gap: 16px; padding: 4px 4px 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label, .fieldlabel { font-size: 13px; color: var(--muted); letter-spacing: .03em; }
+.field .help { font-size: 13px; color: var(--muted); margin: 0; }
+select, input.text { width: 100%; appearance: none; background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; font: inherit; }
+.row { display: flex; gap: 8px; align-items: center; }
+.row > * { min-width: 0; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 380px) { .grid2 { grid-template-columns: 1fr; } }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 7px 14px; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
+.go { border: 0; border-radius: 14px; background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: 17px; padding: 15px 18px; }
+.go:disabled { opacity: .5; }
+.go:active { transform: translateY(1px); }
+.ghost { border: 1px solid var(--line); background: transparent; border-radius: 12px; padding: 10px 14px; }
+.ghost:disabled { opacity: .45; }
+.back { all: unset; cursor: pointer; color: var(--muted); font-size: 15px; padding: 6px 2px; }
+.topbar { display: flex; align-items: center; gap: 10px; }
+.topbar .grow { flex: 1; min-width: 0; }
+.topbar .ttl { font-family: var(--f-display); font-weight: 700; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* talk */
+#talk { min-height: calc(100vh - 60px); }
+.stage { display: grid; place-items: center; position: relative; min-height: 190px; }
+.orb { width: min(46vw, 200px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(var(--orb-rgb, var(--glow-rgb)), .62) 0%, rgba(var(--orb-rgb, var(--glow-rgb)), .18) 46%, rgba(var(--orb-rgb, var(--glow-rgb)), 0) 70%); transform: scale(var(--s, .82)); transition: transform .14s ease-out; }
+.orb.hajun { --orb-rgb: var(--good-rgb); }
+.orb.idle { animation: breathe 6s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { transform: scale(.78); } 50% { transform: scale(.9); } }
+@media (prefers-reduced-motion: reduce) { .orb.idle { animation: none; } .orb { transition: none; } }
+.statelabel { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-weight: 600; font-size: 15px; }
+.caption { display: flex; flex-direction: column; gap: 10px; }
+.cap-lily { font-family: var(--f-read); font-size: clamp(1.45rem, 4.6vw, 2.4rem); line-height: 1.35; min-height: 1.4em; text-wrap: pretty; }
+.cap-hajun { font-family: var(--f-read); font-size: clamp(1.25rem, 3.8vw, 2rem); line-height: 1.35; background: var(--hajun); border-radius: 14px; padding: 10px 14px; }
+.cap-hajun:empty { display: none; }
+.cap-fix { font-family: var(--f-read); color: var(--good); font-size: clamp(1.15rem, 3.4vw, 1.8rem); }
+.cap-fix:empty { display: none; }
+.actions { display: flex; flex-direction: column; gap: 10px; }
+.bigbtn { border: 0; border-radius: 18px; padding: 20px 16px; font-size: clamp(1.25rem, 4vw, 1.7rem); font-weight: 600; background: var(--accent); color: var(--accent-ink); }
+.bigbtn.hajun { background: var(--good); color: #fff; }
+:root[data-theme="dark"] .bigbtn.hajun { color: #0d1016; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bigbtn.hajun { color: #0d1016; } }
+.bigbtn.quiet { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+.bigbtn:disabled { opacity: .45; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.tools .ghost { font-size: 15px; }
+.helpcard { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.saybtn { all: unset; cursor: pointer; font-family: var(--f-read); font-size: clamp(1.1rem, 3.4vw, 1.5rem); padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); }
+details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; padding: 6px 0; }
+.logbox { display: flex; flex-direction: column; gap: 8px; max-height: 44vh; overflow-y: auto; padding: 4px 0; }
+.msg { max-width: 92%; border-radius: 16px; padding: 10px 14px; border: 1px solid var(--line); background: var(--card); font-family: var(--f-read); font-size: 1.1rem; line-height: 1.4; }
+.msg.hajun { align-self: flex-end; background: var(--hajun); }
+.msg .fx { color: var(--good); margin-top: 4px; }
+.msg .ko { color: var(--muted); font-family: var(--f-body); font-size: .95rem; margin-top: 4px; }
+
+/* library */
+.shelf { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 640px) { .shelf { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.book { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; border-radius: 14px; overflow: hidden; background: var(--card); border: 1px solid var(--line); min-width: 0; }
+.book:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.book .cv { aspect-ratio: 4 / 3; display: grid; place-items: center; font-size: 46px; position: relative; }
+.book .cv .lv { position: absolute; left: 8px; top: 8px; font-size: 11.5px; font-weight: 600; background: rgba(255, 255, 255, .85); color: #1d2130; border-radius: 999px; padding: 1px 8px; }
+.book .cv .ok { position: absolute; right: 8px; top: 8px; font-size: 12px; font-weight: 600; background: #1d2130; color: #fff; border-radius: 999px; padding: 1px 8px; }
+.book .bt { font-family: var(--f-read); font-weight: 700; font-size: 15.5px; line-height: 1.3; padding: 10px 10px 2px; }
+.book .bs { font-size: 12.5px; color: var(--muted); padding: 0 10px 10px; }
+.book.tool .cv { background: var(--accent-soft); }
+
+/* reader */
+.pagehead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pic { font-size: clamp(44px, 12vw, 72px); line-height: 1.1; letter-spacing: .08em; text-align: center; padding: 6px 0 0; }
+.text { font-family: var(--f-read); font-size: clamp(1.55rem, 5.2vw, 2.6rem); line-height: 1.55; display: flex; flex-direction: column; gap: 6px; }
+.sent { margin: 0; padding: 2px 8px; border-radius: 10px; transition: background .2s; }
+.sent.now { background: var(--accent-soft); }
+.sent.hajunturn { background: var(--good-soft); }
+.w { cursor: pointer; border-radius: 6px; }
+.w.on { text-decoration: underline; text-decoration-thickness: 4px; text-decoration-color: var(--accent); text-underline-offset: 6px; }
+.w.got { color: var(--good); }
+.readbar { display: flex; flex-direction: column; gap: 10px; }
+.turnnote { font-weight: 600; color: var(--good); min-height: 1.5em; text-align: center; }
+.ctrl { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+.ctrl .ghost { font-size: 20px; padding: 12px 16px; }
+.wordpop { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); transform: translateX(-50%); z-index: 60; background: var(--ink); color: var(--paper); border-radius: 14px; padding: 12px 18px; font-size: 17px; max-width: min(92vw, 520px); box-shadow: 0 8px 30px rgba(0, 0, 0, .25); }
+.wordpop b { font-family: var(--f-read); font-size: 22px; margin-right: 8px; }
+.endbox { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+
+/* quiz */
+.qtext { font-family: var(--f-read); font-size: clamp(1.45rem, 4.8vw, 2.3rem); line-height: 1.35; }
+.opts { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.opt { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); font-family: var(--f-read); font-size: clamp(1.25rem, 4vw, 1.8rem); }
+.opt .em { font-size: 1.5em; }
+.opt.right { border-color: var(--good); background: var(--good-soft); }
+.opt.wrong { border-color: var(--bad); opacity: .7; }
+.heard { color: var(--muted); font-family: var(--f-read); font-size: 1.2rem; min-height: 1.4em; }
+.score { font-size: 28px; letter-spacing: .1em; text-align: center; }
+
+/* overlay */
+.overlay { position: fixed; inset: 0; z-index: 50; background: var(--paper); overflow-y: auto; padding: calc(env(safe-area-inset-top, 0px) + 18px) 16px calc(env(safe-area-inset-bottom, 0px) + 30px); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.card .lbl { font-size: 13px; color: var(--muted); }
+.toast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 12px); transform: translateX(-50%); z-index: 70; background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 12px; font-size: 14.5px; max-width: 92vw; }
+.spin::after { content: "…"; animation: blink 1s steps(3) infinite; }
+@keyframes blink { 50% { opacity: .2; } }
+</style>
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<main class="screen" id="home">
+  <header>
+    <div class="when" id="today"></div>
+    <h1>하준이 영어 도장</h1>
+    <p class="lede">Miss Lily와 바로바로 말하고, 같이 책 읽어요.</p>
+  </header>
+  <div class="banner err" id="keyWarn" hidden>Gemini 키가 아직 없어요. 아래 <b>설정</b>에서 키를 넣어야 Lily가 말해요.</div>
+  <div class="doors">
+    <button class="door" id="goTalk" type="button"><span class="ic">💬</span><span class="t">Lily랑 말하기</span><span class="d">말 끝나면 바로 대답해요 · 자유대화, 오늘의 수업, 이야기 이어 만들기</span></button>
+    <button class="door" id="goBooks" type="button"><span class="ic">📚</span><span class="t">책 읽기</span><span class="d">Lily가 읽어 주고, 번갈아 읽고, 퀴즈와 책 이야기까지</span></button>
+  </div>
+  <div class="stats" id="stats"></div>
+
+  <section>
+    <h2 style="margin-bottom:6px">더 보기</h2>
+    <div class="list">
+      <a href="https://learnenglishkids.britishcouncil.org/listen-watch/short-stories" target="_blank" rel="noopener"><span>📺 브리티시 카운슬 키즈 영상 이야기</span><span>밖으로 열기 ↗</span></a>
+      <a href="../sleep/"><span>🌙 밤의 쉼표 (잠자리 영어)</span><span>열기</span></a>
+      <a href="../"><span>🥋 예전 버전 (모험·발음 연습)</span><span>열기</span></a>
+    </div>
+  </section>
+
+  <details class="settings" id="settingsBox">
+    <summary>설정</summary>
+    <div class="form">
+      <div class="field">
+        <label for="key">Gemini API 키 (예전 앱과 같은 키를 같이 써요)</label>
+        <input class="text" id="key" type="password" autocomplete="off" placeholder="AIza… 로 시작하는 키">
+        <p class="help" id="keyHelp">키 만들기: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></p>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="voice">Lily 목소리</label>
+          <select id="voice"><option value="Sulafat">Sulafat · 따뜻한</option><option value="Leda">Leda · 젊은</option><option value="Aoede">Aoede · 산뜻한</option><option value="Zephyr">Zephyr · 밝은</option><option value="Kore">Kore · 또렷한</option><option value="Achird">Achird · 친근한</option></select></div>
+        <div class="field"><label for="accent">발음</label>
+          <select id="accent"><option value="us">🇺🇸 미국</option><option value="gb">🇬🇧 영국</option></select></div>
+        <div class="field"><label for="turn">대답 방식</label>
+          <select id="turn"><option value="auto">자동 — 말 끝나면 바로 (루라처럼)</option><option value="manual">버튼 — 눌러서 시작, 눌러서 끝</option></select></div>
+        <div class="field"><label for="silence">말 끝 기다림 (자동일 때)</label>
+          <select id="silence"><option value="600">0.6초 (빠르게)</option><option value="900">0.9초 (추천)</option><option value="1500">1.5초</option><option value="2500">2.5초 (천천히 생각할 때)</option></select></div>
+        <div class="field"><label for="out">소리 나가는 곳</label>
+          <select id="out"><option value="phone">폰 스피커</option><option value="tv">TV (화면 미러링)</option></select></div>
+        <div class="field"><label for="rate">책 읽는 속도</label>
+          <select id="rate"><option value="0.8">느리게</option><option value="0.9">조금 천천히</option><option value="1">보통</option></select></div>
+        <div class="field"><label for="readEngine">책 읽기 목소리</label>
+          <select id="readEngine"><option value="cloud">Google Cloud (추천)</option><option value="gemini">Gemini 목소리</option><option value="phone">폰 내장 목소리</option></select></div>
+        <div class="field"><label for="model">대화 모델</label>
+          <select id="model"><option value="gemini-3.8-live">Gemini 3.8 Live (기본)</option><option value="gemini-3.1-flash-live-preview">Gemini 3.1 Flash Live (예비)</option></select></div>
+      </div>
+      <div class="row"><button class="ghost" id="testVoice" type="button">🔊 책 읽기 목소리 들어보기</button><span class="small muted" id="testNote"></span></div>
+      <p class="help small muted">선풍기·TV 소리가 있어도 Lily는 말소리만 들어요. 그래도 말이 안 끝난다고 느끼면 큰 버튼 <b>✋ 다 말했어</b>를 누르면 바로 넘어가요. TV로 소리를 보내면 Lily 목소리가 다시 마이크로 들어가지 않게 잠깐 기다렸다가 들어요.</p>
+    </div>
+  </details>
+</main>
+
+<!-- ============ TALK SETUP ============ -->
+<main class="screen" id="talkSetup" hidden>
+  <div class="topbar"><button class="back" data-go="home" type="button">‹ 처음으로</button></div>
+  <h1>Lily랑 말하기</h1>
+  <div class="field">
+    <span class="fieldlabel">오늘은 뭐 할까요?</span>
+    <div class="chips" id="talkModes">
+      <button class="chip" data-m="free" type="button" aria-pressed="true">💬 자유대화</button>
+      <button class="chip" data-m="lesson" type="button">🗣 오늘의 수업</button>
+      <button class="chip" data-m="build" type="button">🧩 이야기 이어 만들기</button>
+    </div>
+  </div>
+  <div class="field" id="fFree">
+    <label for="freeTopic">처음 이야기할 거리 (비워 두면 Lily가 알아서)</label>
+    <input class="text" id="freeTopic" type="text" placeholder="예: 오늘 유도 수업, 사마귀, 주말에 한 일" autocomplete="off">
+    <div class="chips" data-fill="freeTopic"><button class="chip" type="button">오늘 하루</button><button class="chip" type="button">유도·주짓수</button><button class="chip" type="button">곤충</button><button class="chip" type="button">우주</button><button class="chip" type="button">학교·친구</button><button class="chip" type="button">가족</button><button class="chip" type="button">좋아하는 음식</button></div>
+  </div>
+  <div class="field" id="fLesson" hidden>
+    <label for="theme">수업 주제 (7~8세 영어회화 교재 단원)</label>
+    <div class="row"><select id="theme" style="flex:1"></select><button class="ghost" id="randTheme" type="button">🎲</button></div>
+    <p class="help small muted" id="themeNote"></p>
+  </div>
+  <div class="field" id="fBuild" hidden>
+    <label for="buildTopic">무슨 이야기를 만들까? (Lily가 한 문장, 하준이가 한 문장)</label>
+    <input class="text" id="buildTopic" type="text" placeholder="예: 유도하는 사마귀, 우주 엘리베이터" autocomplete="off">
+    <div class="chips" data-fill="buildTopic"><button class="chip" type="button">유도하는 사마귀</button><button class="chip" type="button">매미 록스타</button><button class="chip" type="button">달까지 가는 건물</button><button class="chip" type="button">공룡 학교</button><button class="chip" type="button">바다 밑 비밀 기지</button><button class="chip" type="button">로봇 동생</button></div>
+  </div>
+  <div class="field"><label for="talkLen">길이 (끝나면 오늘의 정리)</label>
+    <select id="talkLen"><option value="7">7분</option><option value="10" selected>10분</option><option value="15">15분</option></select></div>
+  <button class="go" id="startTalk" type="button">시작!</button>
+  <p class="small muted">폰을 TV에 미러링해서 쓰면 하준이는 TV 화면을 보고 폰에 대고 말하면 돼요.</p>
+</main>
+
+<!-- ============ TALK ============ -->
+<main class="screen" id="talk" hidden>
+  <div class="topbar">
+    <div class="grow"><div class="ttl" id="talkTitle">Lily랑 말하기</div><div class="small muted" id="talkSub"></div></div>
+    <span class="small muted" id="talkClock"></span>
+    <button class="ghost" id="endTalk" type="button">끝내기</button>
+  </div>
+  <div class="stage"><div class="orb idle" id="orb"></div><div class="statelabel" id="stateLabel">연결 중…</div></div>
+  <div class="caption">
+    <div class="cap-lily" id="capLily"></div>
+    <div class="cap-hajun" id="capHajun"></div>
+    <div class="cap-fix" id="capFix"></div>
+  </div>
+  <div class="banner err" id="talkErr" hidden></div>
+  <div class="actions">
+    <button class="bigbtn" id="bigBtn" type="button" disabled>연결 중…</button>
+    <div class="tools">
+      <button class="ghost" id="tHint" type="button">💡 뭐라고 하지?</button>
+      <button class="ghost" id="tSlow" type="button">🐢 천천히 다시</button>
+      <button class="ghost" id="tKo" type="button">🇰🇷 무슨 뜻?</button>
+      <button class="ghost" id="tTopic" type="button">🔀 다른 얘기</button>
+      <button class="ghost" id="tPause" type="button">⏸ 잠깐</button>
+    </div>
+    <div class="helpcard" id="helpCard" hidden></div>
+  </div>
+  <details class="log"><summary>대화 기록</summary><div class="logbox" id="log"></div></details>
+</main>
+
+<!-- ============ LIBRARY ============ -->
+<main class="screen" id="library" hidden>
+  <div class="topbar"><button class="back" data-go="home" type="button">‹ 처음으로</button></div>
+  <header><h1>하준이 서재</h1><p class="lede">책을 고르면 Lily가 읽어 줘요. 단어를 누르면 뜻이 나와요.</p></header>
+  <div class="shelf" id="tools">
+    <button class="book tool" id="photoBook" type="button"><div class="cv">📷</div><div class="bt">우리 집 책 읽기</div><div class="bs">책 페이지를 찍으면 그 페이지를 읽어 줘요</div></button>
+    <button class="book tool" id="makeBook" type="button"><div class="cv">✨</div><div class="bt">새 이야기 만들기</div><div class="bs">윔피키드·로알드 달 느낌으로 새로 써 줘요</div></button>
+  </div>
+  <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+  <div class="banner" id="photoNote" hidden></div>
+  <section><h2>Lily가 쓴 이야기</h2><p class="small muted" style="margin:4px 0 10px">하준이 수준(Level 1 쉬움 → 3 챕터북 맛보기)으로 쓴 새 이야기예요.</p><div class="shelf" id="shelf"></div></section>
+  <section id="mineSec" hidden><h2>우리가 만든 이야기</h2><div class="shelf" id="mine" style="margin-top:10px"></div></section>
+  <section>
+    <h2 style="margin-bottom:6px">진짜 책은 이런 걸로</h2>
+    <p class="small muted" style="margin:0 0 8px">옥스퍼드 리딩 트리 말고 영국 출판사 시리즈 중 하준이에게 맞을 만한 것 (사진 읽기로 같이 쓰면 좋아요)</p>
+    <div class="list" id="realBooks"></div>
+  </section>
+</main>
+
+<!-- ============ MAKE A STORY ============ -->
+<main class="screen" id="make" hidden>
+  <div class="topbar"><button class="back" data-go="library" type="button">‹ 서재</button></div>
+  <h1>새 이야기 만들기</h1>
+  <div class="field"><span class="fieldlabel">느낌</span>
+    <div class="chips" id="mkStyle">
+      <button class="chip" type="button" aria-pressed="true" data-v="diary">📓 일기 코미디 (윔피키드 느낌)</button>
+      <button class="chip" type="button" data-v="dahl">🎩 엉뚱한 상상 (로알드 달 느낌)</button>
+      <button class="chip" type="button" data-v="bugs">🪲 곤충·자연</button>
+      <button class="chip" type="button" data-v="space">🚀 우주·건축</button>
+      <button class="chip" type="button" data-v="sport">🥋 유도·운동</button>
+      <button class="chip" type="button" data-v="mystery">🔍 탐정·수수께끼</button>
+    </div></div>
+  <div class="field"><label for="mkTopic">소재 (선택)</label><input class="text" id="mkTopic" type="text" placeholder="예: 학교에 나타난 거대 매미, 아빠의 고장 난 로봇" autocomplete="off"></div>
+  <div class="grid2">
+    <div class="field"><label for="mkLevel">난이도</label><select id="mkLevel"><option value="1">Level 1 · 아주 쉬움</option><option value="2" selected>Level 2 · 쉬움</option><option value="3">Level 3 · 챕터북 맛보기</option></select></div>
+    <div class="field"><label for="mkHero">주인공</label><select id="mkHero"><option value="new">새 캐릭터</option><option value="hajun">하준이</option></select></div>
+  </div>
+  <button class="go" id="mkGo" type="button">이야기 써 줘!</button>
+  <div class="banner" id="mkNote" hidden></div>
+</main>
+
+<!-- ============ READER ============ -->
+<main class="screen" id="reader" hidden>
+  <div class="topbar">
+    <button class="back" id="readerBack" type="button">‹ 서재</button>
+    <div class="grow"><div class="ttl" id="rTitle"></div></div>
+    <span class="small muted" id="rPage"></span>
+  </div>
+  <div class="chips" id="rModes">
+    <button class="chip" data-m="listen" type="button" aria-pressed="true">🎧 들려줘</button>
+    <button class="chip" data-m="alt" type="button">🤝 번갈아 읽기</button>
+    <button class="chip" data-m="echo" type="button">🔁 따라 읽기</button>
+    <button class="chip" data-m="solo" type="button">🙋 혼자 읽기</button>
+  </div>
+  <div class="pic" id="rPic"></div>
+  <div class="text" id="rText"></div>
+  <div class="readbar">
+    <div class="turnnote" id="turnNote"></div>
+    <div class="row" id="hajunBtns" hidden style="justify-content:center">
+      <button class="ghost" id="rHear" type="button">🔊 들려줘</button>
+      <button class="ghost" id="rDone" type="button">✅ 다 읽었어</button>
+    </div>
+    <div class="ctrl">
+      <button class="ghost" id="rPrev" type="button" aria-label="앞 페이지">◀</button>
+      <button class="bigbtn" id="rPlay" type="button">▶ 읽기 시작</button>
+      <button class="ghost" id="rNext" type="button" aria-label="다음 페이지">▶</button>
+    </div>
+    <div class="row" id="photoMore" hidden style="justify-content:center"><button class="ghost" id="rPhotoNext" type="button">📷 다음 페이지 찍기</button></div>
+  </div>
+  <div class="endbox" id="rEnd" hidden>
+    <h2>🎉 다 읽었어요!</h2>
+    <div class="small muted" id="rEndNote"></div>
+    <button class="go" id="rQuiz" type="button">🧩 퀴즈 풀기</button>
+    <button class="ghost" id="rTalk" type="button">💬 Lily랑 책 이야기하기</button>
+    <button class="ghost" id="rBuild" type="button">✍️ 다음 이야기 같이 만들기 (한 문장씩)</button>
+    <button class="ghost" id="rAgain" type="button">🔁 처음부터 다시</button>
+  </div>
+</main>
+
+<!-- ============ QUIZ ============ -->
+<main class="screen" id="quiz" hidden>
+  <div class="topbar"><button class="back" id="quizBack" type="button">‹ 책으로</button><div class="grow"><div class="ttl" id="qTitle"></div></div><span class="small muted" id="qNum"></span></div>
+  <div class="qtext" id="qText"></div>
+  <div class="opts" id="qOpts"></div>
+  <div class="heard" id="qHeard"></div>
+  <div class="row" style="justify-content:center;flex-wrap:wrap">
+    <button class="ghost" id="qListen" type="button">🎤 말로 대답하기</button>
+    <button class="ghost" id="qRepeat" type="button">🔊 다시 듣기</button>
+    <button class="ghost" id="qSkip" type="button">모르겠어 →</button>
+  </div>
+  <div class="endbox" id="qEnd" hidden></div>
+</main>
+
+<section class="overlay" id="summary" hidden><div class="screen" id="sumInner"></div></section>
+<div class="wordpop" id="wordPop" hidden></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="books.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = (id) => document.getElementById(id);
+const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+// ============ storage: shared with the old app ("dojo-live") + this app ("lily2") ============
+function load(k) { try { return JSON.parse(localStorage.getItem(k) || "{}") || {}; } catch { return {}; } }
+function shared() { return load("dojo-live"); }
+function updShared(fn) { const cur = load("dojo-live"); fn(cur); try { localStorage.setItem("dojo-live", JSON.stringify(cur)); } catch {} }
+const st = load("lily2");
+function saveSt() { try { localStorage.setItem("lily2", JSON.stringify(st)); } catch {} }
+(() => { const s = shared(); const d = { voice: s.gVoice || "Sulafat", accent: s.accent || "us", turn: "auto", silence: "900", out: "tv", rate: "0.9", readEngine: s.voiceSource === "gemini" ? "gemini" : s.voiceSource === "phone" ? "phone" : "cloud", model: "gemini-3.8-live", talkMode: "free", talkLen: "10" };
+  for (const k in d) if (st[k] == null) st[k] = d[k]; st.progress = st.progress || {}; st.myBooks = st.myBooks || []; st.wordKo = st.wordKo || {}; saveSt(); })();
+const gkey = () => String(shared().key_gemini || "").trim();
+const loc = () => st.accent === "gb" ? "en-GB" : "en-US";
+const tvDelay = () => st.out === "tv" ? 1300 : 300;
+
+function toast(msg, ms = 3200) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, ms); }
+const errKo = (e) => !e ? "잘 안 됐어요." : e.code === "no_key" ? "Gemini 키가 없어요 (처음 화면 → 설정)." : e.code === "bad_key" ? "Gemini 키가 맞지 않아요 (처음 화면 → 설정)." : e.code === "rate_limited" ? "구글 한도에 잠깐 걸렸어요. 조금 뒤 다시 해요." : e.code === "network" ? "인터넷 연결을 확인해 주세요." : "잘 안 됐어요" + (e.message ? " (" + String(e.message).slice(0, 120) + ")" : "") + ". 다시 해 볼까요?";
+
+// ============ Gemini text / vision (short jobs: fixes, hints, translations, stories, photo pages) ============
+const API = "https://generativelanguage.googleapis.com/v1beta/models/";
+const FAST = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.8-flash"];
+const SMART = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite"];
+function parseJSON(text) {
+  try { return JSON.parse(text); } catch {}
+  const m = String(text).match(/\{[\s\S]*\}/); if (m) { try { return JSON.parse(m[0]); } catch {} }
+  return null;
+}
+async function gem(parts, { models = FAST, json = true, max = 1200, temp = 0.4 } = {}) {
+  const key = gkey(); if (!key) throw { code: "no_key" };
+  let last = null;
+  for (const model of models) {
+    for (const thinking of [true, false]) {
+      const gc = { maxOutputTokens: max, temperature: temp };
+      if (json) gc.responseMimeType = "application/json";
+      if (thinking) gc.thinkingConfig = { thinkingLevel: /lite/.test(model) ? "minimal" : "low" };
+      let r;
+      try { r = await fetch(API + model + ":generateContent", { method: "POST", headers: { "content-type": "application/json", "x-goog-api-key": key }, body: JSON.stringify({ contents: [{ role: "user", parts }], generationConfig: gc }) }); }
+      catch { last = { code: "network" }; break; }
+      if (r.ok) {
+        const j = await r.json().catch(() => ({}));
+        const text = ((((j.candidates || [])[0] || {}).content || {}).parts || []).map(p => p.text || "").join("");
+        if (!text) { last = { code: "empty" }; break; }
+        if (!json) return text;
+        const o = parseJSON(text); if (o) return o;
+        last = { code: "invalid_json" }; break;
+      }
+      const j = await r.json().catch(() => ({})); const msg = JSON.stringify(j);
+      if (r.status === 400 && thinking) continue;
+      if (/API_KEY_INVALID|API key not valid/i.test(msg)) throw { code: "bad_key" };
+      last = { code: r.status === 429 ? "rate_limited" : "failed", message: r.status + " " + ((j.error && j.error.message) || "").slice(0, 160) };
+      break;
+    }
+  }
+  throw last || { code: "failed" };
+}
+
+// ============ Reading voice: Google Cloud TTS → Gemini TTS → phone voice (cached on this phone) ============
+function b64ToBlob(b64, mime) { const bin = atob(b64); const u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return new Blob([u8], { type: mime }); }
+function pcmToWav(u8, rate) {
+  const h = new ArrayBuffer(44), d = new DataView(h), n = u8.length, s = (o, t) => { for (let i = 0; i < t.length; i++) d.setUint8(o + i, t.charCodeAt(i)); };
+  s(0, "RIFF"); d.setUint32(4, 36 + n, true); s(8, "WAVE"); s(12, "fmt "); d.setUint32(16, 16, true); d.setUint16(20, 1, true); d.setUint16(22, 1, true);
+  d.setUint32(24, rate, true); d.setUint32(28, rate * 2, true); d.setUint16(32, 2, true); d.setUint16(34, 16, true); s(36, "data"); d.setUint32(40, n, true);
+  return new Blob([h, u8], { type: "audio/wav" });
+}
+async function ttsCloud(text, rate) {
+  const key = gkey(); if (!key) throw { code: "no_key" };
+  for (const name of [`${loc()}-Chirp3-HD-${st.voice}`, loc() === "en-GB" ? "en-GB-Neural2-A" : "en-US-Neural2-F"]) {
+    const r = await fetch("https://texttospeech.googleapis.com/v1/text:synthesize", { method: "POST", headers: { "content-type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({ input: { text }, voice: { languageCode: loc(), name }, audioConfig: { audioEncoding: "MP3", speakingRate: rate } }) });
+    if (r.ok) { const j = await r.json(); if (j.audioContent) return b64ToBlob(j.audioContent, "audio/mpeg"); throw { code: "tts_failed" }; }
+    const j = await r.json().catch(() => ({})); const msg = ((j.error && j.error.message) || "").slice(0, 200);
+    if (r.status === 400 && /voice/i.test(msg)) continue;
+    throw { code: r.status === 403 ? (/not been used|disabled|SERVICE_DISABLED/i.test(msg) ? "cloud_off" : "key_restricted") : r.status === 429 ? "rate_limited" : "tts_failed", message: msg };
+  }
+  throw { code: "tts_failed" };
+}
+const TTS_MODELS = ["gemini-3.8-flash-lite-tts", "gemini-3.8-flash-tts", "gemini-2.5-flash-preview-tts"];
+async function ttsGemini(text) {
+  const key = gkey(); if (!key) throw { code: "no_key" };
+  const style = "warm, clear, friendly storyteller reading a children's book aloud" + (st.accent === "gb" ? ", natural Southern British accent" : ", natural American accent");
+  let last = null;
+  for (const model of TTS_MODELS) {
+    const body = /preview/.test(model)
+      ? { contents: [{ role: "user", parts: [{ text }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: st.voice } } } } }
+      : { contents: [{ role: "user", parts: [{ text, speech_metadata: { style } }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { voice: st.voice } } } };
+    const r = await fetch(API + model + ":generateContent", { method: "POST", headers: { "content-type": "application/json", "x-goog-api-key": key }, body: JSON.stringify(body) });
+    if (!r.ok) { last = { code: r.status === 429 ? "rate_limited" : "tts_failed", message: String(r.status) }; continue; }
+    const j = await r.json(); const part = (((j.candidates || [])[0] || {}).content || {}).parts?.find(p => p.inlineData);
+    if (!part) { last = { code: "tts_failed" }; continue; }
+    const mime = part.inlineData.mimeType || "audio/wav";
+    if (/wav/i.test(mime)) return b64ToBlob(part.inlineData.data, "audio/wav");
+    const bin = atob(part.inlineData.data); const u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return pcmToWav(u8, Number((mime.match(/rate=(\d+)/) || [])[1]) || 24000);
+  }
+  throw last || { code: "tts_failed" };
+}
+const ttsFailAt = {}; let ttsLastErr = null;
+function hash(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
+const memAudio = new Map();
+async function ttsBlob(text, rate) {
+  const order = st.readEngine === "phone" ? [] : st.readEngine === "gemini" ? ["gemini", "cloud"] : ["cloud", "gemini"];
+  for (const eng of order) {
+    const ck = `${location.origin}/__tts/${eng}/${st.voice}/${loc()}/${rate}/${hash(text)}`;
+    if (memAudio.has(ck)) return memAudio.get(ck);
+    try { const c = await caches.open("lily-tts-v1"); const hit = await c.match(ck); if (hit) { const b = await hit.blob(); memAudio.set(ck, b); return b; } } catch {}
+    if (ttsFailAt[eng] && Date.now() - ttsFailAt[eng] < 60000) continue;
+    try {
+      const b = eng === "cloud" ? await ttsCloud(text, rate) : await ttsGemini(text);
+      memAudio.set(ck, b);
+      try { const c = await caches.open("lily-tts-v1"); await c.put(ck, new Response(b, { headers: { "content-type": b.type } })); } catch {}
+      return b;
+    } catch (e) { ttsFailAt[eng] = Date.now(); ttsLastErr = e; }
+  }
+  return null;
+}
+const pending = new Map();
+function prefetch(texts, rate) { for (const t of texts) { if (!t) continue; const k = t + "|" + rate; if (pending.has(k)) continue; pending.set(k, ttsBlob(t, rate).catch(() => null)); } }
+async function getAudio(text, rate) { const k = text + "|" + rate; if (pending.has(k)) { const b = await pending.get(k); pending.delete(k); if (b) return b; } return ttsBlob(text, rate); }
+
+// phone voice fallback
+const synth = window.speechSynthesis; let phoneVoice = null;
+function pickPhoneVoice() {
+  if (!synth) return null; const all = synth.getVoices().filter(v => /^en[-_]/i.test(v.lang)); if (!all.length) return null;
+  const want = st.accent === "gb" ? /en[-_]GB/i : /en[-_]US/i;
+  const rank = (v) => (want.test(v.lang) ? 0 : 10) + (/Natural|network|Google/i.test(v.name) ? 0 : 2) + (/female|Samantha|Aria|Jenny|Ava|Sonia|Libby|Serena/i.test(v.name) ? 0 : 1);
+  return all.sort((a, b) => rank(a) - rank(b))[0];
+}
+if (synth) synth.onvoiceschanged = () => { phoneVoice = pickPhoneVoice(); };
+
+const player = new Audio(); player.preload = "auto";
+let speakTok = 0, finCur = null;
+function stopSpeech() { speakTok++; try { player.pause(); } catch {} try { synth && synth.cancel(); } catch {} const f = finCur; finCur = null; if (f) f(false); }
+// say(): speak text; onTime(fraction 0..1) drives word highlighting; resolves true when finished, false if stopped
+async function say(text, { rate = Number(st.rate) || 0.9, onTime } = {}) {
+  stopSpeech(); const tok = speakTok;
+  let blob = null; try { blob = await getAudio(text, rate); } catch {}
+  if (tok !== speakTok) return false;
+  if (blob) return new Promise((res) => {
+    const url = URL.createObjectURL(blob); let done = false, raf = 0;
+    const fin = (ok) => { if (done) return; done = true; cancelAnimationFrame(raf); URL.revokeObjectURL(url); if (finCur === fin) finCur = null; res(ok); };
+    finCur = fin;
+    player.onended = () => fin(true); player.onerror = () => fin(true);
+    player.src = url; player.playbackRate = blob.type === "audio/mpeg" ? 1 : rate;
+    const tick = () => { if (done) return; if (onTime && player.duration > 0 && isFinite(player.duration)) onTime(Math.min(1, player.currentTime / player.duration)); raf = requestAnimationFrame(tick); };
+    player.play().then(() => { raf = requestAnimationFrame(tick); }).catch(() => fin(true));
+    setTimeout(() => fin(true), 45000);
+  });
+  // phone voice
+  if (!synth) return true;
+  phoneVoice = phoneVoice || pickPhoneVoice();
+  return new Promise((res) => {
+    const u = new SpeechSynthesisUtterance(text); if (phoneVoice) { u.voice = phoneVoice; u.lang = phoneVoice.lang; } else u.lang = loc();
+    u.rate = rate; let done = false; const t0 = Date.now(), est = 600 + text.length * 70 / rate;
+    const fin = (ok) => { if (done) return; done = true; clearInterval(iv); if (finCur === fin) finCur = null; res(ok); };
+    finCur = fin;
+    u.onboundary = (e) => { if (onTime && typeof e.charIndex === "number") onTime(e.charIndex / Math.max(1, text.length)); };
+    const iv = setInterval(() => { if (onTime) onTime(Math.min(1, (Date.now() - t0) / est)); }, 120);
+    u.onend = () => fin(true); u.onerror = () => fin(true);
+    setTimeout(() => fin(true), Math.min(40000, est + 4000));
+    synth.speak(u);
+  });
+}
+function unlockAudio() { try { player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; player.play().catch(() => {}); } catch {} }
+function ttsErrKo(e) {
+  if (!e) return "";
+  if (e.code === "cloud_off") return "Cloud 목소리가 아직 꺼져 있어요(구글 클라우드 → Cloud Text-to-Speech API 사용). 지금은 다른 목소리로 읽어요.";
+  if (e.code === "key_restricted") return "이 키가 Cloud 목소리에 막혀 있어요(키 제한 확인). 지금은 다른 목소리로 읽어요.";
+  return errKo(e);
+}
+
+// ============ speech recognition (read-along + quiz answers): phone's own recognizer, word by word ============
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const normW = (t) => String(t).toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9']+/g, "").replace(/^'+|'+$/g, "");
+const normT = (t) => String(t).toLowerCase().replace(/[’‘]/g, "'").replace(/[^\p{L}\p{N}' ]+/gu, " ").replace(/\s+/g, " ").trim();
+// Android Chrome repeats the whole utterance in every new result ("yes I'm", "yes I'm ready"…); merge so nothing is counted twice
+function mergeInto(acc, t) {
+  t = String(t || "").trim(); if (!t) return acc; const a = normT(acc), b = normT(t); if (!a) return t;
+  if (b === a || a.endsWith(b) || a.includes(" " + b + " ")) return acc;
+  if (b.startsWith(a)) return t;
+  const aw = a.split(" "), bw = b.split(" "), tw = t.split(/\s+/);
+  for (let n = Math.min(aw.length, bw.length); n >= 3; n--) if (aw.slice(-n).join(" ") === bw.slice(0, n).join(" ")) return acc + " " + tw.slice(n).join(" ");
+  return acc + " " + t;
+}
+function mergeResults(results) { let acc = "", lastFinal = true; for (let k = 0; k < results.length; k++) { acc = mergeInto(acc, results[k][0].transcript || ""); lastFinal = !!results[k].isFinal; } return { text: acc.trim(), lastFinal }; }
+const NUM = { 0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten", 50: "fifty", 100: "hundred", 1000: "thousand" };
+const HOMO = [["to", "two", "too"], ["for", "four"], ["one", "won"], ["eight", "ate"], ["no", "know"], ["right", "write"], ["there", "their", "they're"], ["see", "sea"], ["be", "bee"], ["by", "bye", "buy"], ["hi", "high"], ["flour", "flower"], ["son", "sun"], ["new", "knew"], ["mom", "mum", "mam"], ["okay", "ok"], ["gray", "grey"], ["its", "it's"], ["tail", "tale"], ["meet", "meat"], ["week", "weak"], ["whole", "hole"], ["blew", "blue"], ["threw", "through"], ["red", "read"], ["hear", "here"]];
+const HOMOMAP = new Map(); HOMO.forEach(g => g.forEach(w => HOMOMAP.set(w, g)));
+function lev(a, b) { if (Math.abs(a.length - b.length) > 2) return 9; const d = Array.from({ length: a.length + 1 }, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j; for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; }
+function wordMatch(t, h) {
+  if (!t || !h) return false; if (t === h) return true;
+  if (NUM[h] === t || NUM[t] === h) return true;
+  const g = HOMOMAP.get(t); if (g && g.includes(h)) return true;
+  const ta = t.replace(/'/g, ""), ha = h.replace(/'/g, ""); if (ta === ha) return true;
+  if (ta.length >= 4 && lev(ta, ha) <= (ta.length >= 7 ? 2 : 1)) return true;
+  if ((ta.endsWith("s") && ta.slice(0, -1) === ha) || (ha.endsWith("s") && ha.slice(0, -1) === ta)) return true;
+  return false;
+}
+const SFX = /^(z{3,}|h?m{2,}|whoosh|boom|bump|plop|whump|creee*ak|woem|ah+|aaa|chooo+|burr+p|ouch|whoa|meow|moo|oops|hmm)$/;
+function isOptional(n) { return !n || SFX.test(n) || /(.)\1\1/.test(n); }
+// tokens for a sentence: display tokens (with punctuation) + flat list of matchable parts
+function tokenize(sentence) {
+  const toks = sentence.split(/\s+/).filter(Boolean).map(raw => ({ raw, parts: raw.split(/[-–—]/).map(normW).filter(Boolean) }));
+  toks.forEach(t => { t.opt = t.parts.every(isOptional); });
+  return toks;
+}
+function align(toks, heard) {
+  const flat = []; toks.forEach((t, i) => { if (!t.opt) t.parts.forEach(p => { if (!isOptional(p)) flat.push({ p, i }); }); });
+  const H = normT(heard).split(" ").map(normW).filter(Boolean);
+  let pos = 0; const got = new Set();
+  for (const h of H) { for (let j = pos; j < Math.min(flat.length, pos + 3); j++) { if (wordMatch(flat[j].p, h)) { got.add(flat[j].i); pos = j + 1; break; } } }
+  const real = [...new Set(flat.map(f => f.i))];
+  const lastReal = real[real.length - 1];
+  const done = real.length === 0 || got.size >= real.length || (got.has(lastReal) && got.size >= Math.ceil(real.length * 0.6));
+  return { got, done, real };
+}
+// follow a child reading one sentence aloud; calls onUpdate({got, done}) as words are recognised
+function follow(toks, onUpdate) {
+  if (!SR) return null;
+  let active = true, committed = "", latest = "", rec = null;
+  const start = () => {
+    rec = new SR(); rec.lang = loc(); rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
+    rec.onresult = (e) => { const m = mergeResults(e.results); latest = m.text; const all = mergeInto(committed, latest); const r = align(toks, all); onUpdate({ got: r.got, done: r.done, heard: all }); };
+    rec.onerror = (e) => { if (e.error === "not-allowed" || e.error === "service-not-allowed") { active = false; onUpdate({ denied: true }); } };
+    rec.onend = () => { committed = mergeInto(committed, latest); latest = ""; if (active) setTimeout(() => { if (active) { try { start(); } catch {} } }, 120); };
+    try { rec.start(); } catch {}
+  };
+  start();
+  return { stop() { active = false; try { rec && rec.abort(); } catch {} } };
+}
+// listen for one answer (quiz)
+let listenCancel = null;
+function listenOnce(onInterim, maxMs = 9000) {
+  return new Promise((res) => {
+    if (!SR) return res(null);
+    const rec = new SR(); rec.lang = loc(); rec.continuous = false; rec.interimResults = true;
+    let text = "", done = false;
+    const fin = (v) => { if (done) return; done = true; clearTimeout(t); listenCancel = null; try { rec.abort(); } catch {} res(v); };
+    rec.onresult = (e) => { const m = mergeResults(e.results); text = m.text; onInterim && onInterim(text); if (m.lastFinal) fin(text); };
+    rec.onerror = (e) => fin(e.error === "not-allowed" || e.error === "service-not-allowed" ? { denied: true } : text);
+    rec.onend = () => fin(text);
+    const t = setTimeout(() => fin(text), maxMs);
+    listenCancel = () => fin(null);
+    try { rec.start(); } catch { fin(null); }
+  });
+}
+
+// ============ screens ============
+const SCREENS = ["home", "talkSetup", "talk", "library", "make", "reader", "quiz"];
+function show(id) { SCREENS.forEach(s => $(s).hidden = s !== id); window.scrollTo(0, 0); if (id === "home") renderHome(); if (id === "library") renderLibrary(); }
+document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => { leaveAll(); show(b.dataset.go); }));
+function leaveAll() { stopSpeech(); readerStop(); if (listenCancel) listenCancel(); }
+let wakeLock = null;
+async function keepAwake(on) { try { if (on && "wakeLock" in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); } if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; } } catch {} }
+
+// ============ home ============
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+function renderHome() {
+  const d = new Date(); $("today").textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일`;
+  $("keyWarn").hidden = !!gkey(); $("key").value = gkey();
+  const s = shared().stats, box = $("stats"); box.innerHTML = "";
+  if (s && s.total && s.total.sessions) {
+    let streak = 0; const day = new Date(); if (!s.days[dayKey(day)]) day.setDate(day.getDate() - 1); while (s.days[dayKey(day)]) { streak++; day.setDate(day.getDate() - 1); }
+    const read = Object.values(st.progress).filter(p => p.done).length;
+    [["🔥", `${streak}일 연속`], ["💬", `말한 문장 ${s.total.sentences}개`], ["📚", `다 읽은 책 ${read}권`]].forEach(([i, t]) => { const sp = mk("span"); sp.append(i + " "); sp.append(mk("b", "", t)); box.append(sp); });
+  }
+}
+$("goTalk").addEventListener("click", () => { show("talkSetup"); setTalkMode(st.talkMode); });
+$("goBooks").addEventListener("click", () => show("library"));
+// settings
+[["voice"], ["accent"], ["turn"], ["silence"], ["out"], ["rate"], ["readEngine"], ["model"]].forEach(([id]) => { $(id).value = st[id]; $(id).addEventListener("change", () => { st[id] = $(id).value; saveSt(); if (id === "accent") phoneVoice = null; if (id === "readEngine") { delete ttsFailAt.cloud; delete ttsFailAt.gemini; } }); });
+$("key").addEventListener("change", () => { const v = $("key").value.trim(); updShared(s => { s.key_gemini = v; }); renderHome(); });
+$("testVoice").addEventListener("click", async () => {
+  unlockAudio(); delete ttsFailAt.cloud; delete ttsFailAt.gemini; ttsLastErr = null; $("testNote").textContent = "가져오는 중…";
+  await say("Hi Hajun! I'm Miss Lily. Shall we read a story together?", { rate: Number(st.rate) || 0.9 });
+  $("testNote").textContent = ttsLastErr && st.readEngine !== "phone" ? ttsErrKo(ttsLastErr) : "✔ 이 목소리로 읽어요";
+});
+
+// ============ prompts ============
+// 7-8세 영어회화 교재(Oxford Let's Go / Family and Friends, Cambridge Kid's Box 1-2 등)의 단원 주제를 합친 목록
+  const THEMES = [
+    ["기본 표현", [
+      ["인사와 자기소개", "Greetings and introductions: Hello! What's your name? How old are you? I'm eight. Nice to meet you. What do you like?", "talk", "meeting each other properly: Lily interviews Hajun, then lets Hajun interview Lily"],
+      ["기분·느낌", "Feelings: How are you? I'm happy / sad / tired / scared / excited. Why?", "game", "Guess the feeling: Lily describes a moment (or makes a sound), Hajun names the feeling; then Hajun says how HE feels today and why"],
+      ["색깔·모양", "Colors and shapes: What color is it? It's red. It's a circle. Blue and yellow!", "game", "I spy: Lily says 'I spy something red' about the emoji scene, Hajun guesses; then they swap"],
+      ["숫자·몇 개", "Numbers and How many: How many bugs? Six bugs! Count to ten with me.", "game", "Counting game: the emoji scene shows things to count; 'How many ___?' Hajun counts out loud"],
+      ["할 수 있어요 (can)", "Abilities: Can you jump? Yes, I can. I can't fly. What can you do?", "tpr", "Simon says with can/can't: Hajun does the action and says 'I can jump!'"],
+      ["이건 뭐야? (what's this)", "Identifying things: What's this? It's a ball. Is it big or small? Yes, it is / No, it isn't.", "game", "Mystery box: Lily describes a hidden object with three clues, Hajun guesses; then Hajun hides something and gives clues"]
+    ]],
+    ["나와 가족", [
+      ["우리 가족", "Family: Who's this? This is my dad / mom. I have a sister. Do you have a brother? What does your dad like?", "talk", "Hajun's REAL family: who is in it, what they like, what they do at home; Lily shares one thing about her own family"],
+      ["내 몸", "My body: This is my nose. I have two hands. Touch your toes! Shake your arms!", "tpr", "Body action game: Touch your ___! Wiggle your ___! Hajun says which body part he is touching"],
+      ["옷 입기", "Clothes: Put on your shoes. I'm wearing a blue shirt. Whose hat is this?", "roleplay", "a clothes shop before a trip; Lily is the shopkeeper, Hajun picks clothes and says what he is wearing"],
+      ["아플 때", "Health: What's wrong? I have a tummy ache. I have a cold. Take a rest. Feel better!", "roleplay", "a doctor's office; Lily is Dr. Lily, Hajun is the patient (or brings a sick toy) and explains what's wrong"],
+      ["하루 일과·시간", "Daily routine and time: I get up at seven. I brush my teeth. What time is it? It's three o'clock.", "talk", "Hajun's REAL day from morning to night, with clock times; Lily compares with her own day"]
+    ]],
+    ["학교와 놀이", [
+      ["학교 물건", "School things: What's this? It's a pencil. Is this your bag? Open your book.", "roleplay", "first day in Lily's classroom; Lily is the teacher handing out things, Hajun names them and asks for what he needs"],
+      ["장난감", "Toys: What's your favorite toy? I have a robot. Let's play! Can I have the car?", "talk", "Hajun's REAL toys at home: what he has, his favorite, what he wants; then a quick toy-shop role-play"],
+      ["운동·취미", "Sports and hobbies: I like judo. Do you like swimming? Let's play soccer. I'm good at running.", "talk", "Hajun's REAL sports (judo, taekwondo, wrestling): what he does in class, what he is good at, what is hard"],
+      ["생일 파티", "Birthday party: Happy birthday! How old are you? Here's a present. Thank you! Let's eat cake.", "roleplay", "a birthday party; Lily is the host, Hajun is the birthday boy opening presents and greeting guests"],
+      ["슈퍼히어로", "Superheroes: He's strong. She can fly. What's your superpower? I can run fast!", "story", "Hajun invents his own superhero and saves the day; Lily plays the citizens"]
+    ]],
+    ["우리 주변", [
+      ["우리 집·방", "My house and rooms: Where's the cat? It's in the kitchen. Under the bed! Next to the sofa.", "game", "hide and seek in a house: a pet hides in a room, Hajun guesses 'Is it in the kitchen?' using in/on/under/next to"],
+      ["음식·좋아하는 것", "Food: I like pizza. I don't like carrots. Are you hungry? Yummy! Can I have some milk?", "roleplay", "a restaurant; Lily is the waiter, Hajun orders from a silly menu and says what he likes and doesn't like"],
+      ["날씨·계절", "Weather and seasons: How's the weather? It's sunny. It's raining. Let's go outside. I love snow!", "roleplay", "a TV weather show; Hajun is the weather reporter, Lily is the anchor asking about each city"],
+      ["동네 장소·길 찾기", "Places in town: Where's the park? Go straight. Turn left. It's next to the school.", "roleplay", "Lily is lost in town and asks Hajun for directions to the park, the shop, the school; the emoji scene is the map"],
+      ["탈것", "Transportation: How do you go to school? By bus. A fast train! Look, a rocket!", "story", "a race across the city changing vehicles (bus, boat, helicopter...); Hajun chooses the next one"],
+      ["직업", "Jobs: What does he do? He's a firefighter. She's a doctor. I want to be a judo champion.", "game", "guess the job: Lily gives clues ('I drive a red truck'), Hajun guesses; then he gives clues"],
+      ["쇼핑·돈", "Shopping: How much is it? It's five dollars. Can I have this, please? Here you are.", "roleplay", "a toy store with prices; Lily is the shopkeeper, Hajun has ten dollars and must choose"]
+    ]],
+    ["동물과 자연", [
+      ["동물·애완동물", "Animals and pets: I have a dog. Elephants are big. Do you like lions? It's fast!", "game", "guess the animal from three clues; then Hajun gives clues for Lily to guess"],
+      ["곤충", "Insects: praying mantis, cicada, beetle, ant. It has six legs. It can jump. Where does it live?", "talk", "Hajun is the bug expert: Lily is curious and asks him about mantises, cicadas and beetles; he teaches her"],
+      ["바다 동물", "Sea animals: shark, octopus, dolphin. It can swim. It lives under the water. How many arms?", "story", "a submarine trip; Hajun steers and decides which sea animal to visit"],
+      ["농장·동물원", "Farm and zoo: What do cows say? Moo! Let's go to the zoo. Look at the monkeys!", "roleplay", "a zoo visit; Lily is the zookeeper guiding Hajun from cage to cage, animal sounds included"],
+      ["우주", "Space: planets, rockets, the moon. The sun is hot. Let's fly to Mars! 3, 2, 1, blast off!", "story", "a rocket mission; Hajun is the captain choosing planets"]
+    ]],
+    ["이야기·특별한 날", [
+      ["여행·휴가", "Holidays and travel: Where are you going? I'm going to the beach. Pack your bag. Don't forget your hat!", "roleplay", "packing for a trip and checking in at the airport; Lily is the airport staff"],
+      ["특별한 날", "Special days: Halloween, Christmas, Chuseok. Trick or treat! Merry Christmas! Happy Chuseok!", "roleplay", "a holiday scene (pick one): trick-or-treating door to door, or giving Christmas gifts"],
+      ["옛날이야기", "Fairy tales: Once upon a time... three little pigs, a big bad wolf. What happens next?", "story", "retell a classic tale together (three little pigs, the tortoise and the hare...); Hajun decides what happens next"]
+    ]]
+  ];
+  const ACTIVITY = {
+    talk: (d) => `Real-life conversation, no invented characters. You are Miss Lily herself. Topic: ${d}. Ask about Hajun's own life with the lesson questions, react warmly, share one small thing about yourself, and let him ask you back.`,
+    roleplay: (d) => `Role-play a real situation: ${d}. Hajun plays himself. Set the scene in one line, then act it out with the lesson phrases. When he is stuck, prompt him with what he could say ("You can say: One pizza, please!").`,
+    game: (d) => `A quick game: ${d}. Explain the rule in one sentence, then play 5-8 rounds with the lesson phrases; celebrate points.`,
+    tpr: (d) => `An action game: ${d}. Give one command at a time with the lesson words, Hajun does it and says what he is doing.`,
+    story: (d) => `A short cartoon adventure with 2-3 new characters: ${d}. Use FLAVOR here. Hajun's answers change what happens.`
+  };
+  const THEME_LIST = THEMES.flatMap(([cat, items]) => items.map(([ko, en, mode, detail]) => ({ cat, ko, en, mode, detail })));
+function fillThemes() { const sel = $("theme"); sel.innerHTML = ""; sel.append(new Option("🎲 아무거나 (안 한 주제 중에서)", "random")); THEMES.forEach(([cat, items]) => { const g = document.createElement("optgroup"); g.label = cat; items.forEach(([ko]) => g.append(new Option(ko, ko))); sel.append(g); }); if (shared().theme) sel.value = shared().theme; }
+function pickTheme() {
+  const v = $("theme").value; if (v && v !== "random") return THEME_LIST.find(t => t.ko === v);
+  const used = new Set(shared().usedThemes || []); const pool = THEME_LIST.filter(t => !used.has(t.ko)); const p = pool.length ? pool : THEME_LIST;
+  return p[Math.floor(Math.random() * p.length)];
+}
+function markThemeUsed(ko) { updShared(s => { const u = (s.usedThemes || []).filter(x => x !== ko); u.push(ko); s.usedThemes = u.slice(-(THEME_LIST.length - 3)); }); }
+function memBlock() {
+  const s = shared(); const list = s.memory || [];
+  const sessions = (s.sessions || []).slice(-5).map(x => `${x.date} — ${x.theme}` + (x.practiced ? ` (practiced: ${x.practiced})` : ""));
+  return (list.length ? `\n\nWHAT YOU REMEMBER ABOUT HAJUN (use it naturally, like a teacher who knows him; never recite it):\n- ` + list.join("\n- ") : "\n\nWHAT YOU REMEMBER ABOUT HAJUN: nothing yet — get to know him.")
+    + (sessions.length ? `\nRECENT SESSIONS (newest last; bring back one practiced phrase early as a quick playful review):\n- ` + sessions.join("\n- ") : "");
+}
+function lilyBase() {
+  const gb = st.accent === "gb";
+  return `You are Miss Lily, a warm, playful ${gb ? "British (southern England)" : "American"} English teacher. You are talking LIVE, by voice, with Hajun, an 8-year-old Korean boy. Hajun understands spoken English well, but speaking is hard for him: he needs easy questions, a little time, and lots of encouragement.
+
+HOW YOU SOUND: like a real, friendly native speaker talking with a kid — natural speed, contractions, real reactions ("Whoa!", "No way!", "Ha! That's so funny!"). ${gb ? "Use British words and expressions (mum, brilliant, lovely, holiday, biscuit)." : "Use American words (mom, awesome, vacation, cookie)."}
+KEEP EVERY TURN SHORT: 1-3 short sentences plus ONE easy question, about 25 words. Never lecture, never list.
+ENGLISH ONLY: if Hajun speaks Korean, show you understood, say it for him in simple English ("Oh, you mean: I'm hungry!") and invite him to say it. A Korean word only if he is totally stuck.
+RECAST, DON'T CORRECT: when his English has mistakes, say the correct sentence back naturally inside your reaction ("You went to the park yesterday? Fun!"). Never say "wrong". Never explain grammar.
+HELP HIM SPEAK IN SENTENCES: if he answers with one word, give him the whole sentence to copy ("Can you say: I like big beetles?") and cheer when he tries. If he is stuck, ask an either-or question.
+Be kind, polite, honest and thankful — a good role model. Everything cartoon-safe.
+Messages in [square brackets] come from the app or from Hajun's dad, not from Hajun. Follow them without mentioning them.`;
+}
+function talkSystem(cfg) {
+  const today = new Date(), dateStr = `${today.getMonth() + 1}/${today.getDate()}`;
+  let mode = "";
+  if (cfg.kind === "free") mode = `FREE TALK: you are his English-speaking friend, not a quiz machine. Really listen and answer exactly what he said (details, feelings, the funny part). Follow his lead. Sometimes share a tiny thing about yourself or a fun fact. ${cfg.topic ? "Start with this topic (picked by Hajun or his dad): " + cfg.topic + "." : "Start with a friendly question about his day, or about something you remember about him."}`;
+  if (cfg.kind === "lesson") mode = `TODAY'S LESSON: ${cfg.theme.en}\nACTIVITY: ${ACTIVITY[cfg.theme.mode](cfg.theme.detail)}\nFLAVOR (Hajun's favourite things — a light seasoning only): judo, jiu-jitsu, wrestling, taekwondo, praying mantises, cicadas, beetles, space, big buildings.\nCoursebook rhythm: model the target phrase once → ask a question that uses it → he answers → say it back correctly → a small variation ("What about your mom?"). Every session must feel fresh. Never open with "Welcome to our dojo".`;
+  if (cfg.kind === "build") mode = `WE MAKE A STORY TOGETHER, ONE SENTENCE EACH. Topic: ${cfg.topic || "something funny you choose"}. Style: funny and surprising, like a great children's book (silly characters, sound effects), but completely original — never use characters or lines from real books.
+You start with ONE story sentence (6-12 easy words) and hand it over: "Your turn! What happens next?". Each time he adds something: say his idea back as a correct story sentence ("Yes! Then the mantis did a big judo throw!"), add ONE new sentence that builds on HIS idea, and hand it back. Keep the same characters. If he's stuck, give two choices ("Does the beetle run away, or say sorry?"). After about 8 of his sentences, give a happy ending and retell "our story" in 3-4 short sentences.`;
+  if (cfg.kind === "booktalk" || cfg.kind === "bookbuild") {
+    const text = cfg.book.pages.map(p => p.s.join(" ")).join("\n").slice(0, 9000);
+    mode = `YOU AND HAJUN JUST READ "${cfg.book.title}" TOGETHER. The text:\n${text}\n\n` + (cfg.kind === "booktalk"
+      ? `NOW: talk about the story like a fun reading buddy. One question at a time: easy ones first (who / what / where), then why, then "What would YOU do?", and connect it to Hajun's own life (judo, bugs, space, his family). Use words from the story so he can reuse them. After about 8 of his answers, ask: "Do you want to make up what happens next? Let's do it together!" and, if he wants, make the next part one sentence each (you one sentence, he one sentence).`
+      : `NOW: MAKE THE NEXT PART of this story together, one sentence each. Start with ONE sentence (6-12 easy words) that continues the story, then: "Your turn! What happens next?". Each time he answers: say his idea back as a correct story sentence, add ONE new sentence building on HIS idea, and hand it back. Same characters, same funny style. If he's stuck, offer two choices. After about 8 of his sentences, wrap up with a happy ending and retell "our new chapter" in 3-4 short sentences.`);
+  }
+  return lilyBase() + `\n\nTODAY: ${dateStr}\n` + mode + memBlock();
+}
+function kickoffText(cfg) {
+  return cfg.kind === "free" ? "[Start now: greet Hajun by name like a friend and ask one easy opening question. Short.]"
+    : cfg.kind === "lesson" ? "[Start now: say hi to Hajun, set up today's activity in one breath, and ask your first easy question.]"
+    : cfg.kind === "build" ? "[Start now: say hi, say we'll make a story together, then say the first sentence and hand it to Hajun.]"
+    : cfg.kind === "booktalk" ? "[Start now: say one excited line about the story we just read, then ask your first easy question about it.]"
+    : "[Start now: say we'll make the next part together, then say the first sentence and hand it to Hajun.]";
+}
+
+// ============ talk setup ============
+function setTalkMode(m) { st.talkMode = m; saveSt(); document.querySelectorAll("#talkModes .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === m))); $("fFree").hidden = m !== "free"; $("fLesson").hidden = m !== "lesson"; $("fBuild").hidden = m !== "build"; }
+$("talkModes").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) setTalkMode(b.dataset.m); });
+document.querySelectorAll("[data-fill]").forEach(box => box.addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (!b) return; const inp = $(box.dataset.fill); inp.value = b.textContent; }));
+fillThemes();
+$("theme").addEventListener("change", () => updShared(s => { s.theme = $("theme").value; }));
+$("randTheme").addEventListener("click", () => { $("theme").value = "random"; const t = pickTheme(); $("theme").value = t.ko; });
+(() => { const u = shared().usedThemes || []; $("themeNote").textContent = `주제 ${THEME_LIST.length}개 · 해 본 것 ${u.length}개` + (u.length ? ` (최근: ${u.slice(-3).reverse().join(", ")})` : ""); })();
+$("talkLen").value = st.talkLen; $("talkLen").addEventListener("change", () => { st.talkLen = $("talkLen").value; saveSt(); });
+$("startTalk").addEventListener("click", () => {
+  const m = st.talkMode; const cfg = { kind: m, minutes: Number($("talkLen").value) || 10 };
+  if (m === "free") { cfg.topic = $("freeTopic").value.trim(); cfg.label = "💬 자유대화" + (cfg.topic ? ": " + cfg.topic : ""); }
+  if (m === "lesson") { cfg.theme = pickTheme(); markThemeUsed(cfg.theme.ko); cfg.label = "🗣 " + cfg.theme.ko; }
+  if (m === "build") { cfg.topic = $("buildTopic").value.trim(); cfg.label = "🧩 이야기 만들기" + (cfg.topic ? ": " + cfg.topic : ""); }
+  startTalk(cfg);
+});
+
+// ============ LIVE TALK (Gemini Live: voice in, voice out, no waiting for three separate calls) ============
+const LIVE_URL = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=";
+const LIVE_MODELS = ["gemini-3.8-live", "gemini-3.1-flash-live-preview", "gemini-2.5-flash-native-audio-preview-12-2025"];
+const WORKLET = `class LilyCap extends AudioWorkletProcessor { constructor(){ super(); this.b = new Float32Array(2048); this.n = 0; }
+  process(inputs){ const ch = inputs[0] && inputs[0][0]; if (ch) { for (let i = 0; i < ch.length; i++) { this.b[this.n++] = ch[i]; if (this.n === this.b.length) { this.port.postMessage(this.b.slice(0)); this.n = 0; } } } return true; } }
+registerProcessor("lily-cap", LilyCap);`;
+const Mic = {
+  ctx: null, stream: null, node: null, onPcm: null, level: 0,
+  async open() {
+    if (this.stream) { if (this.ctx.state === "suspended") await this.ctx.resume().catch(() => {}); return true; }
+    this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 } });
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)(); await this.ctx.resume().catch(() => {});
+    const src = this.ctx.createMediaStreamSource(this.stream); const sink = this.ctx.createGain(); sink.gain.value = 0; sink.connect(this.ctx.destination);
+    try {
+      const url = URL.createObjectURL(new Blob([WORKLET], { type: "application/javascript" }));
+      await this.ctx.audioWorklet.addModule(url);
+      this.node = new AudioWorkletNode(this.ctx, "lily-cap"); this.node.port.onmessage = (e) => this.feed(e.data);
+    } catch {
+      this.node = this.ctx.createScriptProcessor(4096, 1, 1); this.node.onaudioprocess = (e) => this.feed(e.inputBuffer.getChannelData(0).slice(0));
+    }
+    src.connect(this.node); this.node.connect(sink);
+    return true;
+  },
+  feed(f32) {
+    let sum = 0; for (let i = 0; i < f32.length; i++) sum += f32[i] * f32[i];
+    this.level = Math.sqrt(sum / f32.length);
+    const ratio = this.ctx.sampleRate / 16000, n = Math.floor(f32.length / ratio), out = new Int16Array(n);
+    for (let i = 0; i < n; i++) { const a = Math.floor(i * ratio), b = Math.min(f32.length, Math.floor((i + 1) * ratio)); let s = 0; for (let k = a; k < b; k++) s += f32[k]; const v = Math.max(-1, Math.min(1, s / ((b - a) || 1))); out[i] = v < 0 ? v * 32768 : v * 32767; }
+    this.onPcm && this.onPcm(out);
+  },
+  close() { try { this.stream && this.stream.getTracks().forEach(t => t.stop()); } catch {} try { this.ctx && this.ctx.close(); } catch {} this.ctx = null; this.stream = null; this.node = null; this.level = 0; }
+};
+const Out = { ctx: null, gain: null, an: null, end: 0, srcs: new Set(), buf: null };
+function outInit() {
+  if (!Out.ctx) {
+    try { Out.ctx = new AudioContext({ sampleRate: 24000 }); } catch { Out.ctx = new AudioContext(); }
+    Out.gain = Out.ctx.createGain(); Out.an = Out.ctx.createAnalyser(); Out.an.fftSize = 512; Out.gain.connect(Out.an); Out.an.connect(Out.ctx.destination); Out.buf = new Uint8Array(Out.an.fftSize);
+  }
+  Out.ctx.resume().catch(() => {});
+}
+function playPcm(b64, rate) {
+  const bin = atob(b64); const n = bin.length >> 1; if (!n) return;
+  const buf = Out.ctx.createBuffer(1, n, rate || 24000); const ch = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) { let v = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8); if (v >= 32768) v -= 65536; ch[i] = v / 32768; }
+  const src = Out.ctx.createBufferSource(); src.buffer = buf; src.connect(Out.gain);
+  const now = Out.ctx.currentTime; const t = Out.end > now ? Out.end : now + 0.08;
+  src.start(t); Out.end = t + buf.duration; Out.srcs.add(src); src.onended = () => Out.srcs.delete(src);
+}
+function stopPlayback() { for (const s of Out.srcs) { try { s.stop(); } catch {} } Out.srcs.clear(); Out.end = 0; }
+const playingOut = () => !!Out.ctx && Out.end > Out.ctx.currentTime + 0.02;
+function u8ToB64(u8) { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+
+const L = { ws: null, cfg: null, state: "off", manual: false, handle: null, variant: 0, closing: false, lilyActive: false, lilyText: "", curHajun: null, lastLily: "", pcm: [], pcmN: 0,
+  sentAt: 0, lastServerAt: 0, startAt: 0, endAt: 0, timeUp: false, byeSent: false, goAway: false, floor: 0, convo: [], stars: 0, speakMs: 0, nudgeT: null, clockT: null, wd: null, levelRaf: 0, reconnects: 0 };
+function liveSetupMsg(v, cfg) {
+  const s = { model: "models/" + v.model, generationConfig: { responseModalities: ["AUDIO"] }, systemInstruction: { parts: [{ text: talkSystem(cfg) }] } };
+  if (v.voice) s.generationConfig.speechConfig = { voiceConfig: { prebuiltVoiceConfig: { voiceName: st.voice } } };
+  if (v.vad) s.realtimeInputConfig = L.manual ? { automaticActivityDetection: { disabled: true } }
+    : { automaticActivityDetection: { disabled: false, startOfSpeechSensitivity: "START_SENSITIVITY_HIGH", endOfSpeechSensitivity: "END_SENSITIVITY_HIGH", prefixPaddingMs: 300, silenceDurationMs: Number(st.silence) || 900 } };
+  if (v.vad && v.handling) s.realtimeInputConfig.activityHandling = "NO_INTERRUPTION";
+  if (v.extras) { s.contextWindowCompression = { slidingWindow: {} }; s.sessionResumption = L.handle ? { handle: L.handle } : {}; }
+  if (v.tx) { s.inputAudioTranscription = {}; s.outputAudioTranscription = {}; }
+  return { setup: s };
+}
+function liveVariants() {
+  const m = st.model, alt = LIVE_MODELS.filter(x => x !== m);
+  return [
+    { model: m, voice: 1, vad: 1, handling: 1, extras: 1, tx: 1 },
+    { model: m, voice: 1, vad: 1, handling: 0, extras: 0, tx: 1 },
+    { model: alt[0], voice: 1, vad: 1, handling: 1, extras: 1, tx: 1 },
+    { model: alt[0], voice: 1, vad: 1, handling: 0, extras: 0, tx: 1 },
+    { model: m, voice: 0, vad: 1, handling: 0, extras: 0, tx: 1 },
+    { model: alt[1], voice: 1, vad: 1, handling: 0, extras: 0, tx: 1 },
+    { model: m, voice: 0, vad: 0, handling: 0, extras: 0, tx: 0 }
+  ];
+}
+function wsOpen(setupMsg) {
+  return new Promise((res) => {
+    let ws; try { ws = new WebSocket(LIVE_URL + encodeURIComponent(gkey())); } catch (e) { return res({ error: { code: "network", message: String(e) } }); }
+    ws.binaryType = "arraybuffer"; let ok = false;
+    const t = setTimeout(() => { if (!ok) { try { ws.close(); } catch {} res({ error: { code: "timeout", message: "연결 시간 초과" } }); } }, 15000);
+    ws.onopen = () => ws.send(JSON.stringify(setupMsg));
+    ws.onmessage = (ev) => {
+      const m = parseMsg(ev.data); if (!m) return;
+      if (m.setupComplete && !ok) { ok = true; clearTimeout(t); ws.onmessage = (e2) => { const mm = parseMsg(e2.data); if (mm) onLive(mm); }; res({ ws }); }
+    };
+    ws.onclose = (ev) => { if (!ok) { clearTimeout(t); res({ error: { code: "closed", close: ev.code, message: ev.reason || ("code " + ev.code) } }); } };
+    ws.onerror = () => {};
+  });
+}
+function parseMsg(data) { try { return JSON.parse(typeof data === "string" ? data : new TextDecoder().decode(data)); } catch { return null; } }
+function fatalReason(msg) { return /API key not valid|API_KEY_INVALID|invalid api key/i.test(msg) ? "bad_key" : /quota|RESOURCE_EXHAUSTED|rate limit|exceeded/i.test(msg) ? "rate_limited" : /billing|BILLING/i.test(msg) ? "billing" : null; }
+async function liveConnect() {
+  const vs = liveVariants(); const startIdx = (st.liveOk && st.liveOk.model === st.model) ? Math.min(st.liveOk.i, vs.length - 1) : 0;
+  const order = [...vs.keys()].slice(startIdx).concat([...vs.keys()].slice(0, startIdx));
+  let lastErr = null;
+  for (const i of order) {
+    if (L.closing) return false;
+    const v = vs[i]; if (L.manual && !v.vad) continue;
+    const r = await wsOpen(liveSetupMsg(v, L.cfg));
+    if (r.ws) {
+      L.ws = r.ws; L.variant = i; st.liveOk = { model: st.model, i }; saveSt();
+      r.ws.onclose = (ev) => onLiveClose(ev); return true;
+    }
+    lastErr = r.error; const fatal = fatalReason(lastErr.message || "");
+    if (fatal) { lastErr.code = fatal; break; }
+  }
+  talkError(lastErr);
+  return false;
+}
+function talkError(e) {
+  const box = $("talkErr"); box.hidden = false;
+  const why = !e ? "연결이 안 됐어요." : e.code === "bad_key" ? "Gemini 키가 맞지 않아요. 처음 화면 → 설정에서 키를 확인해 주세요."
+    : e.code === "rate_limited" ? "구글 한도에 걸렸어요. 잠깐 뒤 다시 시작해 주세요." : e.code === "billing" ? "Gemini 결제(크레딧)를 확인해 주세요."
+    : e.code === "mic" ? "마이크를 열 수 없어요. 주소창 자물쇠 → 마이크 허용을 켜 주세요. (Claude 앱 안이 아니라 크롬에서 열어야 해요)"
+    : "Lily와 연결이 안 됐어요. 이 문구를 그대로 Claude에게 보내 주세요 → " + (e.message || e.code);
+  box.innerHTML = ""; box.append(mk("div", "", why));
+  if (e && e.code !== "bad_key" && e.code !== "billing" && L.cfg) { const b = mk("button", "ghost", "🔄 다시 연결"); b.type = "button"; b.style.marginTop = "8px"; b.onclick = () => { const c = L.cfg; L.closing = true; try { L.ws && L.ws.close(); } catch {} Mic.close(); startTalk(c); }; box.append(b); }
+  setTalkState("off");
+}
+function sendJSON(o) { if (L.ws && L.ws.readyState === 1) L.ws.send(JSON.stringify(o)); }
+function sendAudio(i16) { sendJSON({ realtimeInput: { audio: { data: u8ToB64(new Uint8Array(i16.buffer, i16.byteOffset, i16.byteLength)), mimeType: "audio/pcm;rate=16000" } } }); }
+function sendText(t) {
+  const at = Date.now(); L.sentAt = at;
+  sendJSON({ realtimeInput: { text: t } });
+  clearTimeout(L.wd);
+  L.wd = setTimeout(() => {   // Lily stayed quiet: give the turn to Hajun instead of waiting forever
+    if (L.lastServerAt < at && !L.lilyActive && L.ws && L.state === "thinking") { setTalkState(L.manual ? "ready" : "listen"); toast("Lily가 조용하네요 — 하준이가 먼저 \"Hi, Lily!\" 해 봐요 🙂", 5000); }
+  }, 8000);
+  if (L.state !== "lily") setTalkState("thinking");
+}
+// mic → Live: only while it's Hajun's turn (so Lily's own voice from the TV never comes back in)
+function micGate() { return L.manual ? L.state === "rec" : (L.state === "listen" || L.state === "hearing"); }
+function onPcm(i16) {
+  const lv = Mic.level;
+  L.floor = !L.floor ? lv : lv < L.floor ? L.floor * 0.9 + lv * 0.1 : L.floor * 0.998 + lv * 0.002;   // steady fan/AC hum becomes the floor
+  const loud = lv > Math.max(0.015, L.floor * 2.5);
+  if (micGate()) {
+    L.pcm.push(i16); L.pcmN += i16.length;
+    if (L.pcmN >= 1600) { const all = new Int16Array(L.pcmN); let o = 0; for (const c of L.pcm) { all.set(c, o); o += c.length; } L.pcm = []; L.pcmN = 0; sendAudio(all); }
+    if (loud) { L.speakMs += i16.length / 16; if (!L.manual && L.state === "listen") setTalkState("hearing"); else armNudge(); }
+  } else { L.pcm = []; L.pcmN = 0; }
+}
+function sendSilence(ms) { const n = Math.round(16 * ms); for (let k = 0; k < n; k += 1600) sendAudio(new Int16Array(Math.min(1600, n - k))); }
+
+async function startTalk(cfg) {
+  leaveAll();
+  if (!gkey()) { toast("Gemini 키가 없어요. 처음 화면 → 설정에서 넣어 주세요.", 5000); show("home"); $("settingsBox").open = true; return; }
+  Object.assign(L, { cfg, state: "off", manual: st.turn === "manual", handle: null, closing: false, lilyActive: false, lilyText: "", curHajun: null, lastLily: "", pcm: [], pcmN: 0, sentAt: 0, lastServerAt: 0, timeUp: false, byeSent: false, goAway: false, floor: 0, convo: [], stars: 0, speakMs: 0, reconnects: 0, startAt: 0 });
+  show("talk"); keepAwake(true);
+  $("talkTitle").textContent = cfg.label || "Lily랑 말하기"; $("talkSub").textContent = L.manual ? "버튼 방식: 🎤 누르고 말하고, 다 하면 ✋" : "말이 끝나면 Lily가 바로 대답해요";
+  $("talkErr").hidden = true; $("capLily").textContent = ""; $("capHajun").textContent = ""; $("capFix").textContent = ""; $("log").innerHTML = ""; $("helpCard").hidden = true;
+  $("tTopic").hidden = cfg.kind !== "free"; setTalkState("connecting");
+  outInit(); unlockAudio();
+  try { await Mic.open(); } catch { talkError({ code: "mic" }); return; }
+  Mic.onPcm = onPcm;
+  if (!(await liveConnect())) return;
+  L.startAt = Date.now(); L.endAt = L.startAt + (cfg.minutes || 10) * 60000;
+  clearInterval(L.clockT); L.clockT = setInterval(talkClock, 1000); talkClock();
+  levelLoop();
+  sendText(kickoffText(cfg));
+  updShared(s => { const d = new Date(); s.sessions = (s.sessions || []).concat([{ date: `${d.getMonth() + 1}/${d.getDate()}`, theme: (cfg.label || "").replace(/^\S+\s/, "") }]).slice(-10); });
+}
+function talkClock() {
+  if (!L.startAt) return; const left = Math.max(0, L.endAt - Date.now()); const m = Math.floor(left / 60000), s = Math.floor(left % 60000 / 1000);
+  $("talkClock").textContent = `⏱ ${m}:${String(s).padStart(2, "0")}`;
+  if (!left && !L.timeUp) { L.timeUp = true; if (L.state === "listen" || L.state === "ready" || L.state === "paused") sendBye(); }
+}
+function sendBye() { if (L.byeSent) return; L.byeSent = true; sendText("[TIME IS UP: react to what he just said if anything, tell Hajun one specific thing he did great today, and say a warm goodbye. Ask no question.]"); }
+async function onLiveClose(ev) {
+  if (L.closing) return;
+  L.ws = null;
+  if (L.handle && L.reconnects < 4) {   // the server ends long sessions: pick up where we left off
+    L.reconnects++; setTalkState("connecting");
+    const r = await wsOpen(liveSetupMsg(liveVariants()[L.variant], L.cfg));
+    if (r.ws) { L.ws = r.ws; r.ws.onclose = (e) => onLiveClose(e); setTalkState(L.manual ? "ready" : "listen"); return; }
+  }
+  talkError({ code: "closed", message: (ev && (ev.reason || "code " + ev.code)) || "연결 끊김" });
+}
+function onLive(m) {
+  L.lastServerAt = Date.now();
+  if (m.sessionResumptionUpdate && m.sessionResumptionUpdate.newHandle && m.sessionResumptionUpdate.resumable !== false) L.handle = m.sessionResumptionUpdate.newHandle;
+  if (m.goAway) L.goAway = true;
+  const sc = m.serverContent; if (!sc) return;
+  const interim = sc.interimInputTranscription && sc.interimInputTranscription.text;
+  if (interim && !L.lilyActive) $("capHajun").textContent = ((L.curHajun ? L.curHajun.text : "") + " " + interim).trim();
+  if (sc.inputTranscription && sc.inputTranscription.text) {
+    if (!L.curHajun) { L.curHajun = { who: "Hajun", text: "", fix: "" }; L.convo.push(L.curHajun); logAdd(L.curHajun); $("capFix").textContent = ""; }
+    L.curHajun.text += sc.inputTranscription.text; const t = L.curHajun.text.trim();
+    L.curHajun.el.firstChild.textContent = t; $("capHajun").textContent = t;
+  }
+  if (sc.modelTurn && sc.modelTurn.parts) for (const p of sc.modelTurn.parts) {
+    if (p.inlineData && p.inlineData.data && /audio/i.test(p.inlineData.mimeType || "audio")) {
+      beginLily();
+      if (L.state !== "paused") playPcm(p.inlineData.data, Number(((p.inlineData.mimeType || "").match(/rate=(\d+)/) || [])[1]) || 24000);
+    }
+  }
+  if (sc.outputTranscription && sc.outputTranscription.text) { beginLily(); L.lilyText += sc.outputTranscription.text; $("capLily").textContent = L.lilyText.trim(); }
+  if (sc.interrupted) stopPlayback();
+  if (sc.turnComplete) { if (L.lilyActive) lilyDone(); else if (L.state === "thinking") setTalkState(L.manual ? "ready" : "listen"); }
+}
+function beginLily() {
+  if (L.lilyActive) return;
+  L.lilyActive = true; clearTimeout(L.wd); clearTimeout(L.nudgeT);
+  L.lilyText = ""; $("capLily").textContent = ""; $("helpCard").hidden = true;
+  setTalkState("lily");
+}
+async function lilyDone() {
+  if (!L.lilyActive) return;
+  L.lilyActive = false;
+  const before = L.lastLily;
+  const h = L.curHajun; L.curHajun = null;
+  if (h) { if (h.text.trim()) { h.text = h.text.trim(); L.stars++; fixFor(h, before); } else { L.convo.splice(L.convo.indexOf(h), 1); h.el && h.el.remove(); } }
+  const said = L.lilyText.trim(); if (said) { L.lastLily = said; const e = { who: "Lily", text: said }; L.convo.push(e); logAdd(e); }
+  while (playingOut() && L.ws && L.state !== "paused") await sleep(80);
+  if (L.state === "paused" || !L.ws) return;
+  if (L.byeSent) { await sleep(600); endTalk(); return; }
+  if (L.timeUp) { sendBye(); return; }
+  await sleep(tvDelay());
+  if (L.state !== "lily" && L.state !== "thinking") return;
+  if (L.goAway) { L.goAway = false; try { L.ws.close(); } catch {} return; }   // reconnect between turns (onLiveClose resumes)
+  setTalkState(L.manual ? "ready" : "listen");
+}
+function armNudge() { clearTimeout(L.nudgeT); L.nudgeT = setTimeout(() => { if ((L.state === "listen" || L.state === "ready") && L.ws) sendText("[Hajun has been quiet for a while. Gently check in with an easy yes/no question.]"); }, 45000); }
+function setTalkState(s) {
+  L.state = s;
+  const orb = $("orb"), big = $("bigBtn"), lab = $("stateLabel");
+  orb.classList.toggle("hajun", s === "listen" || s === "hearing" || s === "rec");
+  orb.classList.toggle("idle", s === "connecting" || s === "thinking" || s === "paused" || s === "off" || s === "ready");
+  lab.textContent = { connecting: "연결 중…", lily: "Lily가 말하는 중", listen: "하준이 차례 — 말해 봐!", hearing: "듣고 있어요…", thinking: "생각 중…", ready: "🎤 버튼을 누르고 말해요", rec: "듣고 있어요… 다 하면 ✋", paused: "잠깐 멈춤", off: "끝" }[s] || "";
+  big.disabled = s === "connecting" || s === "off" || s === "thinking";
+  big.className = "bigbtn" + ((s === "listen" || s === "hearing" || s === "rec" || s === "ready") ? " hajun" : s === "lily" ? " quiet" : "");
+  big.textContent = s === "lily" ? "⏸ 잠깐 멈춤" : s === "ready" ? "🎤 눌러서 말하기" : s === "rec" ? "✋ 다 말했어" : (s === "listen" || s === "hearing") ? "✋ 다 말했어" : s === "paused" ? "▶ 다시 하기" : s === "thinking" ? "생각 중…" : "연결 중…";
+  ["tHint", "tSlow", "tKo", "tTopic"].forEach(id => { $(id).disabled = !(s === "listen" || s === "hearing" || s === "ready" || s === "paused"); });
+  $("tPause").textContent = s === "paused" ? "▶ 계속" : "⏸ 잠깐"; $("tPause").hidden = s === "lily" || s === "paused";
+  if (s === "listen" || s === "ready") armNudge();
+}
+function levelLoop() {
+  cancelAnimationFrame(L.levelRaf);
+  const tick = () => {
+    if ($("talk").hidden) return;
+    let lv = 0;
+    if (L.state === "lily" && Out.an) { Out.an.getByteTimeDomainData(Out.buf); let s = 0; for (let i = 0; i < Out.buf.length; i++) { const v = (Out.buf[i] - 128) / 128; s += v * v; } lv = Math.sqrt(s / Out.buf.length) * 3; }
+    else if (micGate()) lv = Mic.level * 8;
+    $("orb").style.setProperty("--s", String(0.78 + Math.min(0.3, lv)));
+    L.levelRaf = requestAnimationFrame(tick);
+  };
+  L.levelRaf = requestAnimationFrame(tick);
+}
+$("bigBtn").addEventListener("click", () => {
+  const s = L.state;
+  if (s === "lily") { stopPlayback(); setTalkState("paused"); return; }
+  if (s === "paused") { setTalkState(L.manual ? "ready" : "listen"); return; }
+  if (s === "ready") { stopSpeech(); sendJSON({ realtimeInput: { activityStart: {} } }); setTalkState("rec"); return; }
+  if (s === "rec") { if (L.pcmN) { const all = new Int16Array(L.pcmN); let o = 0; for (const c of L.pcm) { all.set(c, o); o += c.length; } L.pcm = []; L.pcmN = 0; sendAudio(all); } sendJSON({ realtimeInput: { activityEnd: {} } }); setTalkState("thinking"); watchReply(); return; }
+  if (s === "listen" || s === "hearing") {   // "I'm done": push a moment of clean silence so the turn ends right now, fan or no fan
+    setTalkState("thinking"); sendSilence(1600); sendJSON({ realtimeInput: { audioStreamEnd: true } }); watchReply(); return;
+  }
+});
+function watchReply() {
+  const at = Date.now();
+  setTimeout(() => { if (L.state === "thinking" && !L.lilyActive && L.lastServerAt < at + 50) { $("capHajun").textContent = ""; toast("잘 안 들렸어요. 다시 말해 볼까요? 🙂"); setTalkState(L.manual ? "ready" : "listen"); } }, 7000);
+}
+$("tPause").addEventListener("click", () => { if (L.state === "paused") setTalkState(L.manual ? "ready" : "listen"); else { stopPlayback(); stopSpeech(); setTalkState("paused"); } });
+$("tSlow").addEventListener("click", () => { stopSpeech(); sendText("[Hajun's dad: please say your last sentence again, slowly and clearly, then ask the same question again.]"); });
+$("tTopic").addEventListener("click", () => {
+  const card = $("helpCard"); card.innerHTML = ""; card.append(mk("div", "small muted", "무슨 얘기 할까?"));
+  const w = mk("div", "chips"); [["🎲 아무거나", ""], ["🪲 곤충", "bugs"], ["🥋 유도·주짓수", "judo and jiu-jitsu"], ["🚀 우주", "space"], ["🍕 음식", "food"], ["🏫 학교", "school and friends"], ["👨‍👩‍👧 가족", "his family"], ["🧸 장난감", "toys"]].forEach(([lab, t]) => {
+    const b = mk("button", "chip", lab); b.type = "button"; b.onclick = () => { card.hidden = true; sendText(t ? `[Change the topic to: ${t}. One fun line, then an easy question.]` : "[Change the topic to something new Hajun would love. One fun line, then an easy question.]"); }; w.append(b);
+  });
+  card.append(w); card.hidden = false;
+});
+$("tKo").addEventListener("click", async () => {
+  const src = L.lastLily; if (!src) return; const card = $("helpCard"); card.innerHTML = ""; card.append(mk("div", "spin", "번역 중")); card.hidden = false;
+  try { const r = await gem([{ text: `Translate this English teacher's line into natural, simple spoken Korean for an 8-year-old. English: "${src}". Reply ONLY JSON: {"ko":"<Korean>"}` }]); card.innerHTML = ""; card.append(mk("div", "", "🇰🇷 " + (r.ko || ""))); }
+  catch (e) { card.innerHTML = ""; card.append(mk("div", "", errKo(e))); }
+});
+$("tHint").addEventListener("click", async () => {
+  const src = L.lastLily; const card = $("helpCard"); card.innerHTML = ""; card.append(mk("div", "spin", "생각 중")); card.hidden = false;
+  try {
+    const r = await gem([{ text: `An English teacher just said to Hajun (8, Korean, shy speaker): "${src}". Give 2 short, natural answers he could say (4-9 words each, different ideas, easy words). Reply ONLY JSON: {"hints":["",""]}` }]);
+    card.innerHTML = ""; card.append(mk("div", "small muted", "💡 눌러서 듣고 따라 말해 봐요"));
+    (r.hints || []).slice(0, 3).forEach(h => { const b = mk("button", "saybtn", "🔊 " + h); b.type = "button"; b.onclick = () => hearAside(h); card.append(b); });
+  } catch (e) { card.innerHTML = ""; card.append(mk("div", "", errKo(e))); }
+});
+// play a helper sentence without it leaking into Lily's microphone
+async function hearAside(text) { const back = L.state; if (back === "listen" || back === "hearing") setTalkState("paused"); await say(text, { rate: 0.85 }); await sleep(tvDelay()); if (L.state === "paused" && (back === "listen" || back === "hearing")) setTalkState("listen"); }
+function logAdd(e) {
+  const m = mk("div", "msg " + (e.who === "Hajun" ? "hajun" : "lily")); m.append(mk("div", "", e.text)); e.el = m;
+  if (e.who === "Lily") { const ko = mk("div", "ko"); ko.hidden = true; m.append(ko); m.onclick = async () => { if (!ko.hidden) { ko.hidden = true; return; } ko.hidden = false; if (ko.textContent) return; ko.textContent = "번역 중…"; try { const r = await gem([{ text: `Translate into natural, simple spoken Korean for an 8-year-old: "${e.text}". Reply ONLY JSON: {"ko":""}` }]); ko.textContent = "🇰🇷 " + (r.ko || ""); } catch (er) { ko.textContent = errKo(er); } }; }
+  $("log").append(m); $("log").scrollTop = $("log").scrollHeight;
+}
+async function fixFor(entry, before) {
+  try {
+    const r = await gem([{ text: `Hajun (8, Korean, learning English) just said this to his teacher. It comes from a speech recognizer and may be broken or partly Korean: "${entry.text}". The teacher had just said: "${before || ""}". Reply ONLY JSON: {"fix":"<what he meant as ONE short, natural, correct English sentence an 8-year-old would say (max 12 words). If his sentence is already natural and correct, repeat it exactly.>"}` }]);
+    const fix = String(r.fix || "").trim(); entry.fix = fix;
+    if (fix && normT(fix) !== normT(entry.text)) { if (entry.el) entry.el.append(mk("div", "fx", "✏️ " + fix)); if (normT($("capHajun").textContent) === normT(entry.text) || L.state === "lily") $("capFix").textContent = "✏️ " + fix; }
+  } catch {}
+}
+$("endTalk").addEventListener("click", () => endTalk());
+function endTalk() {
+  if (L.closing) return; L.closing = true;
+  clearInterval(L.clockT); clearTimeout(L.nudgeT); clearTimeout(L.wd); cancelAnimationFrame(L.levelRaf);
+  try { L.ws && L.ws.close(); } catch {} L.ws = null; stopPlayback(); Mic.close(); keepAwake(false); setTalkState("off");
+  if (L.curHajun && L.curHajun.text.trim()) { L.curHajun.text = L.curHajun.text.trim(); L.stars++; } L.curHajun = null;
+  L.convo = L.convo.filter(x => x.text && x.text.trim());
+  const minutes = L.startAt ? Math.round((Date.now() - L.startAt) / 6000) / 10 : 0;
+  recordStats(L.cfg ? L.cfg.label : "대화", L.stars, Math.round(L.speakMs / 1000), minutes);
+  if (L.convo.some(x => x.who === "Hajun")) showSummary(); else show(L.cfg && L.cfg.book ? "reader" : "home");
+}
+function recordStats(label, sentences, speakSec, minutes) {
+  if (minutes < 0.5 && !sentences) return;
+  updShared(s => {
+    const st2 = s.stats || { days: {}, total: { sentences: 0, speakSec: 0, minutes: 0, sessions: 0 } }; const k = dayKey();
+    const d = st2.days[k] || { sentences: 0, speakSec: 0, minutes: 0, sessions: 0 };
+    d.sentences += sentences; d.speakSec += speakSec; d.minutes = Math.round((d.minutes + minutes) * 10) / 10; d.sessions += 1; st2.days[k] = d;
+    st2.total.sentences += sentences; st2.total.speakSec += speakSec; st2.total.minutes = Math.round((st2.total.minutes + minutes) * 10) / 10; st2.total.sessions += 1;
+    const keys = Object.keys(st2.days).sort(); while (keys.length > 120) delete st2.days[keys.shift()];
+    s.stats = st2; s.history = (s.history || []).concat([{ date: k.slice(5).replace("-", "/"), label, sentences, minutes }]).slice(-30);
+  });
+}
+function sayBtn(text) { const b = mk("button", "saybtn", "🔊 " + text); b.type = "button"; b.onclick = () => say(text, { rate: 0.85 }); return b; }
+async function showSummary() {
+  const box = $("sumInner"); box.innerHTML = ""; $("summary").hidden = false; $("summary").scrollTop = 0;
+  box.append(mk("h1", "", "오늘의 정리"));
+  const hajunTurns = L.convo.filter(x => x.who === "Hajun");
+  box.append(mk("div", "stats", `💬 ${hajunTurns.length}문장 · 🎙 ${Math.round(L.speakMs / 1000)}초 · ⏱ ${L.startAt ? Math.round((Date.now() - L.startAt) / 60000) : 0}분 · ${L.cfg ? L.cfg.label : ""}`));
+  const note = mk("div", "card"); note.append(mk("div", "lbl", "👨‍👧 아빠에게"), mk("div", "spin", "정리하는 중")); box.append(note);
+  const pairs = hajunTurns.filter(x => x.fix && normT(x.fix) !== normT(x.text)).slice(-6);
+  if (pairs.length) { const c = mk("div", "card"); c.append(mk("div", "lbl", "✏️ 하준이가 한 말 → 이렇게 말하면 더 좋아요")); pairs.forEach(x => { c.append(mk("div", "", "🧒 " + x.text)); c.append(sayBtn(x.fix)); }); box.append(c); }
+  const phr = mk("div", "card"); phr.hidden = true; box.append(phr);
+  const done = mk("button", "go", "확인"); done.type = "button"; done.onclick = () => { stopSpeech(); $("summary").hidden = true; show(L.cfg && L.cfg.book ? "reader" : "home"); }; box.append(done);
+  const lines = L.convo.slice(-50).map(x => (x.who === "Lily" ? "Lily: " : "Hajun: ") + x.text + (x.fix && normT(x.fix) !== normT(x.text) ? ` (better: ${x.fix})` : "")).join("\n");
+  const known = (shared().memory || []).join("; ").slice(0, 1500);
+  try {
+    const r = await gem([{ text: `TASK: SESSION SUMMARY. Hajun, an 8-year-old Korean boy, just finished an English speaking session with Miss Lily (${L.cfg ? L.cfg.label : ""}).\nTranscript:\n${lines}\n\nAlready known about Hajun: ${known || "nothing"}\nReply ONLY JSON: {"note_ko":"<2 short Korean sentences for his dad: one specific thing he did well today, one thing to practise next>","phrases":[{"en":"<a useful sentence from today he should keep using, max 8 words>","ko":"<Korean>"}],"words":[{"en":"","ko":""}],"remember":["<new lasting facts about Hajun's real life that HE said today (names, favourites, things he did), short English; [] if none>"]}\nGive 3-5 phrases and up to 5 words.` }], { models: SMART, max: 1500 });
+    note.lastChild.className = ""; note.lastChild.textContent = r.note_ko || "";
+    const ps = (r.phrases || []).filter(x => x && x.en).slice(0, 5), ws = (r.words || []).filter(x => x && x.en).slice(0, 5);
+    if (ps.length || ws.length) { phr.innerHTML = ""; phr.append(mk("div", "lbl", "📚 오늘 배운 표현 (눌러서 듣기)")); ps.forEach(x => { phr.append(sayBtn(x.en)); if (x.ko) phr.append(mk("div", "lbl", x.ko)); }); if (ws.length) phr.append(mk("div", "", ws.map(x => `${x.en} · ${x.ko || ""}`).join("   "))); phr.hidden = false; }
+    if (Array.isArray(r.remember) && r.remember.length) updShared(s => { const list = s.memory || []; const seen = new Set(list.map(normT)); r.remember.map(String).filter(x => x.length < 140).forEach(f => { if (!seen.has(normT(f))) { list.push(f); seen.add(normT(f)); } }); s.memory = list.slice(-80); });
+    if (ps.length) updShared(s => { const ss = s.sessions || []; if (ss.length) ss[ss.length - 1].practiced = ps.slice(0, 4).map(x => x.en).join("; "); s.sessions = ss; });
+  } catch (e) { note.lastChild.className = ""; note.lastChild.textContent = "AI 정리는 못 했어요 (" + errKo(e) + ")"; }
+}
+
+// ============ LIBRARY ============
+const REAL_BOOKS = [
+  ["Ladybird Readers (Penguin)", "외국 아이용으로 만든 단계별 리더스 · 5단계 · 케임브리지 YLE 시험과 연결", "https://www.penguin.co.uk/books/304724/ladybird-readers-level-3---bbc-earth---where-animals-live-elt-graded-reader/9780241578919"],
+  ["Collins Big Cat (HarperCollins)", "영국 학교 표준 색깔 단계 · 저학년(KS1)은 Lilac~Lime, 그 위는 Copper~Pearl", "https://collins.co.uk/pages/primary-primary-english-collins-big-cat-ks1-bands"],
+  ["Project X (Oxford)", "옥스퍼드지만 ORT와 다르게 남자아이용으로 만든 액션·우주 시리즈", "https://www.teachitprimary.co.uk/oxford-university-press-project-x"],
+  ["Usborne Young Reading", "혼자 읽기 시작한 아이용 시리즈 1~4 · 명작·과학 이야기", "https://www.books2door.com/collections/usborne-reading-programme/age_7-9"],
+  ["Horrid Henry Early Reader (Orion)", "장난꾸러기 헨리 코미디의 쉬운판 · 그림책에서 읽기책으로 넘어가는 단계", "https://toppsta.com/books/details/49130/horrid-henry-early-reader-horrid-henrys-holiday-book-3"],
+  ["로알드 달 짧은 책들 (5~7세용 세트)", "The Magic Finger, Fantastic Mr Fox, Esio Trot, The Twits 등", "https://world-shop.scholastic.co.uk/products/Roald-Dahl-Book-Set-Ages-5-plus-6-Books-9789999756198"],
+  ["Tom Gates (Scholastic UK)", "영국판 윔피키드 — 낙서 일기 형식 · 9세 이상 권장(조금 뒤에)", "https://www.booktrust.org.uk/book/t/the-brilliant-world-of-tom-gates/"]
+];
+function allBooks() { return (window.LILY_BOOKS || []).concat(st.myBooks || []); }
+function bookCard(b) {
+  const btn = mk("button", "book"); btn.type = "button";
+  const cv = mk("div", "cv", b.cover ? b.cover.e : "📖"); cv.style.background = (b.cover && b.cover.bg) || "var(--accent-soft)";
+  cv.append(mk("span", "lv", "Level " + (b.level || 2)));
+  if (st.progress[b.id] && st.progress[b.id].done) cv.append(mk("span", "ok", "✓ 읽음"));
+  btn.append(cv, mk("div", "bt", b.title), mk("div", "bs", b.style || ""));
+  btn.onclick = () => openBook(b);
+  return btn;
+}
+function renderLibrary() {
+  const sh = $("shelf"); sh.innerHTML = ""; (window.LILY_BOOKS || []).forEach(b => sh.append(bookCard(b)));
+  const mine = st.myBooks || []; $("mineSec").hidden = !mine.length; $("mine").innerHTML = ""; mine.slice().reverse().forEach(b => $("mine").append(bookCard(b)));
+  const rb = $("realBooks"); if (!rb.childElementCount) REAL_BOOKS.forEach(([t, d, u]) => { const a = mk("a"); a.href = u; a.target = "_blank"; a.rel = "noopener"; const l = mk("span"); l.append(mk("b", "", t)); l.append(mk("br")); l.append(mk("span", "small muted", d)); a.append(l, mk("span", "", "↗")); rb.append(a); });
+}
+
+// ============ READER ============
+const R = { book: null, page: 0, s: 0, mode: "listen", tok: 0, playing: false, follower: null, resolveTurn: null, read: 0, startAt: 0 };
+function openBook(b, page = 0) {
+  leaveAll(); R.book = b; R.page = page; R.s = 0; R.playing = false; R.read = 0; R.startAt = Date.now();
+  R.mode = st.readMode || "listen"; setReadMode(R.mode);
+  $("rTitle").textContent = b.title; $("rEnd").hidden = true; $("photoMore").hidden = !b.photo;
+  show("reader"); renderPage(); keepAwake(true);
+}
+function setReadMode(m) { R.mode = m; st.readMode = m; saveSt(); document.querySelectorAll("#rModes .chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.m === m))); }
+$("rModes").addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (!c) return; const was = R.playing; readerStop(); setReadMode(c.dataset.m); if (was) readerRun(); });
+function renderPage() {
+  const b = R.book, p = b.pages[R.page];
+  $("rPage").textContent = `${R.page + 1} / ${b.pages.length}`; $("rPic").textContent = p.e || "";
+  const box = $("rText"); box.innerHTML = "";
+  p._toks = p.s.map(tokenize);
+  p.s.forEach((sent, i) => {
+    const el = mk("p", "sent"); el.dataset.i = i;
+    p._toks[i].forEach((t, j) => { if (j) el.append(" "); const w = mk("span", "w", t.raw); w.dataset.j = j; w.onclick = (e) => { e.stopPropagation(); wordTap(t.raw, sent); }; el.append(w); });
+    box.append(el);
+  });
+  $("rPrev").disabled = R.page === 0; $("rNext").disabled = R.page >= b.pages.length - 1;
+  playBtn();
+}
+function sentEl(i) { return $("rText").querySelector(`.sent[data-i="${i}"]`); }
+function focusSent(i, cls) { $("rText").querySelectorAll(".sent").forEach(e => e.classList.remove("now", "hajunturn")); const e = sentEl(i); if (e) { e.classList.add(cls || "now"); e.scrollIntoView({ block: "nearest", behavior: "smooth" }); } }
+function markWord(i, j) { const e = sentEl(i); if (!e) return; e.querySelectorAll(".w").forEach(w => w.classList.toggle("on", Number(w.dataset.j) === j)); }
+function clearMarks() { $("rText").querySelectorAll(".w.on").forEach(w => w.classList.remove("on")); }
+function playBtn() { $("rPlay").textContent = R.playing ? "⏸ 잠깐" : (R.s > 0 ? "▶ 이어서" : "▶ 읽기 시작"); }
+function readerStop() { R.tok++; R.playing = false; stopSpeech(); if (R.follower) { R.follower.stop(); R.follower = null; } if (R.resolveTurn) { const f = R.resolveTurn; R.resolveTurn = null; f("stop"); } $("hajunBtns").hidden = true; $("turnNote").textContent = ""; clearMarks(); if (!$("reader").hidden) playBtn(); }
+$("rPlay").addEventListener("click", () => { if (R.playing) readerStop(); else { unlockAudio(); $("rEnd").hidden = true; readerRun(); } });
+$("rPrev").addEventListener("click", () => { readerStop(); if (R.page > 0) { R.page--; R.s = 0; renderPage(); } });
+$("rNext").addEventListener("click", () => { readerStop(); if (R.page < R.book.pages.length - 1) { R.page++; R.s = 0; renderPage(); } });
+$("readerBack").addEventListener("click", () => { readerFinishStats(); readerStop(); keepAwake(false); show("library"); });
+function whoReads(i) { return R.mode === "listen" ? "lily" : R.mode === "solo" ? "hajun" : R.mode === "echo" ? "both" : (i % 2 === 0 ? "lily" : "hajun"); }
+function charWeights(toks) { const w = toks.map(t => t.raw.length + 2); const tot = w.reduce((a, b) => a + b, 0); let acc = 0; return w.map(x => (acc += x) / tot); }
+async function lilyReads(i, tok) {
+  const p = R.book.pages[R.page], text = p.s[i], toks = p._toks[i], cw = charWeights(toks);
+  focusSent(i); $("turnNote").textContent = "";
+  const rate = Number(st.rate) || 0.9;
+  const nexts = [p.s[i + 1], p.s[i + 2]].concat(R.page + 1 < R.book.pages.length ? [R.book.pages[R.page + 1].s[0]] : []);
+  prefetch(nexts, rate);
+  const ok = await say(text, { rate, onTime: (f) => { if (tok !== R.tok) return; const adj = Math.max(0, (f - 0.04) / 0.92); let j = cw.findIndex(c => c >= adj); if (j < 0) j = toks.length - 1; markWord(i, j); } });
+  clearMarks();
+  if (ttsLastErr && !$("rTitle").dataset.warned && st.readEngine !== "phone") { $("rTitle").dataset.warned = "1"; toast(ttsErrKo(ttsLastErr), 6000); }
+  return ok && tok === R.tok;
+}
+function hajunReads(i, tok) {
+  return new Promise((resolve) => {
+    const p = R.book.pages[R.page], toks = p._toks[i];
+    focusSent(i, "hajunturn"); $("hajunBtns").hidden = false;
+    $("turnNote").textContent = SR ? "🎤 하준이 차례 — 소리 내어 읽어요" : "🎤 하준이 차례 — 다 읽으면 ✅";
+    const el = sentEl(i); el && el.querySelectorAll(".w").forEach(w => w.classList.remove("got"));
+    toks.forEach((t, j) => { if (t.opt && el) el.querySelector(`.w[data-j="${j}"]`)?.classList.add("got"); });
+    let finished = false, lastProg = Date.now(), best = 0, helped = false;
+    const finish = (how) => { if (finished) return; finished = true; clearInterval(iv); if (R.follower) { R.follower.stop(); R.follower = null; } R.resolveTurn = null; $("hajunBtns").hidden = true; resolve(how); };
+    R.resolveTurn = finish;
+    const startFollow = () => {
+      if (!SR || finished) return;
+      R.follower = follow(toks, (u) => {
+        if (finished || tok !== R.tok) return;
+        if (u.denied) { $("turnNote").textContent = "마이크 권한이 꺼져 있어요 — 다 읽으면 ✅ 눌러요"; return; }
+        if (u.got) { u.got.forEach(j => el && el.querySelector(`.w[data-j="${j}"]`)?.classList.add("got")); if (u.got.size > best) { best = u.got.size; lastProg = Date.now(); } }
+        if (u.done) { R.read++; chime(); $("turnNote").textContent = ["Great reading! ⭐", "Nice! ⭐", "You did it! ⭐", "Super! ⭐"][Math.floor(Math.random() * 4)]; setTimeout(() => finish("ok"), 450); }
+      });
+    };
+    setTimeout(startFollow, tvDelay() > 500 ? 250 : 120);
+    const iv = setInterval(async () => {   // stuck for a while: Lily reads it once, then he tries again
+      if (finished || tok !== R.tok) { clearInterval(iv); return; }
+      if (!helped && Date.now() - lastProg > (best ? 9000 : 12000)) {
+        helped = true; if (R.follower) { R.follower.stop(); R.follower = null; }
+        $("turnNote").textContent = "같이 읽어 볼까? 들어 보고 따라 읽어요";
+        await lilyReads(i, tok); if (finished || tok !== R.tok) return;
+        focusSent(i, "hajunturn"); $("turnNote").textContent = "🎤 이제 하준이가 읽어요"; lastProg = Date.now(); await sleep(tvDelay()); startFollow();
+      }
+    }, 700);
+    $("rHear").onclick = async () => { if (R.follower) { R.follower.stop(); R.follower = null; } lastProg = Date.now(); await lilyReads(i, tok); if (finished || tok !== R.tok) return; focusSent(i, "hajunturn"); $("turnNote").textContent = "🎤 이제 하준이가 읽어요"; await sleep(tvDelay()); lastProg = Date.now(); startFollow(); };
+    $("rDone").onclick = () => { R.read++; finish("ok"); };
+  });
+}
+async function readerRun() {
+  const tok = ++R.tok; R.playing = true; playBtn();
+  while (tok === R.tok) {
+    const p = R.book.pages[R.page];
+    if (R.s >= p.s.length) {
+      if (R.page < R.book.pages.length - 1) { await sleep(800); if (tok !== R.tok) return; R.page++; R.s = 0; renderPage(); window.scrollTo({ top: 0, behavior: "smooth" }); continue; }
+      R.playing = false; R.s = 0; playBtn(); bookFinished(); return;
+    }
+    const i = R.s, who = whoReads(i);
+    if (who === "lily" || who === "both") { const ok = await lilyReads(i, tok); if (!ok) return; }
+    if (who === "hajun" || who === "both") { await sleep(who === "both" ? tvDelay() : 150); if (tok !== R.tok) return; const r = await hajunReads(i, tok); if (r === "stop" || tok !== R.tok) return; }
+    R.s++; await sleep(R.mode === "listen" ? 260 : 450);
+  }
+}
+let ac = null;
+function chime() { try { ac = ac || new AudioContext(); const t = ac.currentTime; [784, 1047].forEach((f, k) => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = f; g.gain.setValueAtTime(0.0001, t + k * 0.09); g.gain.exponentialRampToValueAtTime(0.12, t + k * 0.09 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + k * 0.09 + 0.35); o.connect(g); g.connect(ac.destination); o.start(t + k * 0.09); o.stop(t + k * 0.09 + 0.4); }); } catch {} }
+function bookFinished() {
+  const b = R.book; if (!b.photo) { const pr = st.progress[b.id] || { times: 0 }; pr.done = true; pr.times = (pr.times || 0) + 1; st.progress[b.id] = pr; saveSt(); }
+  $("rEnd").hidden = false; $("rQuiz").hidden = !(b.quiz && b.quiz.length);
+  $("rEndNote").textContent = R.read ? `하준이가 ${R.read}문장을 소리 내어 읽었어요.` : "다음엔 🤝 번갈아 읽기나 🔁 따라 읽기로 하준이도 소리 내어 읽어 봐요.";
+  $("rEnd").scrollIntoView({ behavior: "smooth", block: "center" });
+  readerFinishStats();
+}
+function readerFinishStats() { if (R.book && R.read) { recordStats("📚 " + R.book.title, R.read, 0, Math.round((Date.now() - R.startAt) / 6000) / 10); R.read = 0; R.startAt = Date.now(); } }
+$("rAgain").addEventListener("click", () => { $("rEnd").hidden = true; R.page = 0; R.s = 0; renderPage(); readerRun(); });
+$("rQuiz").addEventListener("click", () => startQuiz(R.book));
+$("rTalk").addEventListener("click", () => startTalk({ kind: "booktalk", book: R.book, label: "💬 책 이야기: " + R.book.title, minutes: 10 }));
+$("rBuild").addEventListener("click", () => startTalk({ kind: "bookbuild", book: R.book, label: "✍️ 다음 이야기: " + R.book.title, minutes: 10 }));
+// tap a word: hear it + Korean meaning
+async function wordTap(raw, sentence) {
+  const w = normW(raw.split(/[-–—]/)[0]) || normW(raw); if (!w) return;
+  if (R.playing) readerStop();
+  const pop = $("wordPop"); pop.innerHTML = ""; pop.append(mk("b", "", raw.replace(/[^\p{L}\p{N}'-]/gu, ""))); const ko = mk("span", "spin", ""); pop.append(ko); pop.hidden = false;
+  clearTimeout(wordTap.t); wordTap.t = setTimeout(() => pop.hidden = true, 6000);
+  say(raw.replace(/[^\p{L}\p{N}'-]/gu, " ").trim(), { rate: 0.8 });
+  const g = R.book.words || {}; const keys = Object.keys(g);
+  const hit = keys.find(k => normW(k) === w) || keys.find(k => k.includes(" ") && k.toLowerCase().split(" ").includes(w)) || keys.find(k => normW(k) === w.replace(/(ed|s|es|ing)$/, ""));
+  if (hit) { ko.className = ""; ko.textContent = g[hit]; return; }
+  const ck = w + "|" + hash(sentence); if (st.wordKo[ck]) { ko.className = ""; ko.textContent = st.wordKo[ck]; return; }
+  try { const r = await gem([{ text: `In this sentence from a children's book: "${sentence}", what does the word "${raw}" mean? Reply ONLY JSON: {"ko":"<short Korean meaning for an 8-year-old, max 8 Korean words>"}` }]); ko.className = ""; ko.textContent = r.ko || ""; st.wordKo[ck] = r.ko || ""; const ks = Object.keys(st.wordKo); if (ks.length > 400) delete st.wordKo[ks[0]]; saveSt(); }
+  catch (e) { ko.className = ""; ko.textContent = errKo(e); }
+}
+$("wordPop").addEventListener("click", () => $("wordPop").hidden = true);
+
+// ============ PHOTO: a page from a real book at home ============
+$("photoBook").addEventListener("click", () => { if (!gkey()) { toast("Gemini 키가 필요해요 (처음 화면 → 설정)."); return; } R.photoTarget = null; $("photoInput").click(); });
+$("rPhotoNext").addEventListener("click", () => { R.photoTarget = R.book; $("photoInput").click(); });
+$("photoInput").addEventListener("change", async () => {
+  const f = $("photoInput").files && $("photoInput").files[0]; $("photoInput").value = ""; if (!f) return;
+  const note = $("photoNote"); const inReader = !$("reader").hidden;
+  const msg = (t) => { if (inReader) toast(t, 4000); else { note.hidden = false; note.textContent = t; } };
+  msg("📖 사진 속 글자 읽는 중…");
+  try {
+    const data = await shrink(f);
+    const r = await gem([{ inlineData: { mimeType: "image/jpeg", data } }, { text: `This is a photo of a page from a children's book that this family owns. Write out the story text printed on the page exactly as printed, in reading order, so it can be read aloud to the child. Include dialogue in speech bubbles if it is part of the story. Skip page numbers, running headers, and tiny captions. Split it into sentences. Reply ONLY JSON: {"title":"<book title if visible, else empty>","sentences":["..."]}. If there is no readable story text, reply {"title":"","sentences":[]}.` }], { models: SMART, max: 3000, temp: 0 });
+    const sents = (r.sentences || []).map(s => String(s).trim()).filter(Boolean).slice(0, 60);
+    if (!sents.length) { msg("글자를 못 찾았어요. 페이지가 잘 보이게 다시 찍어 주세요."); return; }
+    note.hidden = true;
+    if (R.photoTarget && R.photoTarget.photo) { R.photoTarget.pages.push({ e: "📷", s: sents }); R.book = R.photoTarget; R.page = R.book.pages.length - 1; R.s = 0; $("rEnd").hidden = true; renderPage(); toast("다음 페이지 추가했어요"); return; }
+    const book = { id: "photo-" + Date.now(), photo: true, title: r.title || "우리 집 책", level: 0, style: "사진", pages: [{ e: "📷", s: sents }], words: {} };
+    openBook(book);
+  } catch (e) { msg(errKo(e)); }
+});
+function shrink(file) {
+  return new Promise((res, rej) => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => { const s = Math.min(1, 1800 / Math.max(img.width, img.height)); const c = document.createElement("canvas"); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res(c.toDataURL("image/jpeg", 0.85).split(",")[1]); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej({ code: "failed", message: "사진을 열 수 없어요" }); };
+    img.src = url;
+  });
+}
+
+// ============ MAKE A NEW STORY ============
+$("makeBook").addEventListener("click", () => show("make"));
+$("mkStyle").addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (!c) return; document.querySelectorAll("#mkStyle .chip").forEach(x => x.setAttribute("aria-pressed", String(x === c))); });
+const STYLE = {
+  diary: "a funny diary written by a kid, one day per page (Monday, Tuesday...): big plans that go wrong, an annoying-but-sweet little sister, embarrassing moments, a kind ending",
+  dahl: "wildly imaginative and a bit mischievous: strange grown-ups, silly made-up words, impossible machines or creatures, a clever kid who saves the day, a twist at the end",
+  bugs: "an adventure with insects and small garden creatures (beetles, praying mantises, cicadas, ants), real bug facts woven in",
+  space: "space and building: rockets, the moon, towers, machines, a kid who loves to design and build",
+  sport: "judo / wrestling / taekwondo training: trying hard, falling and getting up, respect for coaches and partners, funny moments at the dojo",
+  mystery: "a small, funny mystery with clues the reader can spot, solved by a clever kid"
+};
+const LEVELDESC = { 1: "very short sentences (4-8 words), the most common words, mostly present tense, lots of repetition", 2: "short sentences (5-10 words), simple past tense, a few new words that the story makes clear", 3: "sentences up to 14 words, some describing words and dialogue, still easy for a young reader" };
+$("mkGo").addEventListener("click", async () => {
+  const styleKey = (document.querySelector('#mkStyle .chip[aria-pressed="true"]') || {}).dataset?.v || "diary";
+  const lv = Number($("mkLevel").value) || 2, hero = $("mkHero").value === "hajun", topic = $("mkTopic").value.trim();
+  const note = $("mkNote"); note.hidden = false; note.className = "banner"; note.textContent = "✍️ Lily가 이야기를 쓰는 중… (20초쯤)"; $("mkGo").disabled = true;
+  try {
+    const r = await gem([{ text: `Write a completely ORIGINAL children's story for Hajun, an 8-year-old Korean boy who understands spoken English well and is just starting to read English.
+STYLE: ${STYLE[styleKey]}.
+TOPIC: ${topic || "anything fun that fits the style"}.
+HERO: ${hero ? "Hajun himself (8, loves judo, bugs and space, has a little sister named Hana)" : "brand-new characters you invent"}.
+Never copy or imitate characters, titles, catchphrases or sentences from existing books — everything must be new.
+LEVEL ${lv}: ${LEVELDESC[lv]}.
+6 pages, 3-5 sentences per page. Kid humour, sound effects, a little repetition, real dialogue. Values live quietly in the background (kindness, courage, hard work, honesty, thankfulness), never preachy. Cartoon-safe.
+Reply ONLY JSON:
+{"title":"","cover":"<1 emoji>","blurb_ko":"<one Korean sentence for the parent>","pages":[{"e":"<2 emoji for the picture>","s":["<sentence>","..."]}],"words":{"<harder word from the story>":"<short Korean meaning>"},"talk":["<3 questions about the story>"],"quiz":[{"t":"choice","q":"<question>","a":["<correct answer>","<wrong>","<wrong>"],"e":["<emoji>","<emoji>","<emoji>"]},{"t":"word","q":"'<Korean word>'는 영어로?","a":["<correct English word>","<similar-looking wrong word>","<wrong word>"]},{"t":"say","q":"Say it! <a sentence from the story with its last word(s) replaced by ...>","say":"<the full sentence>","key":["<the missing word(s)>"]}]}
+Give 5 quiz items: 2-3 "choice", 1 "word", 1-2 "say". Give 8-12 words.` }], { models: SMART, max: 6000, temp: 0.95 });
+    const pages = (r.pages || []).map(p => ({ e: String(p.e || "📖"), s: (p.s || []).map(String).filter(Boolean) })).filter(p => p.s.length);
+    if (pages.length < 3) throw { code: "failed", message: "이야기가 짧게 나왔어요" };
+    const pal = ["#F2C66D", "#9BC59D", "#B9C4E8", "#E7A98C", "#C9B8E0", "#E8D9B5", "#7FB8A4"];
+    const book = { id: "my-" + Date.now(), level: lv, style: (document.querySelector('#mkStyle .chip[aria-pressed="true"]') || {}).textContent || "", title: String(r.title || "Our Story"), cover: { e: String(r.cover || "📖").slice(0, 4), bg: pal[Math.floor(Math.random() * pal.length)] }, blurb: r.blurb_ko || "", pages, words: r.words || {}, talk: r.talk || [], quiz: Array.isArray(r.quiz) ? r.quiz.filter(q => q && q.q && ((q.a && q.a.length >= 2) || q.say)) : [] };
+    st.myBooks = (st.myBooks || []).concat([book]).slice(-40); saveSt();
+    note.hidden = true; openBook(book);
+  } catch (e) { note.className = "banner err"; note.textContent = errKo(e); }
+  finally { $("mkGo").disabled = false; }
+});
+
+// ============ QUIZ ============
+const Q = { book: null, items: [], i: 0, score: 0, answered: false, tok: 0 };
+function shuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+function startQuiz(book) {
+  readerStop(); Q.book = book; Q.i = 0; Q.score = 0;
+  Q.items = (book.quiz || []).map(it => { if (!it.a) return { ...it }; const idx = shuffle(it.a.map((_, k) => k)); return { ...it, opts: idx.map(k => ({ text: it.a[k], e: (it.e || [])[k] || "", right: k === 0 })) }; });
+  $("qTitle").textContent = "🧩 " + book.title; $("qEnd").hidden = true; show("quiz"); quizShow();
+}
+function quizShow() {
+  Q.answered = false; Q.tok++; if (listenCancel) listenCancel();
+  const it = Q.items[Q.i]; $("qNum").textContent = `${Q.i + 1} / ${Q.items.length}`; $("qHeard").textContent = "";
+  $("qText").textContent = it.q; const box = $("qOpts"); box.innerHTML = "";
+  (it.opts || []).forEach(o => { const b = mk("button", "opt"); b.type = "button"; if (o.e) b.append(mk("span", "em", o.e)); b.append(mk("span", "", o.text)); b.onclick = () => quizAnswer(o, b); o.el = b; box.append(b); });
+  $("qListen").hidden = !SR; $("qSkip").textContent = it.t === "say" && !SR ? "말했어요 ✅" : "모르겠어 →";
+  const tok = Q.tok; if (it.t === "word") return;
+  (async () => { await say(it.q.replace(/\.\.\./g, " blank."), { rate: 0.95 }); if (tok === Q.tok && SR) { await sleep(tvDelay()); if (tok === Q.tok) quizListen(); } })();
+}
+async function quizListen() {
+  const it = Q.items[Q.i]; if (Q.answered || !SR) return; stopSpeech();
+  $("qHeard").textContent = "🎤 듣고 있어요…"; const tok = Q.tok;
+  const t = await listenOnce((x) => { if (tok === Q.tok) $("qHeard").textContent = "🎤 " + x; }, 9000);
+  if (tok !== Q.tok || Q.answered) return;
+  if (t && t.denied) { $("qHeard").textContent = "마이크 권한이 꺼져 있어요 — 눌러서 골라요"; return; }
+  if (!t) { $("qHeard").textContent = it.opts ? "눌러서 골라도 돼요 🙂" : "다시 🎤 눌러서 말해 봐요"; return; }
+  $("qHeard").textContent = "🧒 " + t;
+  const H = normT(t).split(" ").map(normW).filter(Boolean);
+  if (it.opts) {
+    const stop = new Set(["a", "an", "the", "on", "in", "to", "of", "and", "his", "her", "my", "it", "is", "at"]);
+    let best = null, bestScore = 0;
+    it.opts.forEach(o => { const ws = normT(o.text).split(" ").map(normW).filter(w => w && !stop.has(w)); const sc = ws.filter(w => H.some(h => wordMatch(w, h))).length / Math.max(1, ws.length); if (sc > bestScore) { bestScore = sc; best = o; } });
+    if (best && bestScore >= 0.5) quizAnswer(best, best.el); else $("qHeard").textContent += "  — 다시 말하거나 눌러서 골라요";
+    return;
+  }
+  const keys = (it.key || []).map(normW).filter(Boolean);
+  const ok = keys.every(k => H.some(h => wordMatch(k, h))) && (!it.free || H.length >= 2);
+  quizSay(ok, t);
+}
+async function quizAnswer(o, btn) {
+  if (Q.answered) return; Q.answered = true; Q.tok++; if (listenCancel) listenCancel(); stopSpeech();
+  const it = Q.items[Q.i], right = it.opts.find(x => x.right);
+  if (o.right) { Q.score++; btn.classList.add("right"); chime(); await say("Yes! " + o.text + "!", { rate: 0.95 }); }
+  else { btn.classList.add("wrong"); right.el.classList.add("right"); await say("Good try! It's " + right.text + ".", { rate: 0.9 }); }
+  await sleep(500); quizNext();
+}
+async function quizSay(ok, heard) {
+  Q.answered = true; Q.tok++; const it = Q.items[Q.i];
+  if (ok) { Q.score++; chime(); $("qText").textContent = "⭐ " + it.say; await say("Great! " + it.say, { rate: 0.9 }); }
+  else { $("qText").textContent = "👉 " + it.say; await say("Almost! Listen: " + it.say + " Now you say it!", { rate: 0.85 }); }
+  await sleep(600); quizNext();
+}
+function quizNext() { Q.i++; if (Q.i < Q.items.length) quizShow(); else quizEnd(); }
+function quizEnd() {
+  const box = $("qEnd"); box.innerHTML = ""; box.hidden = false; $("qOpts").innerHTML = ""; $("qText").textContent = ""; $("qHeard").textContent = "";
+  box.append(mk("h2", "", "🎉 퀴즈 끝!"), mk("div", "score", "⭐".repeat(Q.score) + "☆".repeat(Math.max(0, Q.items.length - Q.score))));
+  const again = mk("button", "ghost", "🔁 다시 풀기"); again.type = "button"; again.onclick = () => startQuiz(Q.book);
+  const talk = mk("button", "go", "💬 Lily랑 책 이야기하기"); talk.type = "button"; talk.onclick = () => startTalk({ kind: "booktalk", book: Q.book, label: "💬 책 이야기: " + Q.book.title, minutes: 10 });
+  const lib = mk("button", "ghost", "📚 서재로"); lib.type = "button"; lib.onclick = () => show("library");
+  box.append(talk, again, lib);
+  say(Q.score >= Q.items.length - 1 ? "Amazing job, Hajun!" : "Good job, Hajun! Let's try again sometime!", { rate: 0.95 });
+  recordStats("🧩 " + Q.book.title, Q.score, 0, 1);
+}
+$("qListen").addEventListener("click", () => quizListen());
+$("qRepeat").addEventListener("click", () => { const it = Q.items[Q.i]; if (!it || listenCancel && listenCancel()) return; if (it.t === "word") { say(it.a[0], { rate: 0.8 }); return; } say(it.q.replace(/\.\.\./g, " blank."), { rate: 0.85 }); });
+$("qSkip").addEventListener("click", () => { const it = Q.items[Q.i]; if (!it || Q.answered) return; if (it.opts) quizAnswer({ right: false }, mk("button")); else quizSay(!SR, ""); });
+$("quizBack").addEventListener("click", () => { Q.tok++; if (listenCancel) listenCancel(); stopSpeech(); show("reader"); });
+
+// ============ start ============
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && (!$("talk").hidden || !$("reader").hidden)) { wakeLock = null; keepAwake(true); } });
+show("home");
+if (!gkey()) $("settingsBox").open = true;
+})();
+</script>
+</body>
+</html>
