@@ -797,7 +797,8 @@ function keyUI(){const has=!!gKey(),toChrome=ONSITE&&ANDROID&&!INCHROME;keyIn.hi
 GVOICES.forEach(([v,n])=>{const o=document.createElement('option');o.value=v;o.textContent=n;gvSel.appendChild(o)});
 gvSel.value=GVOICES.some(g=>g[0]===prefs.gv)?prefs.gv:'Leda';
 gvSel.onchange=()=>{prefs.gv=gvSel.value;savePrefs();if(PLAY&&cur>=0)startNarr(cur);prefetch()};
-keyIn.onchange=()=>{prefs.gkey=keyIn.value.trim();savePrefs();keyIn.value='';prefetch()};
+function takeKey(){const m=keyIn.value.match(/AIza[0-9A-Za-z_\-]{30,}/);if(!m)return;prefs.gkey=m[0];savePrefs();keyIn.value='';setV('키를 저장했어요. 이 기기에서도 목소리가 나와요.');setTimeout(prefetch,600)}
+keyIn.oninput=takeKey;keyIn.onchange=takeKey;
 
 /* ---------- 자막 ---------- */
 const whoEl=document.getElementById('who'),lineEl=document.getElementById('line');
