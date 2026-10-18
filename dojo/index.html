@@ -173,7 +173,17 @@ const SP={
 Object.keys(SP).forEach((k,i)=>{SP[k].id=k;SP[k].ph=i*1.37});
 SP.grass={n:'띵가',k:'베짱이',tag:'개인 레슨만',arts:['judo','wr'],s:1.0,L:LL({th:38,sn:38}),rx:22,ry:38,hr:19,col:'#a6c75c',lc:'#86a641',hc:'#b4d46a',lw:7,tw:1.8,ant:'long',
   moves:'기술 이름 외우기 · 기타 치며 노래',fact:'날개를 비벼서 베짱베짱 하고 울어요.',id:'grass',ph:17.3,ep:1,scene:'grass'};
-const ORDER=['rhino','stag','mantis','hop','lady','butter','katy','fire','bee','bang','cicada','grass'];
+SP.dung={n:'굴리',k:'쇠똥구리',tag:'주짓수만',arts:['bjj'],s:1.0,L:LL(),rx:28,ry:36,hr:18,col:'#2f2f3a',lc:'#1b1b22',hc:'#383844',lw:9,ant:'short',dark:1,look:'stag',
+  moves:'바닥에서 데굴데굴 굴리기',fact:'똥 경단을 자기 몸보다 크게 굴려서 옮겨요.',id:'dung',ph:19.1,ep:3,scene:'gulli'};
+SP.ant={n:'단단이',k:'개미',tag:'숨은 특훈',arts:['wr','judo'],s:.9,L:LL({th:30,sn:30}),rx:20,ry:30,hr:21,col:'#5a3322',lc:'#2c1810',hc:'#6a3d28',lw:7,ant:'elbow',dark:1,
+  moves:'매일 밤 불가리안 백 300번',fact:'자기 몸무게보다 열 배 넘게 무거운 것도 들어요.',id:'ant',ph:21.7,ep:3,scene:'antnight'};
+SP.cricket={n:'뚜리',k:'귀뚜라미',tag:'단체반 두 달',arts:['judo'],s:.95,L:LL({th:36,sn:36}),rx:21,ry:36,hr:19,col:'#5a4026',lc:'#3e2c1a',hc:'#6b4c2e',lw:7,tw:1.8,ant:'long',dark:1,
+  moves:'매일 밤 단체반 스파링',fact:'귀가 앞다리에 있어요.',id:'cricket',ph:23.3,ep:3,scene:'cricket'};
+SP.kidrhino=Object.assign({},SP.rhino,{n:'꼬마뿔',k:'장수풍뎅이',tag:'아빠랑 특훈',arts:['wr','bjj'],s:.82,col:'#a0522d',look:'rhino',
+  moves:'매일 밤 아빠랑 스파링',fact:'수컷만 큰 뿔이 있어요.',id:'kidrhino',ph:25.9,ep:4,scene:'kidrhino'});
+SP.dadcicada=Object.assign({},SP.cicada,{n:'아빠',k:'매미',tag:'맴맴이 아빠',arts:['judo','wr','bjj'],s:1.22,col:'#343d24',hc:'#3f4a2c',hero:0,look:'cicada',
+  moves:'맴맴이랑 스파링',fact:'수컷 매미만 맴맴 노래해요.',id:'dadcicada',ph:27.1,ep:4,scene:'mmdad'});
+const ORDER=['rhino','stag','mantis','hop','lady','butter','katy','fire','bee','bang','cicada','grass','dung','ant','cricket','kidrhino','dadcicada'];
 const UNLOCK={lady:5,butter:10,katy:15,fire:25,bee:35,bang:50};
 
 /* ---------- 하준이 미션 앱 연동 (같은 사이트에 올렸을 때만) ---------- */
@@ -277,7 +287,7 @@ function midLegs(c,sp,g,time,col){
   for(const s of [1,-1]){const a1=s>0?.9+w:-.6-w,p0=[b[0]+s*4,b[1]-4],d1=DR(a1),p1=[p0[0]+d1[0]*16,p0[1]+d1[1]*16],d2=DR(a1*.3),p2=[p1[0]+d2[0]*14,p1[1]+d2[1]*14];limb(c,[p0,p1,p2],sp.lw*.55,col)}
 }
 function wings(c,sp,g,time){
-  const w=sp.wing||(['hop','katy','bang','mantis'].includes(sp.id)||sp.id==='grass'?'fold':null);if(!w)return;
+  const w=sp.wing||(['hop','katy','bang','mantis','grass','cricket'].includes(sp.id)?'fold':null);if(!w)return;
   const rx=sp.rx,ry=sp.ry,off=sp.L.so-sp.L.bc;
   c.save();c.translate(g.SO[0],g.SO[1]);c.rotate(g.t);
   if(w==='butter'){
@@ -299,7 +309,7 @@ function wings(c,sp,g,time){
 }
 function rings(c,rx,ry,n,a){c.strokeStyle=`rgba(0,0,0,${a||.18})`;c.lineWidth=2;for(let i=1;i<=n;i++){const y=ry*(.05+i*.2);c.beginPath();c.moveTo(-rx,y-4);c.quadraticCurveTo(0,y+6,rx,y-4);c.stroke()}}
 function pattern(c,sp,rx,ry){
-  switch(sp.id){
+  switch(sp.look||sp.id){
     case 'rhino':case 'stag':c.fillStyle='rgba(255,255,255,.22)';c.beginPath();c.ellipse(rx*.25,-ry*.35,rx*.28,ry*.3,-.3,0,TAU);c.fill();c.strokeStyle='rgba(0,0,0,.28)';c.lineWidth=2;c.beginPath();c.moveTo(-rx*.15,-ry);c.quadraticCurveTo(-rx*.35,0,-rx*.1,ry);c.stroke();break;
     case 'mantis':case 'hop':case 'katy':case 'bang':case 'grass':case 'butter':rings(c,rx,ry,4);if(sp.id!=='butter'){c.fillStyle='rgba(0,0,0,.12)';c.fillRect(-rx,-ry,rx*.55,ry*2);c.fillStyle='rgba(255,255,255,.2)';c.fillRect(rx*.45,-ry,rx,ry*2)}break;
     case 'lady':c.fillStyle='#1c1c1c';for(const [a,b,r] of [[-.45,-.45,.26],[.25,-.15,.22],[-.15,.3,.26],[.5,.42,.18],[-.65,.05,.16]]){c.beginPath();c.arc(rx*a,ry*b,rx*r,0,TAU);c.fill()}c.fillStyle='rgba(255,255,255,.3)';c.beginPath();c.ellipse(rx*.3,-ry*.55,rx*.22,ry*.12,-.4,0,TAU);c.fill();break;
@@ -369,7 +379,7 @@ function head(c,sp,g,time,P){
   const hr=sp.hr,id=sp.id;
   c.save();c.translate(g.HD[0],g.HD[1]);c.rotate(g.t*.8);
   antennae(c,sp,time);
-  if(id==='rhino'){
+  if((sp.look||id)==='rhino'){
     c.beginPath();c.moveTo(hr*.5,-hr*.55);c.quadraticCurveTo(hr*2.0,-hr*.55,hr*2.05,-hr*2.5);c.quadraticCurveTo(hr*1.55,-hr*1.0,hr*.75,hr*.3);c.closePath();fs(c,'#3a1a0b',2.5);
     c.beginPath();c.moveTo(hr*1.92,-hr*2.15);c.lineTo(hr*2.5,-hr*2.55);c.lineTo(hr*2.12,-hr*1.95);c.closePath();fs(c,'#3a1a0b',2);
     c.beginPath();c.moveTo(-hr*.6,-hr*.7);c.quadraticCurveTo(-hr*.1,-hr*1.9,hr*.5,-hr*1.75);c.quadraticCurveTo(0,-hr*1.2,hr*.1,-hr*.7);c.closePath();fs(c,'#5a2a12',2);
@@ -520,6 +530,15 @@ function zones(t0,t1,st,hl){if(LT<t0||LT>t1)return;ui(()=>{const al=Math.max(0,M
    const lab=s===1?'있어요':s===.5?'반쪽':'구멍!';X.font='17px "Jua",sans-serif';const pw=X.measureText(lab).width+18;rr(X,x+bw-pw-10,y+38,pw,22,11);X.fillStyle=s===1?'#2f9e44':s===.5?'#c98a12':'#e03131';X.fill();X.fillStyle='#fff';X.fillText(lab,x+bw-pw-1,y+50)});X.restore()})}
 function score(t0,t1,na,nb,va,vb){if(LT<t0||LT>t1)return;ui(()=>{X.save();X.font='26px "Jua",sans-serif';const t=`${na} ${va} : ${vb} ${nb}`,w=X.measureText(t).width+34;rr(X,W-w-16,166,w,44,22);X.fillStyle='rgba(12,22,16,.85)';X.fill();X.strokeStyle=HONEY;X.lineWidth=2.5;X.stroke();X.fillStyle='#fff';X.textAlign='center';X.textBaseline='middle';X.fillText(t,W-w/2-16,189);X.restore()})}
 function sweat(t0,t1,x,y){if(LT<t0||LT>t1)return;X.save();X.strokeStyle=OUT;X.lineWidth=2;for(let i=0;i<3;i++){const q=((LT*.9+i/3)%1),dx=(i-1)*24+(i-1)*q*16,dy=-q*30+q*q*60;X.globalAlpha=1-q;X.fillStyle='#74c0fc';X.beginPath();X.moveTo(x+dx,y+dy-11);X.quadraticCurveTo(x+dx+8,y+dy+2,x+dx,y+dy+6);X.quadraticCurveTo(x+dx-8,y+dy+2,x+dx,y+dy-11);X.fill();X.stroke()}X.restore()}
+
+function steps(t0,t1,n){if(LT<t0||LT>t1)return;ui(()=>{X.save();rr(X,10,12,170,82,14);X.fillStyle='rgba(12,22,16,.8)';X.fill();X.strokeStyle=HONEY;X.lineWidth=2.5;X.stroke();X.font='19px "Jua",sans-serif';X.fillStyle='#fff';X.textBaseline='middle';X.textAlign='left';X.fillText(`성장 계단 ${n}/7`,22,30);
+  for(let i=0;i<7;i++){const hh=10+i*6.5,x=22+i*21,y=86-hh;rr(X,x,y,17,hh,4);X.fillStyle=i<n?HONEY:'rgba(255,255,255,.16)';X.fill()}X.restore()})}
+function checklist(t0,t1,items,done){if(LT<t0||LT>t1)return;ui(()=>{X.save();const x=W-338,y=70,w=322,hh=46+items.length*36;rr(X,x,y,w,hh,16);X.fillStyle='rgba(12,22,16,.84)';X.fill();X.strokeStyle=HONEY;X.lineWidth=2.5;X.stroke();X.font='24px "Black Han Sans","Jua",sans-serif';X.fillStyle=HONEY;X.textBaseline='middle';X.textAlign='left';X.fillText('맴맴이의 하루',x+18,y+26);
+  items.forEach((t,i)=>{const yy=y+62+i*36,ok=i<done;X.beginPath();X.arc(x+30,yy,12,0,TAU);X.fillStyle=ok?'#2f9e44':'rgba(255,255,255,.14)';X.fill();if(ok){X.strokeStyle='#fff';X.lineWidth=3;X.beginPath();X.moveTo(x+24,yy);X.lineTo(x+29,yy+5);X.lineTo(x+37,yy-6);X.stroke()}X.font='21px "Jua",sans-serif';X.fillStyle=ok?'#fff':'rgba(255,255,255,.5)';X.fillText(t,x+52,yy+1)});X.restore()})}
+function bagProp(cx,cy,a){X.save();X.translate(cx,cy);X.rotate(a);X.lineCap='round';X.strokeStyle=OUT;X.lineWidth=20;X.beginPath();X.arc(0,0,32,PI*1.1,PI*1.9);X.stroke();X.strokeStyle='#8b3a2b';X.lineWidth=14;X.stroke();X.strokeStyle=OUT;X.lineWidth=4;for(const s of [1.15,1.85]){X.beginPath();X.arc(Math.cos(PI*s)*32,Math.sin(PI*s)*32,7,0,TAU);X.stroke()}X.restore()}
+function orbitBag(t0,t1,hx,hy){if(LT<t0||LT>t1)return;const a=LT*6;bagProp(hx+Math.cos(a)*46,hy+Math.sin(a)*14,a+PI/2)}
+function ball(x,y,r,a){X.save();X.translate(x,y);X.rotate(a);X.beginPath();X.arc(0,0,r,0,TAU);X.fillStyle='#7a5232';X.fill();X.strokeStyle=OUT;X.lineWidth=3;X.stroke();X.strokeStyle='rgba(40,25,10,.45)';X.lineWidth=2;for(let i=0;i<5;i++){X.beginPath();X.arc(Math.cos(i*1.3)*r*.45,Math.sin(i*1.3)*r*.45,r*.18,0,PI);X.stroke()}X.restore()}
+function book(t0,t1,x,y){if(LT<t0||LT>t1)return;X.save();X.translate(x,y);X.rotate(-.15);X.fillStyle='#3b6fd0';rr(X,-30,-4,60,30,4);X.fill();X.fillStyle='#fff';X.strokeStyle=OUT;X.lineWidth=2;for(const s of [-1,1]){X.beginPath();X.moveTo(0,0);X.quadraticCurveTo(s*14,-8,s*28,-4);X.lineTo(s*28,22);X.quadraticCurveTo(s*14,18,0,24);X.closePath();X.fill();X.stroke()}X.fillStyle=OUT;X.font='13px "Jua",sans-serif';X.textAlign='center';X.fillText('ABC',-14,12);X.fillText('123',14,12);X.restore()}
 
 /* ---------- 장면 ---------- */
 const taps=(t0,n,k,lo,hi)=>Array.from({length:n},(_,i)=>[t0+i*.17,null,{[k]:i%2?lo:hi,e:'lin'}]);
@@ -714,10 +733,88 @@ beat({id:'sum',dur:13,nosign:1,cam:camOf(480,.92),cap:'네 가지를 다 하면 
  fx:()=>{const hl=LT<1.5?-1:Math.floor((LT-1.5)/1.4)%3;zones(0,8.6,[1,1,1],hl);chip(.3,5.6,null,'멀리 태권도 · 붙으면 유도와 레슬링 · 바닥은 주짓수');chip(5.8,8.8,null,'아침 레슬링 + 유도 단체반 = 구멍 막기');burst(9.3,480,G-330,'고맙습니다!','#c3fae8','ding',1.15)}});
 beat({id:'spend',dur:6,nosign:1,cam:camOf(480,1),cap:'다음 화: 맴맴이의 첫 대회',say:'다음 화는 맴맴이의 첫 대회! 하준아, 맴맴이가 어떤 기술로 이기면 좋을까?',
  actors:[ON('cicada',[[0,'cheer',{x:480,f:1}],[1,'guard'],[1.6,'cheer'],[6,'cheer']])],over:lt=>endCard(lt)});
-const EP3=SC;
+const EP3=SC;SC=[];
+/* ===== 3화 · 성장 계단 ① 운동만 잘하면 될까? ===== */
+beat({id:'t3',dur:5,nosign:1,cam:camOf(480,1),cap:'곤충 무술 도장 · 3화',say:'곤충 무술 도장 3화! 성장 계단 첫 번째. 운동만 잘하면 될까?',
+ actors:[ON('dung',[[0,'stand',{x:290,f:1}],[5,'stand']]),ON('cicada',[[0,'cheer',{x:480,f:1}],[1.4,'guard'],[2.4,'cheer'],[5,'cheer']]),ON('ant',[[0,'stand',{x:640,f:-1}],[2.6,'cheer'],[5,'cheer']]),ON('cricket',[[0,'stand',{x:770,f:-1}],[2.8,'cheer'],[5,'cheer']])],
+ fx:()=>ball(200,G-30,30,LT*.6),over:lt=>titleCard(lt)});
+beat({id:'proud',dur:12,cam:camOf(480,1.12),who:['cicada'],cap:'"나 이제 운동 잘하니까, 다 됐지!"',say:'맴맴이는 요즘 기분이 최고예요. 네 가지를 다 배웠으니까요. 나 이제 운동 잘하니까, 다 된 거 아니야? 그런데 정말 그럴까요? 오늘부터 맴맴이의 성장 계단이 시작돼요.',
+ actors:[ON('cicada',[[0,'stand',{x:480,f:1}],[1,'cheer',{ex:3}],[2.5,'guard',{ex:1}],[3.2,'lift',{ex:3}],[4.4,'cheer'],[6,'stand',{ex:3,tl:-.18}],[12,'stand',{tl:-.18}]])],
+ fx:()=>{bubble(1.2,6,560,G-262,'나 이제 운동 잘하니까\n다 된 거 아니야?');chip(7,12,null,'정말 그럴까?');steps(6.5,12,0)}});
+beat({id:'gulli',dur:17,cam:camOf(500,1.12),who:['dung','cicada'],cap:'바닥의 짱이 서서는 쿵, 쿵!',say:'단체반에는 바닥의 짱, 쇠똥구리 굴리가 있어요. 굴리는 주짓수만 해서, 누워서 하면 아무도 못 이겨요. 그런데 서서 하는 시간이 되자, 쿵! 또 쿵! 자꾸 넘어가요. 바닥만 잘하면 서서는 할 게 없어요. 맴맴이는 굴리를 일으켜 주며 말했어요. 서서 하는 것도 같이 연습하자! 첫 번째 계단이에요.',
+ actors:[ON('lady',[[0,'back',{x:640,f:1,rot:-1.5,ex:2}],...taps(.4,20,'fah',.8,2.0),[4,'back',{rot:-1.5}],[4.3,'stand',{x:1100,rot:0,f:1,e:'lin'}],[17,'stand',{x:1100}]]),
+  ON('dung',[[0,'top',{x:700,f:-1,ex:3}],[4,'top',{x:700}],[4.3,'grip',{x:560,f:-1,ex:0,e:'lin'}],[5.2,'grip',{x:555}],[5.6,'grip',{x:540,tl:.5}],[6,'grip',{x:535,tl:.9}],[6.35,'flat',{x:470,y:-140,rot:1.7,e:'in'}],[6.7,'flat',{x:370,y:0,rot:4.71,e:'out',ex:2}],[7.6,'squat',{x:380,rot:2*PI,ex:2}],[8.2,'grip',{x:400,f:1,ex:2}],[9.4,'grip',{x:400,tl:-.2}],[9.9,'flat',{x:330,rot:2*PI-1.57,e:'in',ex:2}],[11.5,'flat',{ex:2}],[12.6,'squat',{x:340,rot:2*PI,ex:2}],[13.6,'stand',{x:350,ex:0}],[14.5,'stand',{ex:3}],[17,'cheer',{ex:3}]]),
+  ON('cicada',[[0,'stand',{x:300,f:1,ex:2}],[4,'stand',{x:300}],[4.3,'grip',{x:420,f:1,ex:1,e:'lin'}],[5.2,'grip',{x:430}],[5.6,'grip',{x:445,tl:-.15}],[6,'turn',{x:520,f:-1}],[6.35,'turn',{x:522}],[6.7,'finish',{x:505}],[8.2,'grip',{x:520,f:-1}],[8.8,'low',{x:515}],[9.4,'shoot',{x:440,e:'out'}],[9.9,'squat',{x:420}],[11,'stand',{x:420,ex:0}],[12.6,'squat',{x:400,fah:1.7,fae:.2,ex:3}],[13.6,'stand',{x:430,ex:3}],[17,'cheer',{ex:3}]])],
+ fx:()=>{if(LT<4.1)ball(800,G-34,34,LT*2);chip(.2,3.9,'bjj','바닥의 짱, 쇠똥구리 굴리');banner(4,4.6,'서서 하는 시간!');const n=LT<6.7?0:LT<9.9?1:2;counter(5,12.6,`굴리가 넘어간 횟수 ${n}`);burst(6.7,355,G-50,'쿵!','#ffd8a8','thud');burst(9.9,315,G-50,'쿵!','#ffd8a8','thud');bubble(10.2,12.4,360,G-200,'어? 바닥에선 내가 짱인데…');bubble(12.6,14.6,470,G-262,'괜찮아! 서서 하는 것도\n같이 연습하자');chip(14.7,17,null,'① 서서도 강해야 해요');steps(4.5,17,LT<14?0:1)}});
+beat({id:'ant1',dur:12,cam:camOf(470,1.12),who:['cicada','ant'],cap:'예전엔 이겼는데, 요즘은?',say:'개미 단단이는 예전엔 맴맴이가 늘 이기던 친구예요. 그런데 요즘은? 번쩍! 쿵! 맴맴이가 자꾸 날아가요. 단단이가 왜 이렇게 세졌을까요?',
+ actors:[ON('ant',[[0,'grip',{x:560,f:-1}],[.6,'grip',{x:550,tl:.4}],[1.2,'grip',{x:540,tl:.8}],[1.55,'flat',{x:480,y:-120,rot:1.7,e:'in'}],[1.9,'flat',{x:370,y:0,rot:4.71,e:'out',ex:2}],[2.6,'flat',{ex:2}],[3,'grip',{x:560,f:-1,rot:0,ex:1,e:'lin'}],[4,'low',{x:555}],[4.5,'shoot',{x:470,e:'out'}],[5,'squat',{x:470}],[5.8,'lift',{x:470,ex:3}],[6.6,'squat',{x:480,e:'in'}],[7.4,'guard',{x:470,ex:1}],[8.6,'grip',{x:440,f:-1}],[9.1,'turn',{x:400,f:1}],[9.6,'turn',{x:402}],[10.1,'finish',{x:420}],[11,'stand',{x:420,f:1,ex:0}],[12,'stand']]),
+  ON('cicada',[[0,'grip',{x:430,f:1,ex:3}],[.6,'grip',{x:440,tl:-.15}],[1.2,'turn',{x:520,f:-1}],[1.9,'finish',{x:505}],[2.6,'cheer',{ex:3}],[3,'grip',{x:430,f:1,ex:1,rot:0,e:'lin'}],[4,'grip',{x:430}],[4.5,'grip',{x:440,tl:-.2,ex:2}],[5,'flat',{x:480,y:-60,rot:-1.0}],[5.8,'flat',{x:505,y:-175,rot:-1.57}],[6.6,'flat',{x:340,y:0,rot:-1.57,e:'in',ex:2}],[7.4,'flat',{ex:4}],[8,'squat',{x:360,rot:0,ex:1}],[8.6,'grip',{x:380,f:1}],[9.1,'grip',{x:385,tl:.6}],[9.5,'flat',{x:440,y:-130,rot:1.7,e:'in'}],[9.8,'flat',{x:540,y:0,rot:4.71,e:'out',ex:2}],[10.8,'squat',{x:530,rot:2*PI,ex:2}],[12,'squat',{ex:2}]])],
+ fx:()=>{chip(.2,2.5,null,'예전엔 맴맴이가 늘 이겼어요');burst(1.9,350,G-50,'쿵!','#ffd8a8','thud',.8);banner(2.6,3.4,'그런데 요즘은…');burst(5.8,470,G-260,'번쩍!','#ffe066','whoosh',.8);burst(6.6,330,G-50,'쿵!','#ffd8a8','thud');burst(9.8,560,G-50,'쿵!','#ffd8a8','thud');bubble(10.2,12,540,G-225,'단단이가 왜 이렇게\n세졌지?!');steps(3.5,12,1)}});
+beat({id:'antnight',dur:14,bg:'night',cam:camOf(480,1.12),who:['ant'],cap:'아무도 안 볼 때, 매일 300번',say:'알고 보니 단단이는 밤마다 집에서 불가리안 백을 돌렸어요. 하나, 둘, 셋, 매일 삼백 번! 진짜 개미도 자기 몸무게보다 열 배 넘게 무거운 것을 들어요. 보이지 않는 곳에서 한 노력은, 어느 날 힘이 되어 나타나요. 차이가 너무 커서, 맴맴이는 금방 따라잡을 수가 없었어요. 두 번째 계단이에요.',
+ actors:[ON('ant',[[0,'stand',{x:430,f:1,fah:2.6,fae:.4,bah:2.5,bae:.4,ex:1}],...taps(.3,56,'tl',-.12,.12),[10.2,'stand',{tl:0}],[10.8,'cheer',{ex:3}],[14,'cheer']]),
+  ON('cicada',[[0,'stand',{x:1080,f:-1}],[8.4,'stand',{x:1080}],[9.8,'stand',{x:740,ex:2}],[14,'stand',{ex:2}]],{walk:[8.4,9.8]})],
+ fx:()=>{orbitBag(0,10.2,430,G-178);counter(0,14,`불가리안 백 ${Math.min(300,Math.floor(LT*30))}번`);meter(3,14,60,178,300,'단단이 힘','#e8a85a',40+55*prog(3,10));meter(3,14,600,178,300,'맴맴이 힘','#9fd36b',60);if(LT>9)sweat(9,14,430,G-200);chip(10.6,14,null,'② 안 보이는 노력이 힘이 돼요');steps(0,14,LT<11?1:2)}});
+beat({id:'bjjgroup',dur:15,cam:camOf(520,1.12),who:['cicada','butter'],cap:'개인 레슨 많이 받았는데…?',say:'맴맴이는 생각했어요. 나는 주짓수 개인 레슨을 많이 받았으니까, 내가 제일 잘하겠지? 그런데 단체반 스파링에서 나비 팔랑이한테 휙 뒤집혔어요. 팔랑이는 개인 레슨은 적었지만, 단체반에서 매일매일 굴렀대요. 배운 기술은 스파링으로 많이 굴려 봐야 진짜 내 것이 돼요. 세 번째 계단!',
+ actors:[ON('butter',[[0,'sit',{x:450,f:1,rot:-.3}],[3.6,'sit',{rot:-.35}],[4.2,'sit',{rot:-.5,flh:2.5}],[4.6,'back',{x:445,rot:-1.4,flh:2.3,blh:2.0}],[5.4,'top',{x:560,rot:0}],[9.8,'top',{x:562}],[10.6,'squat',{x:520}],[11.4,'stand',{x:470,f:1,ex:3}],[12.2,'bow'],[13.4,'stand'],[15,'stand']]),
+  ON('cicada',[[0,'squat',{x:525,f:-1,tl:.75,ex:3}],[3.6,'squat',{ex:1}],[4.2,'squat',{tl:.6}],[4.6,'flat',{x:560,y:-40,rot:-.9,e:'in',ex:2}],[5.2,'flat',{x:620,y:0,rot:-1.57,e:'out',ex:2}],[6,'back',{x:620,rot:-1.5,ex:2}],...taps(6.2,16,'fah',.9,2.0),[9.8,'back',{rot:-1.5}],[10.6,'squat',{x:610,rot:0,ex:0}],[11.4,'stand',{x:600,f:-1,ex:3}],[12.2,'bow'],[13.4,'stand'],[15,'stand']])],
+ fx:()=>{bubble(.2,3.4,560,G-250,'개인 레슨 많이 받았으니까\n내가 제일 잘하겠지?');burst(4.6,600,G-150,'휙!',null,'whoosh');burst(5.2,645,G-50,'쿵!','#ffd8a8','thud');counter(5.6,12,'단체반 스파링 · 팔랑이 120판 · 맴맴이 10판');chip(6,10.2,null,'팔랑이는 단체반에서 매일 굴렀어요');chip(10.4,15,null,'③ 기술은 스파링으로 굴려야 내 것');steps(0,15,LT<11?2:3)}});
+beat({id:'cricket',dur:16,cam:camOf(520,1.12),who:['cricket','cicada'],cap:'두 달 다닌 친구가 왜 이렇게 잘하지?',say:'이번엔 새 친구, 귀뚜라미 뚜리예요. 뚜리는 유도 단체반에 다닌 지 두 달밖에 안 됐고, 개인 레슨은 한 번도 안 받았어요. 그런데 친구들을 척척 넘겨요. 반년 넘게 개인 레슨을 받은 맴맴이도 넘어갔어요. 비결이 뭘까요? 뚜리는 두 달 동안, 같은 또래 친구들이랑 매일 붙어 봤대요. 네 번째 계단이에요.',
+ actors:[ON('lady',[[0,'stand',{x:470,f:1}],[2.4,'grip',{x:480}],[3.2,'grip',{x:478,tl:.8}],[3.55,'flat',{x:540,y:-120,rot:1.7,e:'in'}],[3.9,'flat',{x:640,y:0,rot:4.71,e:'out',ex:2}],[4.6,'squat',{x:640,rot:2*PI,ex:3}],[5,'stand',{x:650,f:1}],[6.2,'stand',{x:1100}],[16,'stand',{x:1100}]],{walk:[5,6.2]}),
+  ON('cricket',[[0,'stand',{x:1050,f:-1}],[2,'stand',{x:600}],[2.4,'grip',{x:590}],[3.2,'turn',{x:505,f:1}],[3.9,'finish',{x:520}],[5,'stand',{x:510,f:-1}],[6,'grip',{x:500,f:-1}],[6.4,'grip',{fah:1.8,fae:.2}],[6.8,'grip',{fah:1.45,fae:.35}],[7.2,'grip',{fah:1.8,fae:.2}],[7.6,'grip',{fah:1.45,fae:.35}],[8.2,'grip',{x:495,tl:-.15}],[8.6,'turn',{x:405,f:1}],[9.3,'finish',{x:420}],[10.4,'stand',{x:430,f:1,ex:3}],[13.6,'bow'],[15,'stand'],[16,'stand']],{walk:[0,2]}),
+  ON('cicada',[[0,'stand',{x:-80,f:1}],[4.2,'stand',{x:-80}],[5.6,'grip',{x:380,f:1,ex:1}],[6.4,'grip',{x:385,fah:1.0,fae:.9,ex:2}],[7.2,'grip',{fah:.9,fae:1.1}],[8,'grip',{x:388,tl:.5}],[8.6,'grip',{x:390,tl:.85}],[8.95,'flat',{x:450,y:-130,rot:1.7,e:'in'}],[9.3,'flat',{x:545,y:0,rot:4.71,e:'out',ex:2}],[10.6,'squat',{x:535,rot:2*PI,ex:2}],[11.6,'stand',{x:530,f:-1,ex:0}],[13.6,'bow',{ex:3}],[15,'stand',{ex:3}],[16,'stand']],{walk:[4.2,5.6]})],
+ fx:()=>{chip(.2,2.4,'judo','단체반 두 달 · 개인 레슨 0번');burst(3.9,660,G-50,'쿵!','#ffd8a8','thud',.8);chip(5.6,8.4,null,'반년 넘게 개인 레슨 받은 맴맴이인데…');burst(9.3,565,G-50,'쿵!','#ffd8a8','thud');counter(9.6,16,'뚜리 · 두 달 동안 단체 스파링 200판');chip(10,13.4,null,'같은 또래랑 매일 붙어 봤대요');chip(13.5,16,null,'④ 또래 친구들과 많이 붙어 보기');steps(0,16,LT<13.5?3:4)}});
+beat({id:'step3',dur:11,nosign:1,cam:camOf(480,1.02),who:['cicada'],cap:'운동만 잘하면 될 줄 알았는데…',say:'운동만 잘하면 될 줄 알았는데, 계단이 아직 많이 남았어요. 맴맴이는 정했어요. 단체반에서 많이 붙어 보고, 집에서도 불가리안 백을 돌리고, 친구들한테 먼저 배우자!',
+ actors:[ON('dung',[[0,'stand',{x:200,f:1}],[7,'cheer',{ex:3}],[11,'cheer']]),ON('ant',[[0,'stand',{x:320,f:1}],[7.1,'cheer',{ex:3}],[11,'cheer']]),
+  ON('cicada',[[0,'stand',{x:480,f:1,fah:2.1,fae:2.3,ex:0}],[3,'stand',{fah:2.1,fae:2.3}],[4,'stand',{fah:2.6,fae:.4,bah:2.5,bae:.4,ex:1}],...taps(4.2,30,'tl',-.12,.12),[9.6,'cheer',{ex:3,tl:0}],[11,'cheer']]),
+  ON('butter',[[0,'stand',{x:640,f:-1}],[7.2,'cheer',{ex:3}],[11,'cheer']]),ON('cricket',[[0,'stand',{x:770,f:-1}],[7.3,'cheer',{ex:3}],[11,'cheer']])],
+ fx:()=>{orbitBag(4,9.5,480,G-190);chip(.3,4,null,'계단이 아직 많이 남았어요');chip(4.2,11,null,'단체반 + 불가리안 백 + 먼저 배우기');steps(0,11,4)}});
+beat({id:'end3',dur:6,nosign:1,cam:camOf(480,1),cap:'다음 화: 성장 계단 ② 진짜 멋진 매미',say:'다음 화는 성장 계단 두 번째! 하준아, 맴맴이가 다음엔 어떤 계단을 올라갈까?',
+ actors:[ON('cicada',[[0,'cheer',{x:480,f:1}],[1,'guard'],[1.6,'cheer'],[6,'cheer']])],over:lt=>endCard(lt)});
+const EP4=SC;SC=[];
+/* ===== 4화 · 성장 계단 ② 진짜 멋진 매미 ===== */
+const DAY=['아침 레슬링','불가리안 백 300번','유도 단체반 스파링','아빠랑 스파링','영어책 읽기','수학 숙제'];
+beat({id:'t4',dur:5,nosign:1,cam:camOf(480,1),cap:'곤충 무술 도장 · 4화',say:'곤충 무술 도장 4화! 성장 계단 두 번째. 진짜 멋진 매미.',
+ actors:[ON('kidrhino',[[0,'guard',{x:250,f:1}],[5,'guard']]),ON('cicada',[[0,'cheer',{x:430,f:1}],[1.4,'guard'],[2.4,'cheer'],[5,'cheer']]),ON('dadcicada',[[0,'stand',{x:590,f:-1}],[2.6,'cheer',{ex:3}],[5,'cheer']]),ON('bee',[[0,'stand',{x:760,f:-1}],[2.8,'cheer'],[5,'cheer']])],
+ over:lt=>titleCard(lt)});
+beat({id:'kidrhino',dur:15,cam:camOf(520,1.12),who:['kidrhino','katy'],cap:'꼬마뿔은 왜 이렇게 침착할까?',say:'장수풍뎅이 꼬마뿔은 번쩍이 사범님 아들이에요. 큰 형이 태클을 해도 침착하게 스프롤! 발차기가 오면 척 잡아서 넘겨요. 맴맴이는 궁금했어요. 꼬마뿔은 어떻게 저렇게 침착할까요?',
+ actors:[ON('katy',[[0,'guard',{x:400,f:1}],[.8,'low',{x:410}],[1.3,'shoot',{x:470,e:'out'}],[1.8,'flat',{x:470,rot:1.45,y:0}],[2.8,'flat',{rot:1.45}],[3.4,'squat',{x:420,rot:0}],[4,'guard',{x:400}],[4.6,'chamber',{x:410}],[4.9,'kick',{x:420,e:'out'}],[5.3,'kick',{x:440,y:-10,tl:-.6,ex:2}],[5.6,'kick',{x:455,y:0,tl:-.4}],[6.1,'flat',{x:350,rot:-1.57,y:0,e:'in',ex:2}],[15,'flat',{x:350,rot:-1.57,ex:2}]]),
+  ON('kidrhino',[[0,'guard',{x:560,f:-1,ex:0}],[1.2,'guard'],[1.45,'sprawl',{x:540,e:'out'}],[2.6,'sprawl',{x:535}],[3.2,'guard',{x:560,ex:0}],[4.8,'guard'],[5,'grip',{x:545,fah:1.35,fae:.25,bah:1.3,bae:.3,tl:.2}],[5.5,'grip',{x:520,fah:1.35,fae:.25,bah:1.3,bae:.3}],[5.9,'low',{x:500,blh:.6,blk:.2}],[6.4,'guard',{x:480,ex:3}],[15,'guard',{ex:3}]]),
+  ON('cicada',[[0,'stand',{x:820,f:-1,ex:2}],[15,'stand']])],
+ fx:()=>{chip(.2,1.3,null,'번쩍이 사범님 아들, 꼬마뿔');burst(1.45,500,G-150,'척!','#fff',null,.6);chip(1.5,3.6,'wr','침착하게 스프롤');chip(4.6,6.8,'wr','발차기 잡고 넘기기');burst(6.1,330,G-50,'쿵!','#ffd8a8','thud');bubble(7,11,790,G-262,'꼬마뿔은 어떻게\n저렇게 침착하지?');chip(11.2,15,null,'시합 같은 실전 감각!');steps(0,15,4)}});
+beat({id:'dadspar',dur:14,bg:'night',cam:camOf(500,1.12),who:['kidrhino','rhino'],cap:'비밀은 매일 밤, 아빠랑 스파링',say:'비밀은 집에 있었어요. 꼬마뿔은 매일 밤 아빠랑 스파링을 해요. 아빠는 눈은 배꼽, 무게는 앞으로! 하고 알려 주고, 꼬마뿔이 해 볼 수 있게 받아 줘요. 그렇게 매일 붙어 보니까, 진짜 시합 같은 실전 감각이 쑥쑥 자랐어요. 다섯 번째 계단이에요.',
+ actors:[ON('rhino',[[0,'back',{x:450,f:1,rot:-1.5,ex:3}],...taps(.4,16,'flh',1.5,2.0),[3.2,'back',{rot:-1.5}],[4.5,'back',{rot:-1.5,flh:2.0,blh:1.7}],[5.5,'squat',{x:470,rot:0,ex:3}],[6.4,'grip',{x:440,f:1,ex:3}],[7.6,'grip',{x:445,tl:.6}],[8.2,'grip',{x:448,tl:.9}],[8.55,'flat',{x:505,y:-120,rot:1.7,e:'in',ex:3}],[8.9,'flat',{x:600,y:0,rot:4.71,e:'out',ex:3}],[10,'flat',{ex:3}],[10.8,'squat',{x:590,rot:2*PI}],[11.6,'stand',{x:580,f:-1,ex:3}],[14,'cheer',{ex:3}]]),
+  ON('kidrhino',[[0,'top',{x:520,f:-1,ex:1}],...taps(.5,16,'fah',1.5,2.1),[3.2,'top'],[4.5,'top',{x:515,tl:1.1}],[5.5,'stand',{x:540,ex:1}],[6.4,'grip',{x:560,f:-1}],[7.6,'grip',{x:555,tl:-.15}],[8.1,'turn',{x:470,f:1}],[8.9,'finish',{x:485}],[10,'stand',{x:495,f:1,ex:3}],[11.6,'cheer',{x:520,ex:3}],[14,'cheer']])],
+ fx:()=>{banner(0,1.2,'꼬마뿔의 비밀은…');counter(1.4,14,'아빠랑 스파링 · 매일 밤');bubble(2,4.6,330,G-120,'눈은 배꼽!\n무게는 앞으로!');burst(8.9,620,G-50,'쿵!','#ffd8a8','thud');burst(9.4,600,G-170,'하하!','#fff',null,.6);chip(10,14,null,'⑤ 아빠랑 스파링 = 진짜 실전 연습');steps(0,14,LT<10.5?4:5)}});
+beat({id:'mmdad',dur:12,bg:'night',cam:camOf(500,1.1),who:['cicada','dadcicada'],cap:'"아빠, 스파링 해요!"',say:'맴맴이는 생각했어요. 나는 아빠랑 하기 싫다고 했었는데… 맴맴이가 아빠한테 갔어요. 아빠, 스파링 해요! 아빠는 엄청 기뻐했어요. 제일 가까이 있는 특훈 선생님은, 바로 아빠였어요.',
+ actors:[ON('cicada',[[0,'stand',{x:380,f:1,fah:2.1,fae:2.3,ex:5}],[3.4,'stand',{ex:0}],[4,'stand',{fah:.25,fae:.35}],[4.6,'guard',{x:420,ex:1}],[6,'low',{x:430}],[6.6,'shoot',{x:500,e:'out'}],[7.2,'top',{x:540,f:1}],[9,'top',{x:540}],[9.8,'stand',{x:520,ex:3}],[10.6,'cheer',{ex:3}],[12,'cheer']]),
+  ON('dadcicada',[[0,'stand',{x:650,f:-1}],[4.6,'cheer',{ex:3}],[5.6,'guard',{x:610,ex:3}],[6.6,'guard',{x:605}],[6.9,'stand',{x:615,tl:-.3}],[7.3,'flat',{x:650,rot:-1.57,e:'in',ex:3}],[9,'flat',{rot:-1.57,ex:3}],[9.8,'squat',{x:640,rot:0}],[10.6,'cheer',{x:620,ex:3}],[12,'cheer']])],
+ fx:()=>{bubble(.3,3.4,380,G-262,'나는 아빠랑 하기 싫다고\n했었는데…');bubble(4,5.8,420,G-262,'아빠, 스파링 해요!');burst(4.8,660,G-300,'좋지!','#c3fae8','pop',.7);burst(7.3,680,G-50,'쿵!','#ffd8a8','thud');chip(8,12,null,'제일 가까운 특훈 선생님 = 아빠');steps(0,12,5)}});
+beat({id:'beestudy',dur:16,cam:camOf(480,1.1),who:['bee'],cap:'운동도 공부도 잘하는 윙윙이',say:'꿀벌 윙윙이는 운동도 잘하는데, 영어랑 수학도 잘해요. 어떻게 둘 다 잘할까요? 윙윙이는 집에 가서 맥없이 놀기만 하지 않아요. 영어책을 읽고, 수학 문제를 풀어요. 공부도 운동도 잘하는 멋진 꿀벌이 되는 게 목표래요. 진짜 꿀벌은 춤을 춰서 꽃이 어디 있는지 친구들한테 알려 줘요. 여섯 번째 계단이에요.',
+ actors:[ON('bee',[[0,'guard',{x:420,f:1}],[.6,'chamber'],[.8,'kick',{e:'out'}],[1,'chamber'],[1.2,'kick',{e:'out'}],[1.4,'chamber'],[1.6,'kick',{e:'out'}],[2.2,'cheer',{ex:3}],[4.8,'cheer'],[5.6,'sit',{x:460,rot:-.15,fah:1.6,fae:.9,bah:1.5,bae:1.1,ex:1}],[16,'sit',{x:460,rot:-.15,fah:1.6,fae:.9,bah:1.5,bae:1.1}]])],
+ fx:()=>{chip(.2,4.8,null,'운동도 잘하는 꿀벌 윙윙이');banner(4.9,5.7,'그런데 집에 가면…');book(5.6,16,508,G-92);bubble(6.2,9.4,570,G-200,'Hello! I like judo!');bubble(9.6,12.6,570,G-200,'3 + 4 = 7!\n벌집은 육각형!');bubble(12.8,16,570,G-220,'공부도 운동도 잘하는\n멋진 꿀벌이 될 거야!');chip(13,16,null,'⑥ 목표가 있으면 맥없이 놀지 않아요');steps(0,16,LT<13?5:6)}});
+beat({id:'montage',dur:14,nosign:1,cam:camOf(420,1),who:['cicada'],cap:'맴맴이의 하루가 바뀌었어요',say:'맴맴이의 하루가 바뀌었어요. 아침엔 레슬링, 집에선 불가리안 백, 밤엔 유도 단체반에서 친구들이랑 스파링. 아빠랑도 스파링하고, 영어책 읽고, 수학 숙제까지! 하루하루가 계단이 돼요.',
+ actors:[ON('dummy',[[0,'stand',{x:420,f:-1}],[1,'flat',{x:285,y:-195,rot:-1.57}],[1.9,'flat',{x:285,y:-205,rot:-1.57}],[2.2,'stand',{x:1200,rot:0,e:'lin'}],[14,'stand',{x:1200}]]),
+  ON('cicada',[[0,'low',{x:300,f:1}],[1,'lift',{ex:1}],[2,'stand',{fah:2.6,fae:.4,bah:2.5,bae:.4}],...taps(2.1,10,'tl',-.12,.12),[4,'grip',{tl:.1}],[5,'turn',{f:-1}],[6,'top',{f:1,x:310}],[7.6,'top'],[8,'sit',{x:300,rot:-.15,fah:1.6,fae:.9,bah:1.5,bae:1.1}],[10,'sit',{fah:1.3,fae:1.4}],[12,'cheer',{x:300,rot:0,ex:3}],[14,'cheer']])],
+ fx:()=>{orbitBag(2,3.9,300,G-190);book(8,12,348,G-92);checklist(0,14,DAY,Math.min(6,Math.floor(LT/2)+1));chip(12,14,null,'하루하루가 계단이 돼요');steps(0,14,6)}});
+beat({id:'kind',dur:16,nosign:1,cam:camOf(480,.95),who:['cicada'],cap:'먼저 친절하게, 사랑을 주는 친구',say:'이제 맴맴이는 친구들한테 먼저 다가가요. 굴리한테는 서서 잡는 법을 알려 주고, 넘어진 띵가는 일으켜 주고, 동글이한테는 낙법을 보여 줘요. 맴맴이가 먼저 친절하게 도와주니까, 친구들도 맴맴이랑 같이 있는 걸 좋아해요. 사랑을 받고, 사랑을 주는 친구. 일곱 번째 계단이에요.',
+ actors:[ON('dung',[[0,'grip',{x:205,f:1,ex:1}],[3.4,'grip',{ex:3}],[10.4,'grip'],[11,'stand',{x:300,f:1,ex:3}],[12,'cheer'],[16,'cheer']],{walk:[10.4,11]}),
+  ON('grass',[[0,'squat',{x:340,f:1,ex:2,rust:.1}],[5.4,'squat',{ex:3}],[6.4,'stand',{x:345,ex:3}],[10.4,'stand'],[11,'stand',{x:395}],[12,'cheer'],[16,'cheer']],{walk:[10.4,11]}),
+  ON('lady',[[0,'stand',{x:650,f:-1,ex:0}],[8.7,'stand',{ex:3}],[9.2,'cheer',{ex:3}],[10.4,'stand'],[11,'stand',{x:590}],[12,'cheer'],[16,'cheer']],{walk:[10.4,11]}),
+  ON('cricket',[[0,'stand',{x:770,f:-1}],[10.4,'stand'],[11,'stand',{x:690}],[12,'cheer'],[16,'cheer']],{walk:[10.4,11]}),
+  ON('cicada',[[0,'grip',{x:275,f:-1,ex:3}],[3.4,'grip'],[4.2,'stand',{x:410,f:-1,ex:3}],[4.8,'squat',{x:410,fah:1.7,fae:.2}],[6.6,'stand',{x:415,ex:3}],[7.6,'stand',{x:555,f:1}],[8.3,'flat',{x:565,rot:-1.57,fah:2.6,ex:3}],[8.7,'flat',{fah:-.7}],[9.6,'squat',{x:560,rot:0}],[10.4,'stand',{x:490,f:1,ex:3}],[11.2,'cheer',{ex:3}],[16,'cheer']],{walk:[[3.4,4.2],[6.6,7.6],[9.6,10.4]]})],
+ fx:()=>{chip(.2,4,null,'굴리한테 서서 잡는 법 알려 주기');chip(4.2,7.4,null,'넘어진 띵가 일으켜 주기');chip(7.6,10.2,'judo','동글이한테 낙법 보여 주기');burst(8.7,520,G-30,'팡!','#ffe066','slap',.7);chip(10.4,16,null,'⑦ 먼저 친절하게, 사랑을 주는 친구');floaty(11.5,16,460,G-260,'♥','#ff8fab');steps(0,16,LT<11?6:7)}});
+const LX4=[-50,47,144,241,338,435,532,629,726,823,920,1017],LO4=['rhino','dadcicada','dung','ant','grass','cicada','kidrhino','bee','cricket','butter','lady','fire'];
+beat({id:'shine',dur:12,nosign:1,cam:camOf(480,.8),cap:'운동도, 공부도, 마음도 쑥쑥!',say:'운동만 잘하면 다 된 줄 알았던 맴맴이는, 계단을 하나씩 오를 때마다 더 멋진 매미가 됐어요. 운동도, 공부도, 마음도 쑥쑥! 다 같이, 고맙습니다!',
+ actors:LO4.map((id,i)=>ON(id,[[0,'stand',{x:LX4[i],f:i<=5?1:-1}],[2,id==='cicada'?'cheer':'stand',{ex:3}],[5.4+i*.05,'stand'],[6+i*.05,'bow'],[7.8,'bow'],[8.6,'cheer'],[12,'cheer']])),
+ fx:()=>{banner(0,1.8,'성장 계단 완성!');floaty(2,9,450,G-330,'♪','#ffe066');chip(2,5.6,null,'운동도, 공부도, 마음도 쑥쑥');burst(6.1,480,G-340,'고맙습니다!','#c3fae8','ding',1.15);steps(0,12,7)}});
+beat({id:'end4',dur:6,nosign:1,cam:camOf(480,1),cap:'다음 화: 맴맴이의 첫 대회',say:'다음 화는 맴맴이의 첫 대회! 하준아, 성장 계단 중에 어떤 계단을 제일 먼저 올라가 볼까?',
+ actors:[ON('cicada',[[0,'cheer',{x:480,f:1}],[1,'guard'],[1.6,'cheer'],[6,'cheer']])],over:lt=>endCard(lt)});
+const EP5=SC;
 const EPS=[{name:'1화 · 네 가지를 배운 매미',next:'반딧불이의 밤 수련',beats:EP1,ch:CH1},
   {name:'2화 · 반딧불이의 밤 수련',next:'맴맴이의 첫 대회',beats:EP2,ch:[['처음','t2'],['베짱이','grass'],['밤 수련','night'],['한 달 뒤','month'],['깃 싸움','grip'],['선택','choice'],['인사','bow2']]},
-  {name:'특집 · 하나만 하면 생기는 구멍',tab:'특집',next:'맴맴이의 첫 대회',beats:EP3,ch:[['처음','sp0'],['거리 지도','map'],['태권도만','tkdonly'],['주짓수만','bjjonly'],['유도 없이','nojudo'],['레슬링 없이','nowr'],['레슬링+주짓수','combo'],['정리','sum']]}];
+  {name:'특집 · 하나만 하면 생기는 구멍',tab:'특집',next:'맴맴이의 첫 대회',beats:EP3,ch:[['처음','sp0'],['거리 지도','map'],['태권도만','tkdonly'],['주짓수만','bjjonly'],['유도 없이','nojudo'],['레슬링 없이','nowr'],['레슬링+주짓수','combo'],['정리','sum']]},
+  {name:'3화 · 성장 계단 ① 운동만 잘하면 될까?',tab:'3화',next:'성장 계단 ② 진짜 멋진 매미',beats:EP4,ch:[['처음','t3'],['자신만만','proud'],['바닥의 짱','gulli'],['개미의 비밀','ant1'],['불가리안 백','antnight'],['단체반 스파링','bjjgroup'],['두 달 친구','cricket'],['정리','step3']]},
+  {name:'4화 · 성장 계단 ② 진짜 멋진 매미',tab:'4화',next:'맴맴이의 첫 대회',beats:EP5,ch:[['처음','t4'],['꼬마뿔','kidrhino'],['아빠랑 스파링','dadspar'],['맴맴이와 아빠','mmdad'],['공부하는 꿀벌','beestudy'],['바뀐 하루','montage'],['친절','kind'],['완성','shine']]}];
 EPS.forEach(e=>{let a=0;e.beats.forEach(b=>{b.start=a;a+=b.dur});e.total=a});
 let EPI=0,TOTAL=0,CH=[];
 function useEp(k){EPI=k;SC=EPS[k].beats;TOTAL=EPS[k].total;CH=EPS[k].ch}
@@ -882,7 +979,7 @@ function render(){
   if(b.props)b.props();
   for(const [id,F,o] of b.actors){
     const sp=SP[id],P=Object.assign({},samp(F,LT));
-    if(o.walk&&LT>o.walk[0]&&LT<o.walk[1]){const s=Math.sin((LT-o.walk[0])*10);P.flh+=.45*s;P.blh-=.45*s;P.fah-=.35*s;P.bah+=.35*s;P.y-=Math.abs(s)*6}
+    if(o.walk)for(const wr of (Array.isArray(o.walk[0])?o.walk:[o.walk]))if(LT>wr[0]&&LT<wr[1]){const s=Math.sin((LT-wr[0])*10);P.flh+=.45*s;P.blh-=.45*s;P.fah-=.35*s;P.bah+=.35*s;P.y-=Math.abs(s)*6}
     place(sp,P);const sil=false;
     if(o.clip){X.save();X.beginPath();X.rect(-3000,-3000,7000,G+10+3000);X.clip();drawBug(X,sp,P,IDLE,sil);X.restore()}else drawBug(X,sp,P,IDLE,sil);
     if(sil){X.save();X.font='40px "Black Han Sans","Jua",sans-serif';X.textAlign='center';X.fillStyle='#e6ff8c';X.strokeStyle=OUT;X.lineWidth=6;const hy=P.wy-(sp.L.hd+sp.hr+34)*sp.s;X.strokeText('?',P.wx,hy);X.fillText('?',P.wx,hy);X.restore()}
