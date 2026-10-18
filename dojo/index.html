@@ -28,6 +28,9 @@ body{color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
 header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
 header h1{font-family:var(--display);font-weight:400;font-size:clamp(30px,6vw,46px);line-height:1.1;margin:0;color:var(--honey);text-wrap:balance}
 header p{margin:0;color:var(--mute)}
+.eps{display:flex;gap:6px;margin-left:auto}
+.eps .btn{font-family:var(--display);font-size:17px;padding:7px 16px}
+.eps .btn.on{background:var(--honey);color:var(--ink);border-color:var(--honey)}
 .stage{position:relative;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 0 0 1px var(--line)}
 .screen{position:relative;width:100%;aspect-ratio:16/9;max-width:100%;margin:0 auto;container-type:inline-size}
 #cv{display:block;width:100%;height:100%}
@@ -83,7 +86,8 @@ section h2{font-family:var(--display);font-weight:400;font-size:28px;line-height
 <div class="wrap">
   <header>
     <h1>곤충 무술 도장</h1>
-    <p>1화 · 네 가지를 배운 매미 · 약 3분 30초</p>
+    <p id="sub"></p>
+    <nav class="eps" id="eps" aria-label="몇 화"></nav>
   </header>
 
   <div class="stage" id="stage">
@@ -157,7 +161,9 @@ const SP={
  dummy:{n:'짚인형',k:'연습 인형',arts:[],s:1.0,L:LL({ua:20,fa:18,th:30,sn:30,hd:86}),rx:26,ry:38,hr:20,col:'#d2ab6c',lc:'#c49b5d',hc:'#d8b376',lw:13,ant:'none',noface:1}
 };
 Object.keys(SP).forEach((k,i)=>{SP[k].id=k;SP[k].ph=i*1.37});
-const ORDER=['rhino','stag','mantis','hop','lady','butter','katy','fire','bee','bang','cicada'];
+SP.grass={n:'띵가',k:'베짱이',tag:'개인 레슨만',arts:['judo','wr'],s:1.0,L:LL({th:38,sn:38}),rx:22,ry:38,hr:19,col:'#a6c75c',lc:'#86a641',hc:'#b4d46a',lw:7,tw:1.8,ant:'long',
+  moves:'기술 이름 외우기 · 기타 치며 노래',fact:'날개를 비벼서 베짱베짱 하고 울어요.',id:'grass',ph:17.3,ep:1,scene:'grass'};
+const ORDER=['rhino','stag','mantis','hop','lady','butter','katy','fire','bee','bang','cicada','grass'];
 const UNLOCK={lady:5,butter:10,katy:15,fire:25,bee:35,bang:50};
 
 /* ---------- 하준이 미션 앱 연동 (같은 사이트에 올렸을 때만) ---------- */
@@ -202,7 +208,7 @@ const easeBack=u=>1+2.70158*Math.pow(u-1,3)+1.70158*Math.pow(u-1,2);
 
 function norm(fr){
   fr=fr.slice().sort((a,b)=>a[0]-b[0]);
-  let prev=Object.assign({x:480,y:0,rot:0,f:1,gl:0},PO.stand);
+  let prev=Object.assign({x:480,y:0,rot:0,f:1,gl:0,rust:0},PO.stand);
   return fr.map(([t,name,o])=>{const p=Object.assign({},prev,name?PO[name]:{},o||{});prev=p;return{t,p,e:(o&&o.e)||'io'}});
 }
 function samp(F,t){
@@ -239,6 +245,7 @@ function place(sp,P,ground){
 /* ---------- 그리기 도구 ---------- */
 let SIL=false;
 const pc=c=>SIL?'#0e1a13':c;
+function tint(h,t,k){const a=parseInt(h.slice(1),16),b=parseInt(t.slice(1),16),m=(x,y)=>Math.round(x+(y-x)*k);return'#'+((1<<24)|(m(a>>16,b>>16)<<16)|(m(a>>8&255,b>>8&255)<<8)|m(a&255,b&255)).toString(16).slice(1)}
 function mixc(h,a){const n=parseInt(h.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const t=a<0?0:255,k=Math.abs(a);r=Math.round(r+(t-r)*k);g=Math.round(g+(t-g)*k);b=Math.round(b+(t-b)*k);return'#'+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1)}
 function poly(c,pts){c.beginPath();c.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)c.lineTo(pts[i][0],pts[i][1])}
 function limb(c,pts,w,col){c.lineCap='round';c.lineJoin='round';c.strokeStyle=pc(OUT);c.lineWidth=w+4.5;poly(c,pts);c.stroke();c.strokeStyle=pc(col);c.lineWidth=w;poly(c,pts);c.stroke()}
@@ -260,7 +267,7 @@ function midLegs(c,sp,g,time,col){
   for(const s of [1,-1]){const a1=s>0?.9+w:-.6-w,p0=[b[0]+s*4,b[1]-4],d1=DR(a1),p1=[p0[0]+d1[0]*16,p0[1]+d1[1]*16],d2=DR(a1*.3),p2=[p1[0]+d2[0]*14,p1[1]+d2[1]*14];limb(c,[p0,p1,p2],sp.lw*.55,col)}
 }
 function wings(c,sp,g,time){
-  const w=sp.wing||(['hop','katy','bang','mantis'].includes(sp.id)?'fold':null);if(!w)return;
+  const w=sp.wing||(['hop','katy','bang','mantis'].includes(sp.id)||sp.id==='grass'?'fold':null);if(!w)return;
   const rx=sp.rx,ry=sp.ry,off=sp.L.so-sp.L.bc;
   c.save();c.translate(g.SO[0],g.SO[1]);c.rotate(g.t);
   if(w==='butter'){
@@ -284,7 +291,7 @@ function rings(c,rx,ry,n,a){c.strokeStyle=`rgba(0,0,0,${a||.18})`;c.lineWidth=2;
 function pattern(c,sp,rx,ry){
   switch(sp.id){
     case 'rhino':case 'stag':c.fillStyle='rgba(255,255,255,.22)';c.beginPath();c.ellipse(rx*.25,-ry*.35,rx*.28,ry*.3,-.3,0,TAU);c.fill();c.strokeStyle='rgba(0,0,0,.28)';c.lineWidth=2;c.beginPath();c.moveTo(-rx*.15,-ry);c.quadraticCurveTo(-rx*.35,0,-rx*.1,ry);c.stroke();break;
-    case 'mantis':case 'hop':case 'katy':case 'bang':case 'butter':rings(c,rx,ry,4);if(sp.id!=='butter'){c.fillStyle='rgba(0,0,0,.12)';c.fillRect(-rx,-ry,rx*.55,ry*2);c.fillStyle='rgba(255,255,255,.2)';c.fillRect(rx*.45,-ry,rx,ry*2)}break;
+    case 'mantis':case 'hop':case 'katy':case 'bang':case 'grass':case 'butter':rings(c,rx,ry,4);if(sp.id!=='butter'){c.fillStyle='rgba(0,0,0,.12)';c.fillRect(-rx,-ry,rx*.55,ry*2);c.fillStyle='rgba(255,255,255,.2)';c.fillRect(rx*.45,-ry,rx,ry*2)}break;
     case 'lady':c.fillStyle='#1c1c1c';for(const [a,b,r] of [[-.45,-.45,.26],[.25,-.15,.22],[-.15,.3,.26],[.5,.42,.18],[-.65,.05,.16]]){c.beginPath();c.arc(rx*a,ry*b,rx*r,0,TAU);c.fill()}c.fillStyle='rgba(255,255,255,.3)';c.beginPath();c.ellipse(rx*.3,-ry*.55,rx*.22,ry*.12,-.4,0,TAU);c.fill();break;
     case 'fire':c.fillStyle='#f4ff9a';c.fillRect(-rx,ry*.52,rx*2,ry);c.fillStyle='rgba(255,255,255,.12)';c.fillRect(rx*.4,-ry,rx,ry*2);break;
     case 'bee':c.fillStyle='#2a2210';for(const yy of [-.2,.14,.64])c.fillRect(-rx,ry*yy,rx*2,ry*.16);c.fillStyle='rgba(255,255,255,.28)';c.beginPath();c.ellipse(rx*.3,-ry*.5,rx*.3,ry*.2,0,0,TAU);c.fill();break;
@@ -298,7 +305,9 @@ function body(c,sp,g,time,P){
   c.beginPath();c.ellipse(0,0,rx,ry,0,0,TAU);c.fillStyle=pc(sp.col);c.fill();
   c.save();c.clip();
   if(!SIL)pattern(c,sp,rx,ry);
-  if(sp.arts.length){const by=ry*.36,n=sp.arts.length,w=rx*2+6;for(let i=0;i<n;i++){c.fillStyle=pc(ART[sp.arts[i]][1]);c.fillRect(-rx-3+w*i/n,by,w/n+.6,10)}c.strokeStyle=pc(OUT);c.lineWidth=1.6;c.strokeRect(-rx-3,by,w,10)}
+  const rust=P.rust||0,bc=a=>rust>0?tint(ART[a][1],'#8a7d6a',rust*.8):ART[a][1];
+  if(rust>0&&!SIL){c.fillStyle=`rgba(156,82,32,${Math.min(.85,rust)})`;for(let i=0;i<16;i++){const x=((i*37)%(rx*2))-rx,y=((i*53)%(ry*2))-ry;c.beginPath();c.arc(x,y,2+(i*7)%4,0,TAU);c.fill()}}
+  if(sp.arts.length){const by=ry*.36,n=sp.arts.length,w=rx*2+6;for(let i=0;i<n;i++){c.fillStyle=pc(bc(sp.arts[i]));c.fillRect(-rx-3+w*i/n,by,w/n+.6,10)}c.strokeStyle=pc(OUT);c.lineWidth=1.6;c.strokeRect(-rx-3,by,w,10)}
   c.restore();
   c.beginPath();c.ellipse(0,0,rx,ry,0,0,TAU);c.strokeStyle=pc(OUT);c.lineWidth=3;c.stroke();
   if(sp.arts.length){
@@ -329,7 +338,8 @@ function antennae(c,sp,time){
     c.restore();
   });
 }
-function eye1(c,x,y,r,ex,back){
+function eye1(c,x,y,r,ex,back,lid){
+  if(ex===5){c.save();c.beginPath();c.ellipse(x,y,r*.82,r,0,0,TAU);c.fillStyle='#fff';c.fill();c.clip();c.fillStyle='#17130e';c.beginPath();c.arc(x+r*.22,y+r*.42,r*.42,0,TAU);c.fill();c.fillStyle=pc(lid||'#888');c.fillRect(x-r,y-r*1.2,r*2,r*1.25);c.restore();c.strokeStyle=OUT;c.lineWidth=2.2;c.beginPath();c.ellipse(x,y,r*.82,r,0,0,TAU);c.stroke();c.lineWidth=2.6;c.beginPath();c.moveTo(x-r*.8,y+r*.05);c.lineTo(x+r*.8,y+r*.05);c.stroke();return}
   if(ex===3||ex===4){c.strokeStyle=OUT;c.lineWidth=2.6;c.lineCap='round';c.beginPath();if(ex===3)c.arc(x,y+r*.35,r*.7,PI*1.15,PI*1.85);else{c.moveTo(x-r*.6,y);c.lineTo(x+r*.6,y)}c.stroke();return}
   c.fillStyle='#fff';c.beginPath();c.ellipse(x,y,r*.82,r,0,0,TAU);c.fill();c.strokeStyle=OUT;c.lineWidth=2.2;c.stroke();
   const pr=ex===2?r*.3:r*.48;c.fillStyle='#17130e';c.beginPath();c.arc(x+r*.28,y+r*.08,pr,0,TAU);c.fill();
@@ -338,7 +348,7 @@ function eye1(c,x,y,r,ex,back){
 }
 function face(c,sp,ex,time){
   const hr=sp.hr,E=sp.eye||[hr*.38,-hr*.12,hr*.44],blink=((time+sp.ph*3)%4.3)<.12,e=(blink&&ex!==3)?4:ex;
-  eye1(c,E[0]-E[2]*.95,E[1]-E[2]*.12,E[2]*.78,e,true);eye1(c,E[0],E[1],E[2],e,false);
+  eye1(c,E[0]-E[2]*.95,E[1]-E[2]*.12,E[2]*.78,e,true,sp.hc);eye1(c,E[0],E[1],E[2],e,false,sp.hc);
   if(SIL)return;
   const m=sp.mouth||[hr*.62,hr*.42];c.strokeStyle=sp.dark?'#f3e7cf':OUT;c.lineWidth=2.4;c.lineCap='round';
   if(ex===2){c.fillStyle='#5a1f1a';c.beginPath();c.ellipse(m[0],m[1],hr*.1,hr*.14,0,0,TAU);c.fill();c.stroke()}
@@ -467,20 +477,35 @@ function titleCard(lt){
   const a=Math.min(1,lt/.6),s=easeBack(Math.min(1,lt/.5));
   X.save();X.globalAlpha=a;X.translate(W/2,150);X.scale(s,s);X.textAlign='center';X.textBaseline='middle';X.lineJoin='round';
   X.font='92px "Black Han Sans","Jua",sans-serif';X.lineWidth=14;X.strokeStyle=OUT;X.strokeText('곤충 무술 도장',0,0);X.fillStyle=HONEY;X.fillText('곤충 무술 도장',0,0);
-  X.font='36px "Jua",sans-serif';X.lineWidth=8;X.strokeText('1화 · 네 가지를 배운 매미',0,72);X.fillStyle='#fff';X.fillText('1화 · 네 가지를 배운 매미',0,72);X.restore();
+  X.font='36px "Jua",sans-serif';X.lineWidth=8;const nm=EPS[EPI].name;X.strokeText(nm,0,72);X.fillStyle='#fff';X.fillText(nm,0,72);X.restore();
 }
 function endCard(lt){
   const a=Math.max(0,Math.min(1,(lt-1)/.8));if(!a)return;
   X.save();X.globalAlpha=a;X.fillStyle='rgba(10,20,14,.62)';X.fillRect(0,0,W,H);X.textAlign='center';X.textBaseline='middle';X.lineJoin='round';
   X.font='34px "Jua",sans-serif';X.fillStyle='#cfe0d3';X.fillText('다음 화',W/2,150);
-  X.font='70px "Black Han Sans","Jua",sans-serif';X.lineWidth=12;X.strokeStyle=OUT;X.strokeText('반딧불이의 밤 수련',W/2,222);X.fillStyle='#e6ff8c';X.fillText('반딧불이의 밤 수련',W/2,222);
+  X.font='70px "Black Han Sans","Jua",sans-serif';X.lineWidth=12;X.strokeStyle=OUT;const nx=EPS[EPI].next;X.strokeText(nx,W/2,222);X.fillStyle='#e6ff8c';X.fillText(nx,W/2,222);
   X.font='46px "Black Han Sans","Jua",sans-serif';X.fillStyle=HONEY;X.fillText('끝',W/2,312);X.restore();
 }
+
+/* 화면 위에 그리는 것(게이지·자막 띠) */
+const UIQ=[];const ui=f=>UIQ.push(f);
+function drawUI(){for(const f of UIQ)f();UIQ.length=0}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),prog=(t0,t1)=>clamp((LT-t0)/(t1-t0),0,1);
+function banner(t0,t1,text){if(LT<t0||LT>t1)return;ui(()=>{const a=Math.max(0,Math.min(1,(LT-t0)/.25,(t1-LT)/.25));X.save();X.globalAlpha=a;X.fillStyle='rgba(12,22,16,.78)';X.fillRect(0,H/2-64,W,128);X.font='66px "Black Han Sans","Jua",sans-serif';X.textAlign='center';X.textBaseline='middle';X.fillStyle=HONEY;X.fillText(text,W/2,H/2+3);X.restore()})}
+function meter(t0,t1,x,y,w,label,col,v){if(LT<t0||LT>t1)return;ui(()=>{X.save();X.font='24px "Jua",sans-serif';X.textBaseline='alphabetic';X.textAlign='left';X.lineJoin='round';X.lineWidth=5;X.strokeStyle='rgba(15,12,8,.6)';X.strokeText(label,x,y-8);X.fillStyle='#fff';X.fillText(label,x,y-8);rr(X,x,y,w,24,12);X.fillStyle='rgba(10,14,10,.55)';X.fill();X.strokeStyle=OUT;X.lineWidth=2.5;X.stroke();rr(X,x+3,y+3,Math.max(18,(w-6)*v/100),18,9);X.fillStyle=col;X.fill();X.restore()})}
+function counter(t0,t1,text){if(LT<t0||LT>t1)return;ui(()=>{X.save();X.font='26px "Jua",sans-serif';const w=X.measureText(text).width+32;rr(X,W-w-18,92,w,42,21);X.fillStyle='rgba(12,22,16,.75)';X.fill();X.strokeStyle=HONEY;X.lineWidth=2.5;X.stroke();X.fillStyle='#fff';X.textAlign='center';X.textBaseline='middle';X.fillText(text,W-w/2-18,114);X.restore()})}
+function acorns(x,y,n){ui(()=>{X.save();for(let i=0;i<10;i++){const ax=x+i*24;X.globalAlpha=i<n?1:.18;X.fillStyle='#b5793f';X.beginPath();X.ellipse(ax,y+4,8,10,0,0,TAU);X.fill();X.fillStyle='#6b4c2e';X.beginPath();X.ellipse(ax,y-5,10,5,0,0,TAU);X.fill()}X.restore()})}
+function bubble(t0,t1,x,y,text){if(LT<t0||LT>t1)return;const a=Math.min(1,(LT-t0)/.2,(t1-LT)/.2),ls=text.split('\n');X.save();X.globalAlpha=Math.max(0,a);X.font='26px "Jua",sans-serif';const w=Math.max(...ls.map(l=>X.measureText(l).width))+36,hh=ls.length*34+18;rr(X,x-w/2,y-hh,w,hh,18);X.fillStyle='#fff';X.fill();X.strokeStyle=OUT;X.lineWidth=3;X.stroke();X.beginPath();X.moveTo(x-14,y-2);X.lineTo(x-4,y+20);X.lineTo(x+10,y-2);X.closePath();X.fillStyle='#fff';X.fill();X.stroke();X.fillStyle='#fff';X.fillRect(x-12,y-6,20,6);X.fillStyle=OUT;X.textAlign='center';X.textBaseline='middle';ls.forEach((l,i)=>X.fillText(l,x,y-hh+26+i*34));X.restore()}
+function floaty(t0,t1,x,y,ch,col){if(LT<t0||LT>t1)return;X.save();X.font='34px "Black Han Sans","Jua",sans-serif';X.textAlign='center';for(let i=0;i<3;i++){const p=((LT*.6+i/3)%1);X.globalAlpha=1-p;X.fillStyle=col;X.strokeStyle=OUT;X.lineWidth=4;X.strokeText(ch,x+i*16+Math.sin(p*6)*8,y-p*90);X.fillText(ch,x+i*16+Math.sin(p*6)*8,y-p*90)}X.restore()}
+function clock(x,r0,r1){const ring=LT>r0&&LT<r1,w=ring?Math.sin(LT*40)*.18:0;X.save();X.translate(x,G-30);X.rotate(w);X.fillStyle='#e8403a';X.strokeStyle=OUT;X.lineWidth=3;for(const s of [-1,1]){X.beginPath();X.arc(s*16,-22,9,0,TAU);X.fill();X.stroke()}X.beginPath();X.arc(0,0,26,0,TAU);X.fill();X.stroke();X.fillStyle='#fff';X.beginPath();X.arc(0,0,19,0,TAU);X.fill();X.strokeStyle=OUT;X.lineWidth=3;X.beginPath();X.moveTo(0,0);X.lineTo(0,-14);X.moveTo(0,0);X.lineTo(-6,10);X.stroke();X.restore()}
+function blanket(x){X.save();X.translate(x,G);X.beginPath();X.moveTo(-82,0);X.bezierCurveTo(-80,-46,80,-58,86,0);X.closePath();X.fillStyle='#6cb04c';X.fill();X.strokeStyle=OUT;X.lineWidth=3;X.stroke();X.strokeStyle='rgba(30,60,20,.5)';X.lineWidth=2;X.beginPath();X.moveTo(-74,-6);X.quadraticCurveTo(0,-34,78,-6);X.stroke();X.restore()}
+function guitar(x,y,a){X.save();X.translate(x,y);X.rotate(a);X.fillStyle='#7a4a22';X.strokeStyle=OUT;X.lineWidth=2.5;X.fillRect(10,-4,58,8);X.strokeRect(10,-4,58,8);X.fillStyle='#c8742c';X.beginPath();X.arc(-8,0,18,0,TAU);X.fill();X.stroke();X.beginPath();X.arc(12,0,13,0,TAU);X.fill();X.stroke();X.fillStyle='#3b2412';X.beginPath();X.arc(4,0,5,0,TAU);X.fill();X.restore()}
+function potion(x,y){X.save();X.translate(x,y);X.fillStyle='#8fb4d4';X.strokeStyle=OUT;X.lineWidth=3;X.beginPath();X.ellipse(0,0,26,14,0,0,TAU);X.fill();X.stroke();X.beginPath();X.moveTo(24,0);X.lineTo(40,-12);X.lineTo(40,12);X.closePath();X.fill();X.stroke();X.strokeStyle='#3d5f80';X.lineWidth=2;for(const dx of [-10,-2,6]){X.beginPath();X.moveTo(dx,-11);X.quadraticCurveTo(dx+4,0,dx,11);X.stroke()}X.fillStyle='#fff';X.beginPath();X.arc(-14,-3,3.5,0,TAU);X.fill();X.fillStyle='#17130e';X.beginPath();X.arc(-14,-3,1.8,0,TAU);X.fill();X.fillStyle='#c98b4a';X.fillRect(-36,-6,10,12);X.strokeStyle=OUT;X.strokeRect(-36,-6,10,12);X.restore()}
 
 /* ---------- 장면 ---------- */
 const taps=(t0,n,k,lo,hi)=>Array.from({length:n},(_,i)=>[t0+i*.17,null,{[k]:i%2?lo:hi,e:'lin'}]);
 const ON=(id,fr,o)=>[id,norm(fr),o||{}];
-const SC=[];
+let SC=[];
 function beat(o){SC.push(o)}
 const camOf=(x,z)=>({x,z});
 
@@ -512,7 +537,7 @@ beat({id:'hop',dur:12,cam:camOf(510,1.16),who:['hop'],cap:'거리 재고, 균형
 const FR=['lady','butter','katy','fire','bee','bang'],FX=[160,290,420,550,680,810];
 beat({id:'friends',dur:6,cam:camOf(480,.92),cap:'두 가지, 세 가지를 같이 배우는 친구들',say:'도장에는 무술을 두 가지, 세 가지씩 같이 배우는 친구들도 있어요.',
  actors:FR.map((id,i)=>ON(id,[[0,'stand',{x:1150+i*60,f:-1}],[.2+i*.3,'stand',{x:1150+i*60}],[1.8+i*.3,'stand',{x:FX[i]}],[2.3+i*.3,'cheer',{x:FX[i],f:1}],[6,'cheer',{x:FX[i],f:1}]],{walk:[.2+i*.3,1.8+i*.3]})),
- fx:()=>{FR.forEach((id,i)=>burst(1.9+i*.3,FX[i],G-240,isLocked(id)?'?':String(SP[id].arts.length),'#c3fae8','pop',.45))}});
+ fx:()=>{FR.forEach((id,i)=>burst(1.9+i*.3,FX[i],G-240,String(SP[id].arts.length),'#c3fae8','pop',.45))}});
 beat({id:'lady',own:'lady',dur:9,cam:camOf(420,1.2),who:['lady'],cap:'데굴데굴 구르고, 낙법 팡!',say:'무당벌레 동글이는 유도랑 주짓수를 배워요. 동글동글한 등으로 데굴데굴 구르고, 넘어져도 낙법으로 팡! 진짜 무당벌레는 위험하면 뒤집혀서 죽은 척을 해요.',
  actors:[ON('lady',[[0,'stand',{x:280,f:1}],[.6,'squat',{x:310}],[1,'tuck',{x:360,rot:PI,y:-10,e:'lin'}],[1.4,'tuck',{x:410,rot:2*PI,y:0,e:'lin'}],[1.8,'tuck',{x:460,rot:3*PI,y:-10,e:'lin'}],[2.2,'tuck',{x:505,rot:4*PI,y:0,e:'lin'}],[2.7,'stand',{x:520,rot:4*PI,ex:3}],[3.4,'squat',{x:530,ex:1}],[3.9,'flat',{x:520,rot:4*PI-1.57,fah:2.6,ex:1}],[4.25,'flat',{fah:-.7,ex:1,e:'out'}],[5.3,'flat',{fah:-.7,ex:3}],[6,'squat',{rot:4*PI,x:525}],[6.6,'cheer',{x:525}],[9,'cheer']])],
  fx:()=>{chip(.5,2.8,'bjj','데굴데굴 앞구르기');chip(3.6,5.4,'judo','낙법 팡!');burst(4.25,480,G-30,'팡!','#ffe066','slap')}});
@@ -570,8 +595,78 @@ beat({id:'end',dur:7,nosign:1,cam:camOf(480,1),cap:'다음 화: 반딧불이의 
  actors:[ON('cicada',[[0,'cheer',{x:480,f:1}],[1,'stand'],[1.6,'cheer'],[7,'cheer']]),ON('fire',[[0,'stand',{x:640,f:-1}],[1.4,'cheer'],[7,'cheer']])],
  over:lt=>endCard(lt)});
 
-let acc=0;SC.forEach(b=>{b.start=acc;acc+=b.dur});const TOTAL=acc;
-const CH=[['처음','title'],['사범님들','intro'],['친구들','friends'],['맴맴이','cicada'],['스파링','sparin'],['인사','bow']];
+const EP1=SC;SC=[];
+const CH1=[['처음','title'],['사범님들','intro'],['친구들','friends'],['맴맴이','cicada'],['스파링','sparin'],['인사','bow']];
+
+/* ===== 2화 · 반딧불이의 밤 수련 ===== */
+beat({id:'t2',dur:5,nosign:1,bg:'night',cam:camOf(480,1),cap:'곤충 무술 도장 · 2화',say:'곤충 무술 도장! 2화. 반딧불이의 밤 수련.',
+ actors:[ON('grass',[[0,'stand',{x:290,f:1,ex:5}],[5,'stand']]),ON('fire',[[0,'cheer',{x:480,f:1,gl:1}],[1.4,'guard',{gl:.5}],[2.4,'cheer',{gl:1}],[5,'cheer']]),ON('cicada',[[0,'stand',{x:670,f:-1}],[2.6,'cheer'],[5,'cheer']])],
+ fx:()=>guitar(312,G-108,-2.5),over:lt=>titleCard(lt)});
+beat({id:'morning',dur:11,cam:camOf(500,1.15),who:['cicada'],cap:'아침 7시, 너무 졸려…',say:'아침 일곱 시. 따르릉! 오늘은 레슬링 개인 연습 날이에요. 그런데 맴맴이는 눈이 안 떠져요. 하아암, 오늘 하루만 쉴까?',
+ props:()=>clock(650,.4,2.6),
+ actors:[ON('cicada',[[0,'flat',{x:470,f:1,rot:-1.57,ex:4}],[2.4,'flat',{ex:4}],[3,'flat',{ex:5}],[3.8,'squat',{x:480,rot:0,ex:5}],[5,'stand',{x:480,ex:5}],[5.6,'stand',{ex:5,fah:2.7,fae:.4,bah:2.6,bae:.4,tl:-.15}],[7,'stand',{ex:5}],[8,'stand',{ex:5,tl:.25}],[11,'stand',{ex:5,tl:.25}]])],
+ fx:()=>{if(LT<3.8)blanket(470);else if(LT<4.8)blanket(470+(LT-3.8)*160);floaty(0,2.8,390,G-70,'Z','#fff');burst(.4,650,G-110,'따르릉!','#ffe066','ring',.75);burst(5.7,500,G-270,'하아암~','#fff',null,.7);chip(.3,4,null,'아침 7시 · 레슬링 개인 연습');chip(7.5,11,null,'오늘 하루만 쉴까…?')}});
+beat({id:'grass',dur:13,cam:camOf(520,1.1),who:['grass'],cap:'"연습은 내일 하지 뭐~"',say:'그때 베짱이 띵가가 기타를 치며 나타났어요. 연습은 내일 하지 뭐! 나는 비싼 개인 레슨만 받을 거야. 힘든 단체반은 안 갈래! 맴맴이도 귀가 솔깃해졌어요.',
+ actors:[ON('cicada',[[0,'stand',{x:400,f:1,ex:5,tl:.25}],[3,'stand',{ex:0}],[6,'stand',{ex:2}],[9.5,'stand',{ex:0,tl:.15,flh:.15}],[13,'stand',{ex:0}]]),
+  ON('grass',[[0,'stand',{x:1000,f:-1,ex:0}],[2.4,'stand',{x:650}],[2.8,'stand',{x:650,fah:1.25,fae:1.5,bah:.9,bae:1.9,ex:5}],...taps(3,30,'fae',1.1,1.7),[13,'stand',{x:650,fah:1.25,fae:1.5,bah:.9,bae:1.9,ex:5}]],{walk:[0,2.4]})],
+ fx:()=>{if(LT>2.6)guitar(632,G-110,-2.55);floaty(3,13,600,G-205,'♪','#ffe066');bubble(3.2,8.5,720,G-250,'연습은 내일 하지 뭐~ ♪');bubble(8.6,13,720,G-250,'개인 레슨만 받을래!\n단체반은 패스~')}});
+beat({id:'night',own:'fire',dur:14,bg:'night',cam:camOf(470,1.1),who:['fire'],cap:'매일 밤 단체반, 같은 크기 친구와 한 판 또 한 판',say:'한편, 반딧불이 반짝이는 매일 밤 유도장 단체반에 가요. 거기엔 반짝이랑 몸집이 비슷한 친구들이 잔뜩 있어요. 오늘도 한 판, 또 한 판! 질 때도 있지만, 같은 크기 친구들이랑 많이 붙어 보는 게 반짝이의 비밀이에요.',
+ actors:[ON('lady',[[0,'stand',{x:560,f:-1}],[1,'grip',{x:540}],[1.4,'grip',{x:530,tl:.6}],[1.85,'flat',{x:470,y:-110,rot:1.7,e:'in'}],[2.2,'flat',{x:360,y:0,rot:4.71,e:'out'}],[2.9,'squat',{x:350,rot:2*PI}],[3.6,'stand',{x:210,rot:2*PI,f:1}],[12.6,'stand'],[13.2,'cheer'],[14,'cheer']],{walk:[2.9,3.6]}),
+  ON('bee',[[0,'stand',{x:1050,f:-1}],[3.6,'stand',{x:1050}],[4.8,'grip',{x:545}],[5.3,'grip',{x:530,tl:.6}],[5.75,'flat',{x:470,y:-110,rot:1.7,e:'in'}],[6.1,'flat',{x:360,y:0,rot:4.71,e:'out'}],[6.7,'squat',{x:350,rot:2*PI}],[7.4,'stand',{x:300,rot:2*PI,f:1}],[12.6,'stand'],[13.2,'cheer'],[14,'cheer']],{walk:[3.6,4.8]}),
+  ON('fire',[[0,'grip',{x:440,f:1,gl:.3}],[1,'grip',{x:445}],[1.4,'turn',{x:500,f:-1,gl:1}],[2,'turn',{x:500}],[2.5,'finish',{x:485,gl:.3}],[3.3,'grip',{x:440,f:1}],[4.8,'grip',{x:445}],[5.3,'turn',{x:500,f:-1,gl:1}],[5.9,'turn',{x:500}],[6.4,'finish',{x:485,gl:.3}],[7.3,'grip',{x:440,f:1}],[8.6,'grip',{x:440}],[9,'grip',{x:448,tl:.5}],[9.6,'grip',{x:450,tl:.85}],[9.95,'flat',{x:505,y:-140,rot:1.7,e:'in',ex:2}],[10.3,'flat',{x:615,y:0,rot:4.71,e:'out',ex:2,fah:2.6}],[10.6,'flat',{fah:-.7,ex:3}],[11.4,'squat',{x:605,rot:2*PI,ex:3}],[12,'stand',{x:605,f:-1,ex:3,gl:.8}],[12.6,'bow'],[13.4,'cheer',{gl:1}],[14,'cheer']]),
+  ON('butter',[[0,'stand',{x:1100,f:-1}],[7.4,'stand',{x:1100}],[8.6,'grip',{x:545}],[9,'turn',{x:470,f:1}],[9.6,'turn',{x:468}],[10.2,'finish',{x:482}],[11.2,'grip',{x:490,f:1,ex:3}],[12,'bow'],[14,'stand']],{walk:[7.4,8.6]})],
+ fx:()=>{const n=LT<2.2?1:LT<6.1?2:LT<10.3?3:Math.min(12,3+Math.floor((LT-10.3)*2.6));counter(0,14,`오늘 밤 스파링 ${n}판`);
+  burst(2.2,350,G-50,'쿵!','#ffd8a8','thud',.8);burst(6.1,350,G-50,'쿵!','#ffd8a8','thud',.8);burst(10.3,640,G-50,'쿵!','#ffd8a8','thud');burst(10.6,575,G-30,'팡!','#ffe066','slap',.7);
+  chip(.3,3.5,null,'같은 크기 친구와 한 판');chip(3.6,7.3,null,'또 한 판!');chip(7.4,11.2,null,'질 때도 있어요. 그래도 또 한 판!');chip(11.3,14,'judo','많이 붙어 볼수록 쑥쑥')}});
+beat({id:'month',dur:14,nosign:1,cam:camOf(480,1),who:['fire','grass'],cap:'한 달 뒤: 쑥쑥 vs 녹슬녹슬',say:'한 달이 지났어요. 개인 레슨에 단체반까지 같이 한 반짝이는 실력이 쑥쑥 늘었어요. 그런데 개인 레슨만 받고 연습을 자꾸 빼먹은 띵가는요? 도토리만 잔뜩 쓰고, 배운 기술이 녹슬어 버렸어요.',
+ actors:[ON('fire',[[0,'stand',{x:290,f:1,gl:.2}],[3,'guard',{gl:.4}],[5,'cheer',{gl:1,ex:3}],[7,'guard',{gl:.6}],[9,'cheer',{gl:1}],[14,'cheer',{gl:.8}]]),
+  ON('grass',[[0,'stand',{x:670,f:-1,ex:0,rust:0}],[3,'stand',{rust:.2,ex:5}],[6,'stand',{rust:.55,tl:.2,ex:5}],[9,'stand',{rust:.85,tl:.35,ex:2}],[12,'stand',{rust:1,tl:.4,ex:5}],[14,'stand',{rust:1,tl:.4,ex:5}]])],
+ fx:()=>{banner(0,2.4,'한 달 뒤');const k=prog(2.5,10.5);meter(2.4,14,60,150,330,'반짝이 실력 (개인 + 단체반)','#e6ff8c',30+62*k);meter(2.4,14,560,150,330,'띵가 실력 (개인 레슨만)','#c0763a',58-33*k);
+  if(LT>5.5){acorns(560,212,Math.max(0,10-Math.floor(prog(6,11.5)*10)))}
+  if(LT>4){X.save();X.fillStyle='rgba(156,82,32,.8)';for(let i=0;i<8;i++){const q=((LT*.5+i/8)%1);X.fillRect(640+(i*13)%60,G-200+q*190,4,4)}X.restore()}
+  chip(2.6,6.5,null,'개인 레슨 + 단체반 = 쑥쑥');chip(6.6,10.8,null,'개인 레슨만 = 도토리만 쏙');chip(10.9,14,null,'배운 기술이 녹슬었어요')}});
+beat({id:'match',dur:15,cam:camOf(480,1.15),who:['fire','grass'],cap:'기술을 아는 것 ≠ 할 수 있는 것',say:'그리고 도장 대회 날! 반짝이랑 띵가가 만났어요. 띵가는 기술 이름은 다 알아요. 업어치기! 허리후리기! 그런데 몸이 안 따라가요. 반짝이는 깃 싸움에서 먼저 잡고, 기울이고, 넘겼어요. 기술은 아는 것만으로는 부족해요. 많이 해 봐서 몸이 기억해야 진짜 내 것이 돼요.',
+ actors:[ON('grass',[[0,'grip',{x:560,f:-1,rust:1,ex:0}],[1.5,'grip',{x:550}],[2.2,'grip',{x:552,fah:1.0,fae:.9}],[3,'grip',{fah:.9,fae:1.0}],[3.6,'turn',{x:500,f:1,tl:.5}],[4.2,'turn',{x:495,tl:.3,ex:2}],[4.6,'grip',{x:540,f:-1,tl:-.2,ex:2}],[5.2,'grip',{x:548,tl:.15}],[6.4,'grip',{x:548}],[6.8,'grip',{x:535,tl:.55}],[7.4,'grip',{x:530,tl:.8}],[8.1,'grip',{x:532,tl:.95}],[8.45,'flat',{x:480,y:-130,rot:1.7,e:'in'}],[8.8,'flat',{x:370,y:0,rot:4.71,e:'out',ex:2}],[11,'flat',{ex:5}],[11.8,'squat',{x:380,rot:2*PI,ex:0}],[12.4,'stand',{x:390,f:1,ex:0}],[13.2,'bow'],[15,'stand']]),
+  ON('fire',[[0,'grip',{x:430,f:1,gl:.4}],[1.5,'grip',{x:440}],[2.2,'grip',{x:442,fah:1.8,fae:.2}],[2.6,'grip',{fah:1.4,fae:.4}],[3,'grip',{fah:1.9,fae:.1}],[3.4,'grip',{fah:1.45,fae:.35}],[6.4,'grip',{x:445}],[6.8,'grip',{x:455,tl:-.2}],[7.4,'turn',{x:510,f:-1,gl:1}],[8.1,'turn',{x:512}],[8.7,'finish',{x:495,gl:.4}],[9.8,'grip',{x:490,ex:3}],[11,'squat',{x:470,fah:1.7,fae:.2}],[12.4,'stand',{x:520,ex:3}],[13.2,'bow'],[15,'stand']])],
+ fx:()=>{chip(1.4,3.6,'judo','깃 싸움: 먼저 잡기');bubble(3.4,5.8,560,G-215,'업어치기! 허리후리기!');burst(4.4,470,G-210,'어? 어?','#fff',null,.6);chip(3.7,6.3,null,'기술 이름만 알아요');chip(6.6,9.6,'judo','잡고 → 기울이고 → 넘기기');burst(8.8,350,G-60,'쿵!','#ffd8a8','thud');dust(8.8,360);chip(9.8,15,null,'몸이 기억해야 진짜 내 것')}});
+beat({id:'grip',dur:14,cam:camOf(540,1.12),who:['cicada','lady'],cap:'힘이 아니라, 깃 싸움 연습이 부족했던 거야',say:'맴맴이도 단체반에서 무당벌레 동글이랑 붙었어요. 그런데 깃 싸움에서 밀려서 넘어갔어요. 맴맴이는 속상해서 유도장에 가기 싫어졌어요. 그때 집게 사범님이 말했어요. 힘이 약해서 진 게 아니야. 깃 싸움 연습이 부족했던 거야.',
+ actors:[ON('lady',[[0,'grip',{x:560,f:-1}],[1.5,'grip',{x:550,fah:1.8,fae:.2}],[2,'grip',{fah:1.45}],[2.5,'grip',{fah:1.8,fae:.2}],[3,'grip',{x:545,fah:1.45,fae:.35}],[3.5,'grip',{x:555,tl:-.15}],[4,'turn',{x:470,f:1}],[4.7,'turn',{x:468}],[5.3,'finish',{x:482}],[6.5,'grip',{x:470,ex:3}],[7.5,'stand',{x:440}],[14,'stand']]),
+  ON('cicada',[[0,'grip',{x:430,f:1}],[1.5,'grip',{x:440,fah:1.0,fae:.9,ex:2}],[2.5,'grip',{fah:.9,fae:1.1}],[3.5,'grip',{x:452,tl:.4}],[4,'grip',{x:446,tl:.75}],[4.7,'grip',{x:447,tl:.9}],[5,'flat',{x:500,y:-120,rot:1.7,e:'in',ex:2}],[5.3,'flat',{x:610,y:0,rot:4.71,e:'out',ex:2}],[6.3,'flat',{ex:4}],[7.2,'squat',{x:600,rot:2*PI,ex:2,tl:.7}],[8.2,'squat',{x:600,tl:.85,ex:4}],[14,'squat',{x:600,tl:.85,ex:4}]]),
+  ON('stag',[[0,'stand',{x:1080,f:-1}],[7.6,'stand',{x:1080}],[9.4,'stand',{x:700}],[10.2,'squat',{x:690,fah:2.0,fae:.2,ex:0}],[14,'squat',{x:690,fah:2.0,fae:.3}]],{walk:[7.6,9.4]})],
+ fx:()=>{chip(1.2,3.6,'judo','깃 싸움에서 밀렸어요');burst(5.3,640,G-60,'쿵!','#ffd8a8','thud');chip(6.6,9.6,null,'시무룩… 유도장 가기 싫어');bubble(10,14,690,G-262,'힘이 약해서 진 게 아니야.\n깃 싸움 연습이 부족했던 거야.')}});
+beat({id:'potion',dur:12,cam:camOf(600,1.18),who:['cicada','stag'],cap:'짜잔! 챔피언의 고등어 물약',say:'사범님이 비밀 물약을 꺼냈어요. 짜잔! 챔피언의 고등어 물약! 팔에는 강철 밧줄, 손에는 자물쇠를 만들어 준대요. 맴맴이는 꿀꺽 마시고, 매일 깃 잡기 연습을 했어요.',
+ actors:[ON('stag',[[0,'squat',{x:690,f:-1,fah:2.0,fae:.3}],[1,'stand',{x:680}],[1.6,'stand',{fah:2.75,fae:.3,ex:3}],[3.6,'stand',{fah:1.6,fae:.2,ex:0}],[5,'stand'],[8,'cheer'],[12,'cheer']]),
+  ON('cicada',[[0,'squat',{x:600,f:1,tl:.85,ex:4}],[1.6,'squat',{tl:.4,ex:2}],[3,'stand',{x:600,ex:2}],[3.8,'stand',{fah:1.5,fae:.3,ex:0}],[4.6,'stand',{fah:2.6,fae:1.6,tl:-.25,ex:4}],[5.8,'stand',{fah:.3,ex:3,tl:0}],[6,'grip',{ex:1}],...taps(6.2,12,'fae',.15,.95),[9.2,'cheer',{ex:3}],[12,'cheer']])],
+ fx:()=>{let px=null,py=null;if(LT>1.6&&LT<3.6){px=660;py=G-200}else if(LT>=3.6&&LT<4.6){const k=prog(3.6,4.4);px=660-k*30;py=G-200+k*60}else if(LT>=4.6&&LT<5.8){px=628;py=G-162}
+  if(px!=null)potion(px,py);burst(1.7,720,G-250,'짜잔!','#c3fae8','ding',.8);burst(4.9,600,G-290,'꿀꺽!','#fff','pop',.7);chip(1.6,4.6,null,'챔피언의 고등어 물약');chip(6,9,'judo','자물쇠 손 만들기');chip(9.2,12,null,'팔엔 강철 밧줄!')}});
+beat({id:'eyes',dur:15,cam:camOf(500,1.18),who:['cicada','butter'],cap:'눈이 돌아가면 중심이 무너져요',say:'이번엔 나비 팔랑이랑 연습 시합! 맴맴이가 위에서 꾹 누르고 있는데, 밖에서 누가 맴맴아! 하고 불렀어요. 고개를 홱 돌린 순간, 휙! 버터플라이 스윕으로 뒤집혔어요. 눈이 돌아가면 중심도 무너져요. 다시 한 번! 이번엔 눈은 상대 배꼽! 끄떡없어요.',
+ actors:[ON('butter',[[0,'sit',{x:450,f:1,rot:-.3}],[2.6,'sit',{rot:-.35}],[3.3,'back',{x:445,rot:-1.4,flh:2.3,blh:2.0}],[4.1,'top',{x:560,rot:0}],[5.6,'top',{x:560}],[6.6,'sit',{x:450,rot:-.3,e:'lin'}],[9.6,'sit',{rot:-.35}],[10.2,'sit',{rot:-.5,flh:2.5}],[10.8,'sit',{rot:-.3,flh:2.2}],[11.4,'sit',{rot:-.5,flh:2.5}],[12,'sit',{rot:-.3}],[13,'cheer',{x:440,rot:0,ex:3}],[15,'cheer']]),
+  ON('cicada',[[0,'squat',{x:525,f:-1,tl:.75,ex:1}],[2.7,'squat',{tl:.75}],[3,'squat',{tl:.05,ex:2}],[3.4,'flat',{x:560,y:-40,rot:-.9,e:'in'}],[4,'flat',{x:620,y:0,rot:-1.57,e:'out',ex:2}],[5.6,'flat',{x:620,rot:-1.57,ex:2}],[6.6,'squat',{x:525,rot:0,tl:.8,ex:1,e:'lin'}],[9.6,'squat',{tl:.8}],[10.2,'squat',{tl:.95,x:530,flh:1.3,blh:-.6}],[10.8,'squat',{tl:.8,x:525}],[11.4,'squat',{tl:.95,x:530}],[12,'squat',{tl:.8,ex:3}],[13,'cheer',{x:560,ex:3}],[15,'cheer']])],
+ fx:()=>{chip(.3,2.7,'bjj','위에서 꾹 누르기');bubble(2.5,3.6,820,G-250,'맴맴아!');burst(3,520,G-240,'두리번',null,null,.6);burst(3.6,600,G-150,'휙!',null,'whoosh');burst(4,645,G-50,'쿵!','#ffd8a8','thud');chip(3,5.8,null,'눈이 돌아가면 중심이 무너져요');banner(5.9,6.9,'다시 한 번!');bubble(9.2,10.2,820,G-250,'맴맴아!');chip(7,13,null,'눈은 상대 배꼽!');burst(11.2,540,G-250,'끄떡없다!','#c3fae8','pop',.8)}});
+beat({id:'choice',dur:14,cam:camOf(520,1.1),who:['cicada'],cap:'선택은 내가, 결과도 내 거예요',say:'맴맴이는 생각했어요. 아침 연습은 졸려요. 그런데 내 힘은 어디서 왔을까? 바로 번쩍이 사범님이랑 한 아침 레슬링 특훈이에요. 그만두면 이 힘도 점점 사라져요. 맴맴이는 스스로 정했어요. 개인 레슨도, 단체반도 다 할래! 선택은 내가 하고, 결과도 내 거예요.',
+ actors:[ON('dummy',[[0,'stand',{x:575,f:-1}],[6,'stand',{x:545,tl:-.3}],[7,'flat',{x:455,y:-195,rot:-1.57}],[8.4,'flat',{x:455,y:-205,rot:-1.57}],[9,'flat',{x:600,y:0,rot:-1.57,e:'in'}],[14,'flat',{x:600,rot:-1.57}]]),
+  ON('cicada',[[0,'stand',{x:420,f:1,fah:2.1,fae:2.3,ex:0}],[3.5,'stand',{fah:2.1,fae:2.3}],[4.5,'stand',{fah:.25,fae:.35}],[5.2,'low',{x:440}],[6,'squat',{x:470}],[7,'lift',{x:480}],[8.4,'lift',{x:482}],[9,'squat',{x:490}],[10,'stand',{x:480,ex:3}],[11,'cheer'],[14,'cheer']]),
+  ON('rhino',[[0,'stand',{x:1050,f:-1}],[3.6,'stand',{x:1050}],[5,'stand',{x:720}],[6,'guard',{x:720,ex:1}],[8.4,'cheer',{x:720,ex:3}],[14,'cheer']],{walk:[3.6,5]})],
+ fx:()=>{bubble(.4,3.6,560,G-275,'아침 연습은 졸린데…\n그만둘까?');chip(4.5,8.8,'wr','내 힘의 비밀: 아침 레슬링 특훈');burst(9,620,G-60,'쿵!','#ffd8a8','thud');chip(9.4,14,null,'개인 레슨도, 단체반도 다 할래!');burst(11,480,G-290,'결심!','#c3fae8','ding',.8)}});
+beat({id:'back',dur:13,bg:'night',cam:camOf(480,1.05),who:['grass'],cap:'다시 시작하면 돼요',say:'그날 밤, 띵가가 쭈뼛쭈뼛 유도장에 왔어요. 나도, 단체반 해 볼래. 친구들은 반갑게 맞아 줬어요. 처음엔 또 넘어갔지만 괜찮아요. 녹슨 기술도 다시 연습하면 반짝반짝 돌아와요.',
+ actors:[ON('cicada',[[0,'stand',{x:650,f:-1}],[2.8,'cheer',{ex:3}],[4.2,'stand',{ex:0}],[11.6,'cheer',{ex:3}],[13,'cheer']]),ON('lady',[[0,'stand',{x:750,f:-1}],[2.9,'cheer'],[4.2,'stand'],[11.7,'cheer'],[13,'cheer']]),ON('bee',[[0,'stand',{x:850,f:-1}],[3,'cheer'],[4.2,'stand'],[11.8,'cheer'],[13,'cheer']]),
+  ON('grass',[[0,'stand',{x:-80,f:1,rust:1,ex:5,tl:.3}],[2.6,'stand',{x:300,tl:.3}],[3.4,'stand',{ex:0,tl:.15}],[5,'grip',{x:330,rust:.9,ex:1}],[5.6,'grip',{x:340}],[6.2,'grip',{x:352,tl:.4}],[6.6,'grip',{x:348,tl:.75}],[6.95,'flat',{x:405,y:-120,rot:1.7,e:'in'}],[7.3,'flat',{x:510,y:0,rot:4.71,e:'out',ex:2}],[7.7,'flat',{fah:-.7,ex:3,rust:.75}],[8.6,'squat',{x:500,rot:2*PI,ex:3}],[9.3,'grip',{x:500,f:-1,rust:.5}],[11,'grip',{rust:.25,ex:3}],[11.6,'cheer',{rust:.15}],[13,'cheer',{rust:.1}]],{walk:[0,2.6]}),
+  ON('fire',[[0,'stand',{x:470,f:-1,gl:.4}],[2.8,'cheer',{ex:3}],[4.2,'grip',{x:440,ex:1}],[5.6,'grip',{x:430}],[6.2,'turn',{x:365,f:1,gl:1}],[6.6,'turn',{x:362}],[7.3,'finish',{x:378,gl:.4}],[8.6,'stand',{x:400,ex:3}],[9.3,'grip',{x:400,f:1}],[11,'grip'],[11.6,'cheer',{ex:3}],[13,'cheer']])],
+ fx:()=>{bubble(2.6,4.6,300,G-262,'나도… 단체반 해 볼래.');bubble(3,4.8,760,G-262,'어서 와!');burst(7.3,520,G-50,'쿵!','#ffd8a8','thud',.8);burst(7.7,465,G-30,'팡!','#ffe066','slap',.7);chip(5,8.8,null,'처음엔 또 넘어가도 괜찮아');chip(9,13,null,'녹슨 기술도 다시 반짝반짝');burst(10.4,500,G-250,'반짝!','#e6ff8c','ding',.8)}});
+const LX2=[-50,47,144,241,338,435,532,629,726,823,920,1017],LO2=['rhino','stag','lady','butter','grass','cicada','fire','katy','bee','bang','mantis','hop'];
+beat({id:'bow2',dur:10,nosign:1,cam:camOf(480,.8),cap:'많이 붙어 본 친구가 진짜 강해져요',say:'오늘의 도장 약속! 아침엔 개인 연습, 밤엔 단체반. 같은 크기 친구들이랑 많이 붙어 본 친구가 진짜 강해져요. 다 같이, 고맙습니다!',
+ actors:LO2.map((id,i)=>ON(id,[[0,'stand',{x:LX2[i],f:i<=5?1:-1,rust:id==='grass'?.1:0}],[4+i*.05,'stand'],[4.6+i*.05,'bow'],[6.4,'bow'],[7.2,'stand'],[7.8,'cheer'],[10,'cheer']])),
+ fx:()=>{chip(.4,4.2,null,'아침엔 개인 연습, 밤엔 단체반');chip(4.3,10,null,'많이 붙어 본 친구가 진짜 강해져요');burst(4.7,480,G-340,'고맙습니다!','#c3fae8','ding',1.15)}});
+beat({id:'end2',dur:7,nosign:1,cam:camOf(480,1),cap:'다음 화: 맴맴이의 첫 대회',say:'다음 화는 맴맴이의 첫 대회! 하준아, 맴맴이가 대회에서 어떤 기술을 쓰면 좋을까?',
+ actors:[ON('cicada',[[0,'cheer',{x:480,f:1}],[1,'guard'],[1.6,'cheer'],[7,'cheer']]),ON('fire',[[0,'stand',{x:320,f:1,gl:.6}],[1.4,'cheer'],[7,'cheer']]),ON('grass',[[0,'stand',{x:640,f:-1,rust:.1}],[1.6,'cheer'],[7,'cheer']])],
+ over:lt=>endCard(lt)});
+const EP2=SC;
+const EPS=[{name:'1화 · 네 가지를 배운 매미',next:'반딧불이의 밤 수련',beats:EP1,ch:CH1},
+  {name:'2화 · 반딧불이의 밤 수련',next:'맴맴이의 첫 대회',beats:EP2,ch:[['처음','t2'],['베짱이','grass'],['밤 수련','night'],['한 달 뒤','month'],['깃 싸움','grip'],['선택','choice'],['인사','bow2']]}];
+EPS.forEach(e=>{let a=0;e.beats.forEach(b=>{b.start=a;a+=b.dur});e.total=a});
+let EPI=0,TOTAL=0,CH=[];
+function useEp(k){EPI=k;SC=EPS[k].beats;TOTAL=EPS[k].total;CH=EPS[k].ch}
+{let k=EPS.length-1;try{const v=localStorage.getItem('insect-dojo.ep');if(v!=null&&EPS[+v])k=+v}catch(e){}useEp(k)}
 const idx=id=>SC.findIndex(b=>b.id===id);
 
 /* ---------- 소리 ---------- */
@@ -588,6 +683,7 @@ function sfx(k){
     else if(k==='slap')noise('highpass',1400,3000,.09,.55);
     else if(k==='ding'){tone('sine',880,880,.5,.25);tone('sine',1320,1320,.6,.2,.08)}
     else if(k==='pop')tone('triangle',520,900,.12,.25);
+    else if(k==='ring'){for(let i=0;i<8;i++)tone('square',1500,1500,.05,.08,i*.09)}
   }catch(e){}
 }
 /* 제미나이 목소리: 밤의 쉼표와 같은 방식. 영어 도장 앱에 저장된 키로 문장마다 한 번 받아 와서 휴대폰에 저장해요 */
@@ -706,11 +802,11 @@ keyIn.onchange=()=>{prefs.gkey=keyIn.value.trim();savePrefs();keyIn.value='';pre
 /* ---------- 자막 ---------- */
 const whoEl=document.getElementById('who'),lineEl=document.getElementById('line');
 const chipHTML=a=>`<span class="art" style="background:${ART[a][1]}">${ART[a][0]}</span>`;
-function lockText(id){return `도장 출석 ${UNLOCK[id]}번이면 이 친구가 합류해요! (지금 ${LINK?LINK.dj:0}번)`}
-function sayOf(b){return b.own&&isLocked(b.own)?'누구일까요? 도장에 더 가면 만날 수 있어요!':b.say}
+function lockText(id){return `도장 출석 ${UNLOCK[id]}번이면 이 카드가 열려요! (지금 ${LINK?LINK.dj:0}번)`}
+function sayOf(b){return b.say}
 function setCap(b){
-  whoEl.innerHTML=(b.who||[]).map(id=>isLocked(id)?'<b>???</b>':`<b>${SP[id].n}</b><i>${SP[id].k}</i>${SP[id].arts.map(chipHTML).join('')}`).join('<i>&nbsp;vs&nbsp;</i>');
-  lineEl.textContent=b.own&&isLocked(b.own)?lockText(b.own):b.cap;
+  whoEl.innerHTML=(b.who||[]).map(id=>`<b>${SP[id].n}</b><i>${SP[id].k}</i>${SP[id].arts.map(chipHTML).join('')}`).join('<i>&nbsp;vs&nbsp;</i>');
+  lineEl.textContent=b.cap;
 }
 
 /* ---------- 재생 ---------- */
@@ -731,13 +827,13 @@ function render(){
   for(const [id,F,o] of b.actors){
     const sp=SP[id],P=Object.assign({},samp(F,LT));
     if(o.walk&&LT>o.walk[0]&&LT<o.walk[1]){const s=Math.sin((LT-o.walk[0])*10);P.flh+=.45*s;P.blh-=.45*s;P.fah-=.35*s;P.bah+=.35*s;P.y-=Math.abs(s)*6}
-    place(sp,P);const sil=isLocked(id);
+    place(sp,P);const sil=false;
     if(o.clip){X.save();X.beginPath();X.rect(-3000,-3000,7000,G+10+3000);X.clip();drawBug(X,sp,P,IDLE,sil);X.restore()}else drawBug(X,sp,P,IDLE,sil);
     if(sil){X.save();X.font='40px "Black Han Sans","Jua",sans-serif';X.textAlign='center';X.fillStyle='#e6ff8c';X.strokeStyle=OUT;X.lineWidth=6;const hy=P.wy-(sp.L.hd+sp.hr+34)*sp.s;X.strokeText('?',P.wx,hy);X.fillText('?',P.wx,hy);X.restore()}
   }
   if(b.fx)b.fx();
   X.restore();
-  drawChips();
+  drawChips();drawUI();
   if(b.over)b.over(LT);
   PLT=LT;
   seek.value=Math.round(gT/TOTAL*1000);tm.textContent=`${fmt(gT)} / ${fmt(TOTAL)}`;
@@ -781,7 +877,13 @@ sndBtn.onclick=()=>{SOUND=!SOUND;sndBtn.setAttribute('aria-pressed',String(SOUND
 const stage=document.getElementById('stage');
 if(!(document.fullscreenEnabled||document.webkitFullscreenEnabled))fsBtn.hidden=true;
 fsBtn.onclick=()=>{const on=document.fullscreenElement||document.webkitFullscreenElement;try{if(on){(document.exitFullscreen||document.webkitExitFullscreen).call(document)}else{const r=(stage.requestFullscreen||stage.webkitRequestFullscreen).call(stage);if(r&&r.catch)r.catch(()=>{})}}catch(e){}};
-CH.forEach(([n,id])=>{const bt=document.createElement('button');bt.className='btn';bt.type='button';bt.textContent=n;bt.dataset.i=idx(id);bt.onclick=()=>{jump(SC[idx(id)].start);if(!PLAY)play()};chapEl.appendChild(bt)});
+function buildChap(){chapEl.innerHTML='';CH.forEach(([n,id])=>{const bt=document.createElement('button');bt.className='btn';bt.type='button';bt.textContent=n;bt.dataset.i=idx(id);bt.onclick=()=>{jump(SC[idx(id)].start);if(!PLAY)play()};chapEl.appendChild(bt)})}
+buildChap();
+const epsEl=document.getElementById('eps'),subEl=document.getElementById('sub');
+function markEps(){[...epsEl.children].forEach((b,j)=>{b.classList.toggle('on',j===EPI);b.setAttribute('aria-pressed',String(j===EPI))});subEl.textContent=`${EPS[EPI].name} · 약 ${Math.round(TOTAL/60*2)/2}분`}
+function switchEp(k){if(k===EPI)return;stop();useEp(k);try{localStorage.setItem('insect-dojo.ep',String(k))}catch(e){}gT=.9;cur=-1;SEEK=true;hold=0;stopNarr();buildChap();markEps();bigt.textContent='▶ 보기';big.hidden=false;DIRTY=true;prefetch()}
+EPS.forEach((e,k)=>{const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=(k+1)+'화';b.onclick=()=>switchEp(k);epsEl.appendChild(b)});
+markEps();
 function markChap(){const bs=[...chapEl.children];let on=0;bs.forEach((b,j)=>{if(cur>=+b.dataset.i)on=j});bs.forEach((b,j)=>b.classList.toggle('on',j===on))}
 
 
@@ -794,15 +896,14 @@ fit();
 /* ---------- 도장 식구들 ---------- */
 const grid=document.getElementById('grid'),note=document.getElementById('linkNote'),legend=document.getElementById('legend');
 legend.innerHTML=Object.keys(ART).map(chipHTML).join('');
-note.textContent=LINK?`하준이가 지금까지 도장에 간 횟수: ${LINK.dj}번. 도장에 갈수록 친구가 한 명씩 합류해요.`:'띠 색깔이 배운 무술이에요. 사범님은 한 가지, 친구들은 두세 가지, 맴맴이는 네 가지를 다 배웠어요.';
-const SHOW={rhino:'rhino',stag:'stag',mantis:'mantis',hop:'hop',lady:'lady',butter:'butter',katy:'katy',fire:'fire',bee:'bee',bang:'bang',cicada:'cicada'};
+note.textContent=LINK?`하준이가 지금까지 도장에 간 횟수: ${LINK.dj}번. 도장에 갈수록 곤충 카드가 하나씩 열려요.`:'띠 색깔이 배운 무술이에요. 사범님은 한 가지, 친구들은 두세 가지, 맴맴이는 네 가지를 다 배웠어요.';
 const minis=[];
 ORDER.forEach(id=>{
   const sp=SP[id],lk=isLocked(id),card=document.createElement('article');card.className='card'+(lk?' locked':'');
   card.innerHTML=`<canvas aria-hidden="true"></canvas><span class="tag">${sp.tag}</span><h3>${lk?'???':sp.n}<small>${lk?'':sp.k}</small></h3><div class="arts">${lk?'':sp.arts.map(chipHTML).join('')}</div>`+
    (lk?`<p>${lockText(id)}</p>`:`<p><b>필살기</b> ${sp.moves}</p><p><b>진짜 ${sp.k}</b> ${sp.fact}</p>`)+
    `<button class="btn" type="button"${lk?' disabled':''}>이 장면 보기 ▶</button>`;
-  card.querySelector('button').onclick=()=>{jump(SC[idx(SHOW[id])].start);if(!PLAY)play();stage.scrollIntoView({behavior:'smooth',block:'start'})};
+  card.querySelector('button').onclick=()=>{const ep=sp.ep||0;if(EPI!==ep)switchEp(ep);jump(SC[idx(sp.scene||id)].start);if(!PLAY)play();stage.scrollIntoView({behavior:'smooth',block:'start'})};
   grid.appendChild(card);minis.push([card.querySelector('canvas'),id,lk]);
 });
 function drawMinis(){
