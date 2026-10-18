@@ -555,28 +555,54 @@ async function ttsGemini(text) {
   }
   throw last || { code: "tts_failed" };
 }
-const ttsFailAt = {}; let ttsLastErr = null;
+// One voice for the whole book: the first engine that works becomes "sticky"; short hiccups (busy server, too many
+// requests at once) are retried instead of jumping to another voice; we only switch after 3 sentences in a row fail.
+let ttsLastErr = null;
+const TTS = { sticky: null, fails: {}, used: null, active: 0, queue: [] };
+function ttsSlot(urgent) { return new Promise(res => { if (TTS.active < 2) { TTS.active++; res(); } else if (urgent) TTS.queue.unshift(res); else TTS.queue.push(res); }); }
+function ttsFree() { TTS.active--; const n = TTS.queue.shift(); if (n) { TTS.active++; n(); } }
+const fatalTts = (e) => e && (e.code === "no_key" || e.code === "cloud_off" || e.code === "key_restricted" || e.code === "bad_key");
+async function withRetry(fn) { let last; for (const wait of [0, 800, 2000]) { if (wait) await sleep(wait); try { return await fn(); } catch (e) { last = e; if (fatalTts(e)) break; } } throw last; }
 function hash(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
 const memAudio = new Map();
-async function ttsBlob(text, rate) {
-  const order = st.readEngine === "phone" ? [] : st.readEngine === "gemini" ? ["gemini", "cloud"] : ["cloud", "gemini"];
+const ttsKey = (eng, text, rate) => `${location.origin}/__tts/${eng}/${st.voice}/${loc()}/${rate}/${hash(text)}`;
+async function cached(ck) {
+  if (memAudio.has(ck)) return memAudio.get(ck);
+  try { const c = await caches.open("lily-tts-v1"); const hit = await c.match(ck); if (hit) { const b = await hit.blob(); memAudio.set(ck, b); return b; } } catch {}
+  return null;
+}
+async function ttsBlob(text, rate, urgent, allowSwitch) {
+  const base = st.readEngine === "phone" ? [] : st.readEngine === "gemini" ? ["gemini", "cloud"] : ["cloud", "gemini"];
+  const order = TTS.sticky && base.includes(TTS.sticky) ? [TTS.sticky, ...base.filter(e => e !== TTS.sticky)] : base;
   for (const eng of order) {
-    const ck = `${location.origin}/__tts/${eng}/${st.voice}/${loc()}/${rate}/${hash(text)}`;
-    if (memAudio.has(ck)) return memAudio.get(ck);
-    try { const c = await caches.open("lily-tts-v1"); const hit = await c.match(ck); if (hit) { const b = await hit.blob(); memAudio.set(ck, b); return b; } } catch {}
-    if (ttsFailAt[eng] && Date.now() - ttsFailAt[eng] < 60000) continue;
+    const ck = ttsKey(eng, text, rate);
+    const hit = await cached(ck); if (hit) { TTS.used = eng; return hit; }
+    if ((TTS.fails[eng] || 0) >= 3 && eng !== order[order.length - 1]) continue;   // this engine is down for now; keep the next one steady
+    await ttsSlot(urgent);
     try {
-      const b = eng === "cloud" ? await ttsCloud(text, rate) : await ttsGemini(text);
+      const b = await withRetry(() => eng === "cloud" ? ttsCloud(text, rate) : ttsGemini(text));
+      TTS.fails[eng] = 0; if (!TTS.sticky) TTS.sticky = eng; TTS.used = eng;
       memAudio.set(ck, b);
       try { const c = await caches.open("lily-tts-v1"); await c.put(ck, new Response(b, { headers: { "content-type": b.type } })); } catch {}
       return b;
-    } catch (e) { ttsFailAt[eng] = Date.now(); ttsLastErr = e; }
+    } catch (e) {
+      ttsLastErr = e; TTS.fails[eng] = fatalTts(e) ? 99 : (TTS.fails[eng] || 0) + 1;
+      if (TTS.sticky === eng && TTS.fails[eng] >= 3) TTS.sticky = null;
+      if (TTS.sticky === eng && !allowSwitch) return null;   // one-off failure of the steady voice: retry it rather than switch voices
+    } finally { ttsFree(); }
   }
   return null;
 }
 const pending = new Map();
-function prefetch(texts, rate) { for (const t of texts) { if (!t) continue; const k = t + "|" + rate; if (pending.has(k)) continue; pending.set(k, ttsBlob(t, rate).catch(() => null)); } }
-async function getAudio(text, rate) { const k = text + "|" + rate; if (pending.has(k)) { const b = await pending.get(k); pending.delete(k); if (b) return b; } return ttsBlob(text, rate); }
+function prefetch(texts, rate) { for (const t of texts) { if (!t) continue; const k = t + "|" + rate; if (pending.has(k)) continue; pending.set(k, ttsBlob(t, rate, false).catch(() => null)); } }
+async function getAudio(text, rate) {
+  const k = text + "|" + rate;
+  if (pending.has(k)) { const b = await pending.get(k); pending.delete(k); if (b) return b; }
+  let b = await ttsBlob(text, rate, true, false); if (b) return b;
+  if (TTS.sticky) { await sleep(1200); b = await ttsBlob(text, rate, true, false); if (b) return b; }   // same voice once more
+  return ttsBlob(text, rate, true, true);   // still nothing: another real voice is better than the phone's robot voice
+}
+function ttsStatus() { const n = { cloud: "Google Cloud", gemini: "Gemini", phone: "폰" }; return (TTS.used ? "지금 목소리: " + n[TTS.used] : "") + (ttsLastErr ? " · 최근 오류: " + (ttsLastErr.code || "") + " " + String(ttsLastErr.message || "").slice(0, 80) : ""); }
 
 // phone voice fallback
 const synth = window.speechSynthesis; let phoneVoice = null;
@@ -816,12 +842,12 @@ function readToday() { return st.readDays[dayKey()] || 0; }
 function noteRead() { const k = dayKey(); st.readDays[k] = (st.readDays[k] || 0) + 1; const ks = Object.keys(st.readDays).sort(); while (ks.length > 120) delete st.readDays[ks.shift()]; saveSt(); }
 function nextBook() { const all = (window.LILY_BOOKS || []).slice().sort((a, b) => ((/^bd-/.test(a.id) ? 0 : 10) + (a.level || 2)) - ((/^bd-/.test(b.id) ? 0 : 10) + (b.level || 2))); return all.find(b => !(st.progress[b.id] && st.progress[b.id].done)) || all[Math.floor(Math.random() * all.length)]; }
 // settings
-[["voice"], ["accent"], ["turn"], ["silence"], ["out"], ["rate"], ["readEngine"], ["model"], ["goal"]].forEach(([id]) => { $(id).value = st[id]; $(id).addEventListener("change", () => { st[id] = $(id).value; saveSt(); if (id === "accent") phoneVoice = null; if (id === "readEngine") { delete ttsFailAt.cloud; delete ttsFailAt.gemini; } }); });
+[["voice"], ["accent"], ["turn"], ["silence"], ["out"], ["rate"], ["readEngine"], ["model"], ["goal"]].forEach(([id]) => { $(id).value = st[id]; $(id).addEventListener("change", () => { st[id] = $(id).value; saveSt(); if (id === "accent") phoneVoice = null; if (id === "readEngine" || id === "voice" || id === "accent") { TTS.sticky = null; TTS.fails = {}; } }); });
 $("key").addEventListener("change", () => { const v = $("key").value.trim(); updShared(s => { s.key_gemini = v; }); renderHome(); });
 $("testVoice").addEventListener("click", async () => {
-  unlockAudio(); delete ttsFailAt.cloud; delete ttsFailAt.gemini; ttsLastErr = null; $("testNote").textContent = "가져오는 중…";
+  unlockAudio(); TTS.sticky = null; TTS.fails = {}; ttsLastErr = null; $("testNote").textContent = "가져오는 중…";
   await say("Hi Hajun! I'm Miss Lily. Shall we read a story together?", { rate: Number(st.rate) || 0.9 });
-  $("testNote").textContent = ttsLastErr && st.readEngine !== "phone" ? ttsErrKo(ttsLastErr) : "✔ 이 목소리로 읽어요";
+  $("testNote").textContent = (ttsLastErr && st.readEngine !== "phone" ? ttsErrKo(ttsLastErr) + " · " : "✔ ") + ttsStatus();
 });
 
 // ============ prompts ============
