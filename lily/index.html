@@ -66,6 +66,11 @@ h2 { font-family: var(--f-display); font-weight: 700; font-size: 22px; margin: 0
 .door .d { color: var(--muted); font-size: 14.5px; }
 .door::after { content: ""; position: absolute; right: -40px; top: -40px; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--glow-rgb), .35), rgba(var(--glow-rgb), 0) 70%); }
 .door:active { transform: translateY(1px); }
+@media (min-width: 560px) { .door.wide { grid-column: 1 / -1; } }
+.goalbar { display: block; height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; margin-top: 6px; position: relative; z-index: 1; }
+.goalbar span { display: block; height: 100%; width: 0; background: var(--good); border-radius: 5px; transition: width .4s; }
+.vidwrap { aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: #000; }
+.vidwrap iframe { width: 100%; height: 100%; border: 0; display: block; }
 .stats { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 14px; color: var(--muted); }
 .stats b { color: var(--ink); font-weight: 600; }
 .list { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
@@ -154,7 +159,11 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
 .w.on { text-decoration: underline; text-decoration-thickness: 4px; text-decoration-color: var(--accent); text-underline-offset: 6px; }
 .w.got { color: var(--good); }
 .readbar { display: flex; flex-direction: column; gap: 10px; }
-.turnnote { font-weight: 600; color: var(--good); min-height: 1.5em; text-align: center; }
+.turnnote { font-weight: 600; color: var(--good); min-height: 1.5em; text-align: center; font-size: 17px; }
+.earbar { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; max-width: 320px; width: 100%; margin: 0 auto; }
+.earbar span { display: block; height: 100%; width: 0; background: var(--muted); transition: width .08s; }
+.earbar span.on { background: var(--good); }
+.w.miss { color: var(--accent); text-decoration: underline wavy; text-decoration-thickness: 2px; text-underline-offset: 7px; }
 .ctrl { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
 .ctrl .ghost { font-size: 20px; padding: 12px 16px; }
 .wordpop { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); transform: translateX(-50%); z-index: 60; background: var(--ink); color: var(--paper); border-radius: 14px; padding: 12px 18px; font-size: 17px; max-width: min(92vw, 520px); box-shadow: 0 8px 30px rgba(0, 0, 0, .25); }
@@ -191,8 +200,9 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
   </header>
   <div class="banner err" id="keyWarn" hidden>Gemini 키가 아직 없어요. 아래 <b>설정</b>에서 키를 넣어야 Lily가 말해요.</div>
   <div class="doors">
-    <button class="door" id="goTalk" type="button"><span class="ic">💬</span><span class="t">Lily랑 말하기</span><span class="d">말 끝나면 바로 대답해요 · 자유대화, 오늘의 수업, 이야기 이어 만들기</span></button>
-    <button class="door" id="goBooks" type="button"><span class="ic">📚</span><span class="t">책 읽기</span><span class="d">Lily가 읽어 주고, 번갈아 읽고, 퀴즈와 책 이야기까지</span></button>
+    <button class="door wide" id="goBooks" type="button"><span class="ic">📚</span><span class="t">오늘의 책 읽기</span><span class="d" id="readToday">하준이가 소리 내어 읽으면 앱이 듣고 다음 문장으로 넘어가요</span><span class="goalbar"><span id="goalFill"></span></span><span class="d" id="nextBookLine"></span></button>
+    <button class="door" id="goTalk" type="button"><span class="ic">💬</span><span class="t">Lily랑 말하기</span><span class="d">말 끝나면 바로 대답해요 · 자유대화, 수업, 이야기 이어 만들기</span></button>
+    <button class="door" id="goVideos" type="button"><span class="ic">📺</span><span class="t">영상 보기</span><span class="d">페파피그처럼 말 많은 만화 · 영어 자막 · 보고 나서 Lily한테 이야기</span></button>
   </div>
   <div class="stats" id="stats"></div>
 
@@ -228,6 +238,8 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
           <select id="rate"><option value="0.8">느리게</option><option value="0.9">조금 천천히</option><option value="1">보통</option></select></div>
         <div class="field"><label for="readEngine">책 읽기 목소리</label>
           <select id="readEngine"><option value="cloud">Google Cloud (추천)</option><option value="gemini">Gemini 목소리</option><option value="phone">폰 내장 목소리</option></select></div>
+        <div class="field"><label for="goal">하루 읽기 목표 (소리 내어 읽은 문장)</label>
+          <select id="goal"><option value="20">20문장</option><option value="30">30문장</option><option value="50">50문장</option><option value="80">80문장</option></select></div>
         <div class="field"><label for="model">대화 모델</label>
           <select id="model"><option value="gemini-3.8-live">Gemini 3.8 Live (기본)</option><option value="gemini-3.1-flash-live-preview">Gemini 3.1 Flash Live (예비)</option></select></div>
       </div>
@@ -304,11 +316,13 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
   <header><h1>하준이 서재</h1><p class="lede">책을 고르면 Lily가 읽어 줘요. 단어를 누르면 뜻이 나와요.</p></header>
   <div class="shelf" id="tools">
     <button class="book tool" id="photoBook" type="button"><div class="cv">📷</div><div class="bt">우리 집 책 읽기</div><div class="bs">책 페이지를 찍으면 그 페이지를 읽어 줘요</div></button>
-    <button class="book tool" id="makeBook" type="button"><div class="cv">✨</div><div class="bt">새 이야기 만들기</div><div class="bs">윔피키드·로알드 달 느낌으로 새로 써 줘요</div></button>
+    <button class="book tool" id="makeBook" type="button"><div class="cv">✨</div><div class="bt">새 이야기 만들기</div><div class="bs">윔피키드·로알드 달·가족 대화 느낌으로 새로 써 줘요</div></button>
+    <button class="book tool" id="dailyBook" type="button"><div class="cv">🎁</div><div class="bt">오늘의 새 책</div><div class="bs">한 번 누르면 대화 많은 새 이야기가 바로 나와요</div></button>
   </div>
   <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
   <div class="banner" id="photoNote" hidden></div>
-  <section><h2>Lily가 쓴 이야기</h2><p class="small muted" style="margin:4px 0 10px">하준이 수준(Level 1 쉬움 → 3 챕터북 맛보기)으로 쓴 새 이야기예요.</p><div class="shelf" id="shelf"></div></section>
+  <section id="pickSec"><h2>오늘 읽을 책</h2><div class="shelf" id="pick" style="margin-top:10px"></div></section>
+  <section><h2>Lily가 쓴 이야기</h2><p class="small muted" style="margin:4px 0 10px">하준이 수준(Level 1 쉬움 → 3 챕터북 맛보기)으로 쓴 새 이야기예요. 오터 가족 시리즈는 페파피그처럼 대화가 가득해요.</p><div class="shelf" id="shelf"></div></section>
   <section id="mineSec" hidden><h2>우리가 만든 이야기</h2><div class="shelf" id="mine" style="margin-top:10px"></div></section>
   <section>
     <h2 style="margin-bottom:6px">진짜 책은 이런 걸로</h2>
@@ -317,13 +331,32 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
   </section>
 </main>
 
+<!-- ============ VIDEOS ============ -->
+<main class="screen" id="videos" hidden>
+  <div class="topbar"><button class="back" data-go="home" type="button">‹ 처음으로</button></div>
+  <header><h1>영상 보기</h1><p class="lede">말을 많이 하는 만화의 공식 채널이에요. 영어 자막이 켜져 있어 보면서 따라 읽을 수 있어요.</p></header>
+  <div id="vPlayer" hidden>
+    <div class="vidwrap"><iframe id="vFrame" title="영상" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+    <div class="row" style="margin-top:10px;flex-wrap:wrap">
+      <button class="go" id="vRetell" type="button">💬 다 봤어! Lily한테 얘기해 주기</button>
+      <a class="ghost" id="vOpen" href="#" target="_blank" rel="noopener" style="text-decoration:none">유튜브 앱에서 열기 ↗</a>
+    </div>
+  </div>
+  <div class="shelf" id="showList"></div>
+  <div class="field">
+    <label for="ytUrl">다른 영상 틀기 — 유튜브에서 공유 → 링크 복사 → 여기에 붙여넣기</label>
+    <div class="row"><input class="text" id="ytUrl" type="url" placeholder="https://youtu.be/…" autocomplete="off"><button class="ghost" id="ytGo" type="button">틀기</button></div>
+  </div>
+</main>
+
 <!-- ============ MAKE A STORY ============ -->
 <main class="screen" id="make" hidden>
   <div class="topbar"><button class="back" data-go="library" type="button">‹ 서재</button></div>
   <h1>새 이야기 만들기</h1>
   <div class="field"><span class="fieldlabel">느낌</span>
     <div class="chips" id="mkStyle">
-      <button class="chip" type="button" aria-pressed="true" data-v="diary">📓 일기 코미디 (윔피키드 느낌)</button>
+      <button class="chip" type="button" aria-pressed="true" data-v="family">🗣 가족 대화 (페파피그 느낌)</button>
+      <button class="chip" type="button" data-v="diary">📓 일기 코미디 (윔피키드 느낌)</button>
       <button class="chip" type="button" data-v="dahl">🎩 엉뚱한 상상 (로알드 달 느낌)</button>
       <button class="chip" type="button" data-v="bugs">🪲 곤충·자연</button>
       <button class="chip" type="button" data-v="space">🚀 우주·건축</button>
@@ -356,9 +389,10 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
   <div class="text" id="rText"></div>
   <div class="readbar">
     <div class="turnnote" id="turnNote"></div>
+    <div class="earbar" id="earBar" hidden><span id="earLv"></span></div>
     <div class="row" id="hajunBtns" hidden style="justify-content:center">
-      <button class="ghost" id="rHear" type="button">🔊 들려줘</button>
-      <button class="ghost" id="rDone" type="button">✅ 다 읽었어</button>
+      <button class="ghost" id="rHear" type="button">🔊 다시 들려줘</button>
+      <button class="ghost" id="rDone" type="button">넘어가기 →</button>
     </div>
     <div class="ctrl">
       <button class="ghost" id="rPrev" type="button" aria-label="앞 페이지">◀</button>
@@ -383,6 +417,7 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
   <div class="qtext" id="qText"></div>
   <div class="opts" id="qOpts"></div>
   <div class="heard" id="qHeard"></div>
+  <div class="earbar" id="qBar" hidden><span id="qLv"></span></div>
   <div class="row" style="justify-content:center;flex-wrap:wrap">
     <button class="ghost" id="qListen" type="button">🎤 말로 대답하기</button>
     <button class="ghost" id="qRepeat" type="button">🔊 다시 듣기</button>
@@ -409,8 +444,8 @@ function shared() { return load("dojo-live"); }
 function updShared(fn) { const cur = load("dojo-live"); fn(cur); try { localStorage.setItem("dojo-live", JSON.stringify(cur)); } catch {} }
 const st = load("lily2");
 function saveSt() { try { localStorage.setItem("lily2", JSON.stringify(st)); } catch {} }
-(() => { const s = shared(); const d = { voice: s.gVoice || "Sulafat", accent: s.accent || "us", turn: "auto", silence: "900", out: "tv", rate: "0.9", readEngine: s.voiceSource === "gemini" ? "gemini" : s.voiceSource === "phone" ? "phone" : "cloud", model: "gemini-3.8-live", talkMode: "free", talkLen: "10" };
-  for (const k in d) if (st[k] == null) st[k] = d[k]; st.progress = st.progress || {}; st.myBooks = st.myBooks || []; st.wordKo = st.wordKo || {}; saveSt(); })();
+(() => { const s = shared(); const d = { voice: s.gVoice || "Sulafat", accent: s.accent || "us", turn: "auto", silence: "900", out: "tv", rate: "0.9", readEngine: s.voiceSource === "gemini" ? "gemini" : s.voiceSource === "phone" ? "phone" : "cloud", model: "gemini-3.8-live", talkMode: "free", talkLen: "10", goal: "30", readMode: "echo" };
+  for (const k in d) if (st[k] == null) st[k] = d[k]; st.progress = st.progress || {}; st.myBooks = st.myBooks || []; st.wordKo = st.wordKo || {}; st.readDays = st.readDays || {}; saveSt(); })();
 // the key may live in any of the family apps on this phone (영어 도장, 밤의 쉼표, 곤충 도장)
 function gkey() {
   const s = shared(); if (s.key_gemini) return String(s.key_gemini).trim();
@@ -578,7 +613,6 @@ function ttsErrKo(e) {
 }
 
 // ============ speech recognition (read-along + quiz answers): phone's own recognizer, word by word ============
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const normW = (t) => String(t).toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9']+/g, "").replace(/^'+|'+$/g, "");
 const normT = (t) => String(t).toLowerCase().replace(/[’‘]/g, "'").replace(/[^\p{L}\p{N}' ]+/gu, " ").replace(/\s+/g, " ").trim();
 // Android Chrome repeats the whole utterance in every new result ("yes I'm", "yes I'm ready"…); merge so nothing is counted twice
@@ -622,42 +656,78 @@ function align(toks, heard) {
   const done = real.length === 0 || got.size >= real.length || (got.has(lastReal) && got.size >= Math.ceil(real.length * 0.6));
   return { got, done, real };
 }
-// follow a child reading one sentence aloud; calls onUpdate({got, done}) as words are recognised
-function follow(toks, onUpdate) {
-  if (!SR) return null;
-  let active = true, committed = "", latest = "", rec = null;
-  const start = () => {
-    rec = new SR(); rec.lang = loc(); rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
-    rec.onresult = (e) => { const m = mergeResults(e.results); latest = m.text; const all = mergeInto(committed, latest); const r = align(toks, all); onUpdate({ got: r.got, done: r.done, heard: all }); };
-    rec.onerror = (e) => { if (e.error === "not-allowed" || e.error === "service-not-allowed") { active = false; onUpdate({ denied: true }); } };
-    rec.onend = () => { committed = mergeInto(committed, latest); latest = ""; if (active) setTimeout(() => { if (active) { try { start(); } catch {} } }, 120); };
-    try { rec.start(); } catch {}
-  };
-  start();
-  return { stop() { active = false; try { rec && rec.abort(); } catch {} } };
+// ============ EAR: the app's own listening for reading & quiz (like Loora: no button, no phone recognizer) ============
+// It hears when Hajun starts and stops (steady fan/AC noise becomes the "floor"), and at each pause asks Gemini
+// which words he read. Kids pause between words, so a pause only triggers a check — the sentence ends when the words say so.
+const Ear = { on: false, buf: [], pre: [], speaking: false, run: 0, lastVoice: 0, speechMs: 0, floor: 0, checking: false, needVoice: false, h: null };
+function earStart(h) { Object.assign(Ear, { on: true, buf: [], pre: [], speaking: false, run: 0, lastVoice: 0, speechMs: 0, checking: false, needVoice: false, h, t0: Date.now() }); Mic.onPcm = earPcm; }
+function earStop() { Ear.on = false; Ear.h = null; if (Mic.onPcm === earPcm) Mic.onPcm = null; }
+function earPcm(i16) {
+  if (!Ear.on || !Ear.h) return;
+  const lv = Mic.level, now = Date.now(), ms = i16.length / 16;
+  if (!Ear.speaking) Ear.floor = Math.min(0.04, !Ear.floor ? lv : lv < Ear.floor ? Ear.floor * 0.9 + lv * 0.1 : Ear.floor * 0.995 + lv * 0.005);
+  const voiced = lv > Math.max(0.012, Ear.floor * 3);
+  Ear.h.onLevel && Ear.h.onLevel(lv, voiced);
+  if (!Ear.speaking) {
+    Ear.pre.push(i16); if (Ear.pre.length > 8) Ear.pre.shift();
+    Ear.run = voiced ? Ear.run + 1 : 0;
+    if (Ear.run >= 2) { Ear.speaking = true; Ear.buf = Ear.pre.slice(); Ear.pre = []; Ear.lastVoice = now; Ear.h.onStart && Ear.h.onStart(); }
+    return;
+  }
+  Ear.buf.push(i16); if (Ear.buf.length > 600) Ear.buf.shift();
+  if (voiced) { Ear.lastVoice = now; Ear.speechMs += ms; Ear.needVoice = false; }
+  if (!Ear.checking && !Ear.needVoice && now - Ear.lastVoice > (Ear.h.pauseMs || 700) && Ear.speechMs > 250) {
+    Ear.checking = true; Ear.needVoice = true; const h = Ear.h;
+    Promise.resolve(h.onPause(Ear.buf.slice(), Ear.speechMs)).catch(() => {}).finally(() => { Ear.checking = false; });
+  }
 }
-// listen for one answer (quiz)
-let listenCancel = null;
-function listenOnce(onInterim, maxMs = 9000) {
-  return new Promise((res) => {
-    if (!SR) return res(null);
-    const rec = new SR(); rec.lang = loc(); rec.continuous = false; rec.interimResults = true;
-    let text = "", done = false;
-    const fin = (v) => { if (done) return; done = true; clearTimeout(t); listenCancel = null; try { rec.abort(); } catch {} res(v); };
-    rec.onresult = (e) => { const m = mergeResults(e.results); text = m.text; onInterim && onInterim(text); if (m.lastFinal) fin(text); };
-    rec.onerror = (e) => fin(e.error === "not-allowed" || e.error === "service-not-allowed" ? { denied: true } : text);
-    rec.onend = () => fin(text);
-    const t = setTimeout(() => fin(text), maxMs);
-    listenCancel = () => fin(null);
-    try { rec.start(); } catch { fin(null); }
+function wavFromChunks(chunks) {
+  const n = chunks.reduce((a, c) => a + c.length, 0), out = new Uint8Array(44 + n * 2), d = new DataView(out.buffer);
+  const w = (o, t) => { for (let i = 0; i < t.length; i++) d.setUint8(o + i, t.charCodeAt(i)); };
+  w(0, "RIFF"); d.setUint32(4, 36 + n * 2, true); w(8, "WAVE"); w(12, "fmt "); d.setUint32(16, 16, true); d.setUint16(20, 1, true); d.setUint16(22, 1, true);
+  d.setUint32(24, 16000, true); d.setUint32(28, 32000, true); d.setUint16(32, 2, true); d.setUint16(34, 16, true); w(36, "data"); d.setUint32(40, n * 2, true);
+  let off = 44; for (const c of chunks) { out.set(new Uint8Array(c.buffer, c.byteOffset, c.byteLength), off); off += c.byteLength; }
+  return out;
+}
+// did he read the sentence? → { ok:Set(token idx), ratio, done }
+async function checkReading(sentence, toks, chunks) {
+  const real = toks.map((t, j) => ({ j, w: t.raw.replace(/[^\p{L}\p{N}'’-]/gu, "") })).filter(x => !toks[x.j].opt && x.w);
+  const r = await gem([{ inlineData: { mimeType: "audio/wav", data: u8ToB64(wavFromChunks(chunks)) } }, { text: `A young Korean boy (8) is reading this sentence aloud in English: "${sentence}". Listen and judge kindly, like a friendly reading teacher of young children: accept a Korean accent; a word counts as read if a native listener could tell he said it. Ignore background noise, a TV, and other people.
+Words: ${JSON.stringify(real.map(x => x.w))}
+Reply ONLY JSON: {"heard":"<what the boy actually said>","read":[<true or false for each word above, same order>],"finished":<true if he got to the end of the sentence>}
+If there is no speech from the boy, reply {"heard":"","read":[],"finished":false}.` }], { models: FAST, max: 400, temp: 0 });
+  const read = Array.isArray(r.read) ? r.read : [], ok = new Set();
+  real.forEach((x, k) => { if (read[k] === true) ok.add(x.j); });
+  if (r.heard) align(toks, r.heard).got.forEach(j => ok.add(j));
+  const ratio = real.length ? ok.size / real.length : 1, last = real.length ? real[real.length - 1].j : -1;
+  const done = !real.length || ratio >= 0.85 || ((!!r.finished || ok.has(last)) && ratio >= 0.6);
+  return { ok, ratio, done, heard: String(r.heard || "") };
+}
+// one spoken answer (quiz): listen until he stops, then transcribe
+let earCancel = null;
+function earAnswer(question, onNote, maxMs = 10000) {
+  return new Promise(async (res) => {
+    let done = false; const fin = (v) => { if (done) return; done = true; clearTimeout(t); earStop(); earCancel = null; res(v); };
+    earCancel = () => fin(null);
+    const t = setTimeout(() => { if (!Ear.speaking || !Ear.checking) fin(Ear.speaking ? "" : null); }, maxMs);
+    try { await Mic.open(); } catch { fin({ denied: true }); return; }
+    if (done) return;
+    earStart({ pauseMs: 900,
+      onLevel: (lv, v) => { const b = $("qLv"); if (b) { b.style.width = Math.min(100, lv * 900) + "%"; b.classList.toggle("on", v); } },
+      onStart: () => onNote("🎤 듣고 있어요…"),
+      onPause: async (chunks) => {
+        if (done) return; earStop(); onNote("👂 …");
+        try { const r = await gem([{ inlineData: { mimeType: "audio/wav", data: u8ToB64(wavFromChunks(chunks)) } }, { text: `Transcribe exactly what the boy says. He is an 8-year-old Korean learner answering this quiz question: "${question}". He may speak English, Korean or both. Ignore background noise. Reply ONLY JSON: {"heard":"<transcript, or empty if he said nothing>"}` }], { models: FAST, max: 200, temp: 0 }); fin(String(r.heard || "")); }
+        catch { fin(""); }
+      } });
   });
 }
 
 // ============ screens ============
-const SCREENS = ["home", "talkSetup", "talk", "library", "make", "reader", "quiz"];
-function show(id) { SCREENS.forEach(s => $(s).hidden = s !== id); window.scrollTo(0, 0); if (id === "home") renderHome(); if (id === "library") renderLibrary(); }
+const SCREENS = ["home", "talkSetup", "talk", "library", "make", "reader", "quiz", "videos"];
+function show(id) { if (id !== "videos" && $("vFrame")) { $("vFrame").src = "about:blank"; $("vPlayer").hidden = true; } SCREENS.forEach(s => $(s).hidden = s !== id); window.scrollTo(0, 0); if (id === "home") renderHome(); if (id === "library") renderLibrary(); }
 document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => { leaveAll(); show(b.dataset.go); }));
-function leaveAll() { stopSpeech(); readerStop(); if (listenCancel) listenCancel(); }
+function leaveAll() { stopSpeech(); readerStop(); if (earCancel) earCancel(); earStop(); Mic.close(); }
 let wakeLock = null;
 async function keepAwake(on) { try { if (on && "wakeLock" in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); } if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; } } catch {} }
 
@@ -667,6 +737,11 @@ function renderHome() {
   const d = new Date(); $("today").textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일`;
   const kw = $("keyWarn"); kw.hidden = !!gkey() && !(ANDROID && !INCHROME); $("key").value = gkey();
   if (ANDROID && !INCHROME) { kw.innerHTML = ""; kw.append(mk("div", "", "이 앱은 크롬에서 열어야 마이크·읽기 따라가기·키가 제대로 돼요.")); const a = mk("a", "", "크롬으로 열기 ↗"); a.href = "intent://" + location.host + location.pathname + "#Intent;scheme=https;package=com.android.chrome;end"; a.style.fontWeight = "600"; kw.append(a); }
+  const n = readToday(), goal = Number(st.goal) || 30;
+  $("readToday").textContent = n ? `오늘 소리 내어 읽은 문장 ${n} / ${goal}` + (n >= goal ? " · 목표 달성! 🎉" : "") : `오늘 목표: 소리 내어 ${goal}문장 읽기`;
+  $("goalFill").style.width = Math.min(100, Math.round(n / goal * 100)) + "%";
+  const last = st.lastBook && allBooks().find(b => b.id === st.lastBook.id), nb = nextBook();
+  $("nextBookLine").textContent = last && !(st.progress[last.id] && st.progress[last.id].done) ? `이어 읽기: ${last.title}` : nb ? `다음 책: ${nb.title}` : "";
   const s = shared().stats, box = $("stats"); box.innerHTML = "";
   if (s && s.total && s.total.sessions) {
     let streak = 0; const day = new Date(); if (!s.days[dayKey(day)]) day.setDate(day.getDate() - 1); while (s.days[dayKey(day)]) { streak++; day.setDate(day.getDate() - 1); }
@@ -676,8 +751,12 @@ function renderHome() {
 }
 $("goTalk").addEventListener("click", () => { show("talkSetup"); setTalkMode(st.talkMode); });
 $("goBooks").addEventListener("click", () => show("library"));
+$("goVideos").addEventListener("click", () => { show("videos"); renderVideos(); });
+function readToday() { return st.readDays[dayKey()] || 0; }
+function noteRead() { const k = dayKey(); st.readDays[k] = (st.readDays[k] || 0) + 1; const ks = Object.keys(st.readDays).sort(); while (ks.length > 120) delete st.readDays[ks.shift()]; saveSt(); }
+function nextBook() { const all = (window.LILY_BOOKS || []).slice().sort((a, b) => (a.level || 2) - (b.level || 2)); return all.find(b => !(st.progress[b.id] && st.progress[b.id].done)) || all[Math.floor(Math.random() * all.length)]; }
 // settings
-[["voice"], ["accent"], ["turn"], ["silence"], ["out"], ["rate"], ["readEngine"], ["model"]].forEach(([id]) => { $(id).value = st[id]; $(id).addEventListener("change", () => { st[id] = $(id).value; saveSt(); if (id === "accent") phoneVoice = null; if (id === "readEngine") { delete ttsFailAt.cloud; delete ttsFailAt.gemini; } }); });
+[["voice"], ["accent"], ["turn"], ["silence"], ["out"], ["rate"], ["readEngine"], ["model"], ["goal"]].forEach(([id]) => { $(id).value = st[id]; $(id).addEventListener("change", () => { st[id] = $(id).value; saveSt(); if (id === "accent") phoneVoice = null; if (id === "readEngine") { delete ttsFailAt.cloud; delete ttsFailAt.gemini; } }); });
 $("key").addEventListener("change", () => { const v = $("key").value.trim(); updShared(s => { s.key_gemini = v; }); renderHome(); });
 $("testVoice").addEventListener("click", async () => {
   unlockAudio(); delete ttsFailAt.cloud; delete ttsFailAt.gemini; ttsLastErr = null; $("testNote").textContent = "가져오는 중…";
@@ -772,6 +851,7 @@ function talkSystem(cfg) {
   if (cfg.kind === "lesson") mode = `TODAY'S LESSON: ${cfg.theme.en}\nACTIVITY: ${ACTIVITY[cfg.theme.mode](cfg.theme.detail)}\nFLAVOR (Hajun's favourite things — a light seasoning only): judo, jiu-jitsu, wrestling, taekwondo, praying mantises, cicadas, beetles, space, big buildings.\nCoursebook rhythm: model the target phrase once → ask a question that uses it → he answers → say it back correctly → a small variation ("What about your mom?"). Every session must feel fresh. Never open with "Welcome to our dojo".`;
   if (cfg.kind === "build") mode = `WE MAKE A STORY TOGETHER, ONE SENTENCE EACH. Topic: ${cfg.topic || "something funny you choose"}. Style: funny and surprising, like a great children's book (silly characters, sound effects), but completely original — never use characters or lines from real books.
 You start with ONE story sentence (6-12 easy words) and hand it over: "Your turn! What happens next?". Each time he adds something: say his idea back as a correct story sentence ("Yes! Then the mantis did a big judo throw!"), add ONE new sentence that builds on HIS idea, and hand it back. Keep the same characters. If he's stuck, give two choices ("Does the beetle run away, or say sorry?"). After about 8 of his sentences, give a happy ending and retell "our story" in 3-4 short sentences.`;
+  if (cfg.kind === "retell") mode = `HAJUN JUST WATCHED ${cfg.show === "a YouTube video" ? "a YouTube video" : "an episode of the cartoon \"" + cfg.show + "\""} WITH ENGLISH SUBTITLES. You did NOT watch this episode, so you don't know what happened — be curious and let him tell you. One easy question at a time: who was in it, where they were, what happened first, then what, the funniest part, what he would do. Say his sentences back correctly and a little longer ("Oh, Peppa jumped in a muddy puddle? Then what?"). If he's stuck, ask either-or questions. You may mention general things everyone knows about the show's characters, but never invent what happened in this episode. At the end, retell his story back to him in 3-4 short sentences and praise him.`;
   if (cfg.kind === "booktalk" || cfg.kind === "bookbuild") {
     const text = cfg.book.pages.map(p => p.s.join(" ")).join("\n").slice(0, 9000);
     mode = `YOU AND HAJUN JUST READ "${cfg.book.title}" TOGETHER. The text:\n${text}\n\n` + (cfg.kind === "booktalk"
@@ -785,6 +865,7 @@ function kickoffText(cfg) {
     : cfg.kind === "lesson" ? "[Start now: say hi to Hajun, set up today's activity in one breath, and ask your first easy question.]"
     : cfg.kind === "build" ? "[Start now: say hi, say we'll make a story together, then say the first sentence and hand it to Hajun.]"
     : cfg.kind === "booktalk" ? "[Start now: say one excited line about the story we just read, then ask your first easy question about it.]"
+    : cfg.kind === "retell" ? "[Start now: say hi, say you heard he just watched it, and ask him what happened. Short.]"
     : "[Start now: say we'll make the next part together, then say the first sentence and hand it to Hajun.]";
 }
 
@@ -829,13 +910,14 @@ const Mic = {
     return true;
   },
   feed(f32) {
+    if (!this.ctx) return;
     let sum = 0; for (let i = 0; i < f32.length; i++) sum += f32[i] * f32[i];
     this.level = Math.sqrt(sum / f32.length);
     const ratio = this.ctx.sampleRate / 16000, n = Math.floor(f32.length / ratio), out = new Int16Array(n);
     for (let i = 0; i < n; i++) { const a = Math.floor(i * ratio), b = Math.min(f32.length, Math.floor((i + 1) * ratio)); let s = 0; for (let k = a; k < b; k++) s += f32[k]; const v = Math.max(-1, Math.min(1, s / ((b - a) || 1))); out[i] = v < 0 ? v * 32768 : v * 32767; }
     this.onPcm && this.onPcm(out);
   },
-  close() { try { this.stream && this.stream.getTracks().forEach(t => t.stop()); } catch {} try { this.ctx && this.ctx.close(); } catch {} this.ctx = null; this.stream = null; this.node = null; this.level = 0; }
+  close() { try { if (this.node) { if (this.node.port) this.node.port.onmessage = null; else this.node.onaudioprocess = null; this.node.disconnect(); } } catch {} try { this.stream && this.stream.getTracks().forEach(t => t.stop()); } catch {} try { this.ctx && this.ctx.close(); } catch {} this.ctx = null; this.stream = null; this.node = null; this.level = 0; }
 };
 const Out = { ctx: null, gain: null, an: null, end: 0, srcs: new Set(), buf: null };
 function outInit() {
@@ -1113,7 +1195,7 @@ function endTalk() {
   L.convo = L.convo.filter(x => x.text && x.text.trim());
   const minutes = L.startAt ? Math.round((Date.now() - L.startAt) / 6000) / 10 : 0;
   recordStats(L.cfg ? L.cfg.label : "대화", L.stars, Math.round(L.speakMs / 1000), minutes);
-  if (L.convo.some(x => x.who === "Hajun")) showSummary(); else show(L.cfg && L.cfg.book ? "reader" : "home");
+  if (L.convo.some(x => x.who === "Hajun")) showSummary(); else show(L.cfg && L.cfg.book ? "reader" : L.cfg && L.cfg.kind === "retell" ? "videos" : "home");
 }
 function recordStats(label, sentences, speakSec, minutes) {
   if (minutes < 0.5 && !sentences) return;
@@ -1136,7 +1218,7 @@ async function showSummary() {
   const pairs = hajunTurns.filter(x => x.fix && normT(x.fix) !== normT(x.text)).slice(-6);
   if (pairs.length) { const c = mk("div", "card"); c.append(mk("div", "lbl", "✏️ 하준이가 한 말 → 이렇게 말하면 더 좋아요")); pairs.forEach(x => { c.append(mk("div", "", "🧒 " + x.text)); c.append(sayBtn(x.fix)); }); box.append(c); }
   const phr = mk("div", "card"); phr.hidden = true; box.append(phr);
-  const done = mk("button", "go", "확인"); done.type = "button"; done.onclick = () => { stopSpeech(); $("summary").hidden = true; show(L.cfg && L.cfg.book ? "reader" : "home"); }; box.append(done);
+  const done = mk("button", "go", "확인"); done.type = "button"; done.onclick = () => { stopSpeech(); $("summary").hidden = true; show(L.cfg && L.cfg.book ? "reader" : L.cfg && L.cfg.kind === "retell" ? "videos" : "home"); if (L.cfg && L.cfg.kind === "retell") renderVideos(); }; box.append(done);
   const lines = L.convo.slice(-50).map(x => (x.who === "Lily" ? "Lily: " : "Hajun: ") + x.text + (x.fix && normT(x.fix) !== normT(x.text) ? ` (better: ${x.fix})` : "")).join("\n");
   const known = (shared().memory || []).join("; ").slice(0, 1500);
   try {
@@ -1156,8 +1238,7 @@ const REAL_BOOKS = [
   ["Project X (Oxford)", "옥스퍼드지만 ORT와 다르게 남자아이용으로 만든 액션·우주 시리즈", "https://www.teachitprimary.co.uk/oxford-university-press-project-x"],
   ["Usborne Young Reading", "혼자 읽기 시작한 아이용 시리즈 1~4 · 명작·과학 이야기", "https://www.books2door.com/collections/usborne-reading-programme/age_7-9"],
   ["Horrid Henry Early Reader (Orion)", "장난꾸러기 헨리 코미디의 쉬운판 · 그림책에서 읽기책으로 넘어가는 단계", "https://toppsta.com/books/details/49130/horrid-henry-early-reader-horrid-henrys-holiday-book-3"],
-  ["로알드 달 짧은 책들 (5~7세용 세트)", "The Magic Finger, Fantastic Mr Fox, Esio Trot, The Twits 등", "https://world-shop.scholastic.co.uk/products/Roald-Dahl-Book-Set-Ages-5-plus-6-Books-9789999756198"],
-  ["Tom Gates (Scholastic UK)", "영국판 윔피키드 — 낙서 일기 형식 · 9세 이상 권장(조금 뒤에)", "https://www.booktrust.org.uk/book/t/the-brilliant-world-of-tom-gates/"]
+  ["로알드 달 짧은 책들 (5~7세용 세트)", "The Magic Finger, Fantastic Mr Fox, Esio Trot, The Twits 등", "https://world-shop.scholastic.co.uk/products/Roald-Dahl-Book-Set-Ages-5-plus-6-Books-9789999756198"]
 ];
 function allBooks() { return (window.LILY_BOOKS || []).concat(st.myBooks || []); }
 function bookCard(b) {
@@ -1170,15 +1251,19 @@ function bookCard(b) {
   return btn;
 }
 function renderLibrary() {
-  const sh = $("shelf"); sh.innerHTML = ""; (window.LILY_BOOKS || []).forEach(b => sh.append(bookCard(b)));
+  const pick = $("pick"); pick.innerHTML = ""; const nb = nextBook(); const last = st.lastBook && allBooks().find(b => b.id === st.lastBook.id && !(st.progress[b.id] && st.progress[b.id].done));
+  [last, nb].filter((b, k, a) => b && a.indexOf(b) === k).forEach(b => pick.append(bookCard(b)));
+  $("pickSec").hidden = !pick.childElementCount;
+  const sh = $("shelf"); sh.innerHTML = ""; (window.LILY_BOOKS || []).slice().sort((a, b) => (a.level || 2) - (b.level || 2)).forEach(b => sh.append(bookCard(b)));
   const mine = st.myBooks || []; $("mineSec").hidden = !mine.length; $("mine").innerHTML = ""; mine.slice().reverse().forEach(b => $("mine").append(bookCard(b)));
   const rb = $("realBooks"); if (!rb.childElementCount) REAL_BOOKS.forEach(([t, d, u]) => { const a = mk("a"); a.href = u; a.target = "_blank"; a.rel = "noopener"; const l = mk("span"); l.append(mk("b", "", t)); l.append(mk("br")); l.append(mk("span", "small muted", d)); a.append(l, mk("span", "", "↗")); rb.append(a); });
 }
 
 // ============ READER ============
-const R = { book: null, page: 0, s: 0, mode: "listen", tok: 0, playing: false, follower: null, resolveTurn: null, read: 0, startAt: 0 };
-function openBook(b, page = 0) {
-  leaveAll(); R.book = b; R.page = page; R.s = 0; R.playing = false; R.read = 0; R.startAt = Date.now();
+const R = { book: null, page: 0, s: 0, mode: "listen", tok: 0, playing: false, resolveTurn: null, read: 0, startAt: 0 };
+function openBook(b, page) {
+  if (page == null) page = (st.lastBook && st.lastBook.id === b.id && !(st.progress[b.id] && st.progress[b.id].done)) ? Math.min(st.lastBook.page || 0, b.pages.length - 1) : 0;
+  leaveAll(); R.book = b; R.page = page; if (!b.photo) { st.lastBook = { id: b.id, page }; saveSt(); } R.s = 0; R.playing = false; R.read = 0; R.startAt = Date.now();
   R.mode = st.readMode || "listen"; setReadMode(R.mode);
   $("rTitle").textContent = b.title; $("rEnd").hidden = true; $("photoMore").hidden = !b.photo;
   show("reader"); renderPage(); keepAwake(true);
@@ -1186,7 +1271,7 @@ function openBook(b, page = 0) {
 function setReadMode(m) { R.mode = m; st.readMode = m; saveSt(); document.querySelectorAll("#rModes .chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.m === m))); }
 $("rModes").addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (!c) return; const was = R.playing; readerStop(); setReadMode(c.dataset.m); if (was) readerRun(); });
 function renderPage() {
-  const b = R.book, p = b.pages[R.page];
+  const b = R.book, p = b.pages[R.page]; if (!b.photo) { st.lastBook = { id: b.id, page: R.page }; saveSt(); }
   $("rPage").textContent = `${R.page + 1} / ${b.pages.length}`; $("rPic").textContent = p.e || "";
   const box = $("rText"); box.innerHTML = "";
   p._toks = p.s.map(tokenize);
@@ -1203,11 +1288,11 @@ function focusSent(i, cls) { $("rText").querySelectorAll(".sent").forEach(e => e
 function markWord(i, j) { const e = sentEl(i); if (!e) return; e.querySelectorAll(".w").forEach(w => w.classList.toggle("on", Number(w.dataset.j) === j)); }
 function clearMarks() { $("rText").querySelectorAll(".w.on").forEach(w => w.classList.remove("on")); }
 function playBtn() { $("rPlay").textContent = R.playing ? "⏸ 잠깐" : (R.s > 0 ? "▶ 이어서" : "▶ 읽기 시작"); }
-function readerStop() { R.tok++; R.playing = false; stopSpeech(); if (R.follower) { R.follower.stop(); R.follower = null; } if (R.resolveTurn) { const f = R.resolveTurn; R.resolveTurn = null; f("stop"); } $("hajunBtns").hidden = true; $("turnNote").textContent = ""; clearMarks(); if (!$("reader").hidden) playBtn(); }
+function readerStop() { R.tok++; R.playing = false; stopSpeech(); earStop(); if (R.resolveTurn) { const f = R.resolveTurn; R.resolveTurn = null; f("stop"); } $("hajunBtns").hidden = true; $("turnNote").textContent = ""; clearMarks(); if (!$("reader").hidden) playBtn(); }
 $("rPlay").addEventListener("click", () => { if (R.playing) readerStop(); else { unlockAudio(); $("rEnd").hidden = true; readerRun(); } });
 $("rPrev").addEventListener("click", () => { readerStop(); if (R.page > 0) { R.page--; R.s = 0; renderPage(); } });
 $("rNext").addEventListener("click", () => { readerStop(); if (R.page < R.book.pages.length - 1) { R.page++; R.s = 0; renderPage(); } });
-$("readerBack").addEventListener("click", () => { readerFinishStats(); readerStop(); keepAwake(false); show("library"); });
+$("readerBack").addEventListener("click", () => { readerFinishStats(); readerStop(); Mic.close(); keepAwake(false); show("library"); });
 function whoReads(i) { return R.mode === "listen" ? "lily" : R.mode === "solo" ? "hajun" : R.mode === "echo" ? "both" : (i % 2 === 0 ? "lily" : "hajun"); }
 function charWeights(toks) { const w = toks.map(t => t.raw.length + 2); const tot = w.reduce((a, b) => a + b, 0); let acc = 0; return w.map(x => (acc += x) / tot); }
 async function lilyReads(i, tok) {
@@ -1221,37 +1306,69 @@ async function lilyReads(i, tok) {
   if (ttsLastErr && !$("rTitle").dataset.warned && st.readEngine !== "phone") { $("rTitle").dataset.warned = "1"; toast(ttsErrKo(ttsLastErr), 6000); }
   return ok && tok === R.tok;
 }
+// Hajun's turn: the app listens, colours the words he read, and moves on by itself (buttons are only a backup)
+const PRAISE = ["Great reading! ⭐", "Nice! ⭐", "You did it! ⭐", "Super! ⭐", "Awesome reading! ⭐", "Well done! ⭐"];
 function hajunReads(i, tok) {
-  return new Promise((resolve) => {
-    const p = R.book.pages[R.page], toks = p._toks[i];
+  return new Promise(async (resolve) => {
+    const p = R.book.pages[R.page], toks = p._toks[i], el = sentEl(i);
+    const wEl = (j) => el && el.querySelector(`.w[data-j="${j}"]`);
+    const real = toks.map((t, j) => j).filter(j => !toks[j].opt);
     focusSent(i, "hajunturn"); $("hajunBtns").hidden = false;
-    $("turnNote").textContent = SR ? "🎤 하준이 차례 — 소리 내어 읽어요" : "🎤 하준이 차례 — 다 읽으면 ✅";
-    const el = sentEl(i); el && el.querySelectorAll(".w").forEach(w => w.classList.remove("got"));
-    toks.forEach((t, j) => { if (t.opt && el) el.querySelector(`.w[data-j="${j}"]`)?.classList.add("got"); });
-    let finished = false, lastProg = Date.now(), best = 0, helped = false;
-    const finish = (how) => { if (finished) return; finished = true; clearInterval(iv); if (R.follower) { R.follower.stop(); R.follower = null; } R.resolveTurn = null; $("hajunBtns").hidden = true; resolve(how); };
+    el && el.querySelectorAll(".w").forEach(w => w.classList.remove("got", "miss"));
+    toks.forEach((t, j) => { if (t.opt) wEl(j)?.classList.add("got"); });
+    let finished = false, attempt = 1, best = null, quietTries = 0, timer = null, listenAt = 0;
+    const note = (t) => { $("turnNote").textContent = t; };
+    const bar = (on) => { $("earBar").hidden = !on; if (!on) $("earLv").style.width = "0"; };
+    const finish = (how) => { if (finished) return; finished = true; clearInterval(timer); earStop(); bar(false); R.resolveTurn = null; $("hajunBtns").hidden = true; resolve(how); };
     R.resolveTurn = finish;
-    const startFollow = () => {
-      if (!SR || finished) return;
-      R.follower = follow(toks, (u) => {
-        if (finished || tok !== R.tok) return;
-        if (u.denied) { $("turnNote").textContent = "마이크 권한이 꺼져 있어요 — 다 읽으면 ✅ 눌러요"; return; }
-        if (u.got) { u.got.forEach(j => el && el.querySelector(`.w[data-j="${j}"]`)?.classList.add("got")); if (u.got.size > best) { best = u.got.size; lastProg = Date.now(); } }
-        if (u.done) { R.read++; chime(); $("turnNote").textContent = ["Great reading! ⭐", "Nice! ⭐", "You did it! ⭐", "Super! ⭐"][Math.floor(Math.random() * 4)]; setTimeout(() => finish("ok"), 450); }
-      });
+    const paint = (res, final) => { real.forEach(j => { const w = wEl(j); if (!w) return; if (res.ok.has(j)) { w.classList.add("got"); w.classList.remove("miss"); } else if (final) w.classList.add("miss"); }); };
+    const success = (res, weak) => {
+      if (finished) return; clearInterval(timer); earStop(); bar(false); R.read++; noteRead();
+      if (res) paint(res, true);
+      if (!weak) chime(); note(weak ? "Good try! 👍 다음 문장!" : PRAISE[Math.floor(Math.random() * PRAISE.length)]);
+      setTimeout(() => finish("ok"), weak ? 900 : 650);
     };
-    setTimeout(startFollow, tvDelay() > 500 ? 250 : 120);
-    const iv = setInterval(async () => {   // stuck for a while: Lily reads it once, then he tries again
-      if (finished || tok !== R.tok) { clearInterval(iv); return; }
-      if (!helped && Date.now() - lastProg > (best ? 9000 : 12000)) {
-        helped = true; if (R.follower) { R.follower.stop(); R.follower = null; }
-        $("turnNote").textContent = "같이 읽어 볼까? 들어 보고 따라 읽어요";
-        await lilyReads(i, tok); if (finished || tok !== R.tok) return;
-        focusSent(i, "hajunturn"); $("turnNote").textContent = "🎤 이제 하준이가 읽어요"; lastProg = Date.now(); await sleep(tvDelay()); startFollow();
-      }
-    }, 700);
-    $("rHear").onclick = async () => { if (R.follower) { R.follower.stop(); R.follower = null; } lastProg = Date.now(); await lilyReads(i, tok); if (finished || tok !== R.tok) return; focusSent(i, "hajunturn"); $("turnNote").textContent = "🎤 이제 하준이가 읽어요"; await sleep(tvDelay()); lastProg = Date.now(); startFollow(); };
-    $("rDone").onclick = () => { R.read++; finish("ok"); };
+    const helpRead = async () => {   // Lily reads it once, then it's his turn again
+      clearInterval(timer); earStop(); bar(false); note("같이 읽어 볼까? 잘 듣고 따라 읽어요 👂");
+      await lilyReads(i, tok); if (finished || tok !== R.tok) return false;
+      focusSent(i, "hajunturn"); await sleep(tvDelay()); return !finished && tok === R.tok;
+    };
+    const listen = () => {
+      if (finished || tok !== R.tok) return;
+      note(attempt === 1 ? "🎤 하준이 차례 — 소리 내어 읽어요" : "🎤 이번엔 하준이가 읽어요"); bar(true); listenAt = Date.now();
+      earStart({ pauseMs: 700,
+        onLevel: (lv, v) => { const b = $("earLv"); b.style.width = Math.min(100, lv * 900) + "%"; b.classList.toggle("on", v); },
+        onStart: () => note("👂 듣고 있어요…"),
+        onPause: async (chunks, speechMs) => {
+          if (finished || tok !== R.tok) return;
+          let res = null; try { res = await checkReading(p.s[i], toks, chunks); } catch (e) { res = null; }
+          if (finished || tok !== R.tok) return;
+          if (!res) { if (speechMs >= Math.max(700, real.length * 300)) success(null, true); return; }   // can't check right now: don't block him
+          if (!best || res.ratio >= best.ratio) best = res; paint(res, false);
+          if (res.done) { success(res); return; }
+          note(res.ratio >= 0.5 ? "🎤 좋아요, 끝까지 읽어요!" : "🎤 계속 읽어요");
+        } });
+      clearInterval(timer);
+      timer = setInterval(async () => {
+        if (finished || tok !== R.tok) { clearInterval(timer); return; }
+        const now = Date.now();
+        if (!Ear.speaking && now - listenAt > 9000) {          // nothing heard
+          quietTries++;
+          if (quietTries >= 2) { clearInterval(timer); note("멈췄어요 — ▶ 누르면 이어서 해요"); const t = $("turnNote").textContent; readerStop(); $("turnNote").textContent = t; return; }
+          if (await helpRead()) listen(); return;
+        }
+        if (Ear.speaking && !Ear.checking && Ear.needVoice && now - Ear.lastVoice > 2800) {   // he stopped, sentence not complete
+          const ratio = best ? best.ratio : 0;
+          if (ratio >= 0.5 || attempt >= 2) { success(best, ratio < 0.5); return; }
+          attempt++; if (await helpRead()) listen();
+        }
+      }, 250);
+    };
+    $("rHear").onclick = async () => { if (await helpRead()) listen(); };
+    $("rDone").onclick = () => success(best, false);
+    try { await Mic.open(); } catch { note("마이크를 못 열었어요 — 다 읽으면 ✅ 눌러요"); return; }
+    if (finished || tok !== R.tok) return;
+    listen();
   });
 }
 async function readerRun() {
@@ -1265,11 +1382,12 @@ async function readerRun() {
     const i = R.s, who = whoReads(i);
     if (who === "lily" || who === "both") { const ok = await lilyReads(i, tok); if (!ok) return; }
     if (who === "hajun" || who === "both") { await sleep(who === "both" ? tvDelay() : 150); if (tok !== R.tok) return; const r = await hajunReads(i, tok); if (r === "stop" || tok !== R.tok) return; }
-    R.s++; await sleep(R.mode === "listen" ? 260 : 450);
+    R.s++; if (who !== "lily" && goalCheck()) await sleep(3500); await sleep(R.mode === "listen" ? 260 : 450);
   }
 }
 let ac = null;
 function chime() { try { ac = ac || new AudioContext(); const t = ac.currentTime; [784, 1047].forEach((f, k) => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = f; g.gain.setValueAtTime(0.0001, t + k * 0.09); g.gain.exponentialRampToValueAtTime(0.12, t + k * 0.09 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + k * 0.09 + 0.35); o.connect(g); g.connect(ac.destination); o.start(t + k * 0.09); o.stop(t + k * 0.09 + 0.4); }); } catch {} }
+function goalCheck() { const n = readToday(), g = Number(st.goal) || 30; if (n === g && !st.goalShown?.[dayKey()]) { st.goalShown = { [dayKey()]: true }; saveSt(); toast(`🎉 오늘 목표 ${g}문장 달성!`, 4000); say("Wow, Hajun! You read " + g + " sentences today. Amazing!", { rate: 0.95 }); return true; } return false; }
 function bookFinished() {
   const b = R.book; if (!b.photo) { const pr = st.progress[b.id] || { times: 0 }; pr.done = true; pr.times = (pr.times || 0) + 1; st.progress[b.id] = pr; saveSt(); }
   $("rEnd").hidden = false; $("rQuiz").hidden = !(b.quiz && b.quiz.length);
@@ -1326,10 +1444,34 @@ function shrink(file) {
   });
 }
 
+// ============ VIDEOS: official channels, English captions on, then Hajun retells it to Lily ============
+const SHOWS = [
+  { name: "Peppa Pig", ch: "UCAOtE1V7Ots4DjM8JLlrYgg", e: "🐷", bg: "#F6B8C8", d: "영국 · 가족 일상 대화가 가득" },
+  { name: "Ben and Holly's Little Kingdom", ch: "UC2UhuvjTIrR0Ck2KrkvRcuA", e: "🧚", bg: "#C7DDB5", d: "페파피그 제작진 · 요정 왕국" },
+  { name: "Bluey", ch: "UCVzLLZkDuFGAE2BGdBuBNBg", e: "🐶", bg: "#9EC3E6", d: "BBC Studios 공식 · 가족 놀이 이야기" },
+  { name: "Octonauts", ch: "UCXLLQkbYE-G9jYrra7R4Qsw", e: "🐙", bg: "#8FD0D6", d: "바다 생물 탐험 · 과학 단어" }
+];
+let curVideo = null;
+function renderVideos() {
+  const box = $("showList"); if (box.childElementCount) return;
+  SHOWS.forEach(sh => { const b = mk("button", "book"); b.type = "button"; const cv = mk("div", "cv", sh.e); cv.style.background = sh.bg; b.append(cv, mk("div", "bt", sh.name), mk("div", "bs", sh.d)); b.onclick = () => playVideo({ name: sh.name, list: "UU" + sh.ch.slice(2), open: "https://www.youtube.com/channel/" + sh.ch }); box.append(b); });
+}
+function playVideo(v) {
+  stopSpeech(); curVideo = v;
+  const q = "rel=0&hl=en&cc_load_policy=1&cc_lang_pref=en&playsinline=1&autoplay=1";
+  $("vFrame").src = v.id ? `https://www.youtube-nocookie.com/embed/${v.id}?${q}` : `https://www.youtube-nocookie.com/embed/videoseries?list=${v.list}&${q}`;
+  $("vOpen").href = v.open || ("https://www.youtube.com/watch?v=" + v.id);
+  $("vPlayer").hidden = false; window.scrollTo({ top: 0, behavior: "smooth" }); keepAwake(true);
+}
+function ytId(u) { const m = String(u).match(/(?:youtu\.be\/|v=|shorts\/|embed\/|live\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : /^[A-Za-z0-9_-]{11}$/.test(String(u).trim()) ? String(u).trim() : null; }
+$("ytGo").addEventListener("click", () => { const id = ytId($("ytUrl").value); if (!id) { toast("유튜브 링크를 못 알아봤어요. 공유 → 링크 복사한 주소를 붙여 주세요."); return; } playVideo({ id, name: "a YouTube video" }); });
+$("vRetell").addEventListener("click", () => { const v = curVideo || { name: "a cartoon" }; $("vFrame").src = "about:blank"; startTalk({ kind: "retell", show: v.name, label: "📺 " + (v.name === "a YouTube video" ? "영상" : v.name) + " 이야기", minutes: 7 }); });
+
 // ============ MAKE A NEW STORY ============
 $("makeBook").addEventListener("click", () => show("make"));
 $("mkStyle").addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (!c) return; document.querySelectorAll("#mkStyle .chip").forEach(x => x.setAttribute("aria-pressed", String(x === c))); });
 const STYLE = {
+  family: "an everyday family story told mostly through short, lively dialogue lines (\"...,\" says Mum.), like a gentle British family cartoon: a kid, a little sister, Mum, Dad, sometimes Grandpa; small everyday problems (a rainy day, a lost shoe, a messy kitchen, a trip) solved together, a funny moment, a warm ending. At least half of the sentences are dialogue",
   diary: "a funny diary written by a kid, one day per page (Monday, Tuesday...): big plans that go wrong, an annoying-but-sweet little sister, embarrassing moments, a kind ending",
   dahl: "wildly imaginative and a bit mischievous: strange grown-ups, silly made-up words, impossible machines or creatures, a clever kid who saves the day, a twist at the end",
   bugs: "an adventure with insects and small garden creatures (beetles, praying mantises, cicadas, ants), real bug facts woven in",
@@ -1338,8 +1480,9 @@ const STYLE = {
   mystery: "a small, funny mystery with clues the reader can spot, solved by a clever kid"
 };
 const LEVELDESC = { 1: "very short sentences (4-8 words), the most common words, mostly present tense, lots of repetition", 2: "short sentences (5-10 words), simple past tense, a few new words that the story makes clear", 3: "sentences up to 14 words, some describing words and dialogue, still easy for a young reader" };
+$("dailyBook").addEventListener("click", () => { show("make"); document.querySelectorAll("#mkStyle .chip").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === "family"))); $("mkTopic").value = ""; $("mkGo").click(); });
 $("mkGo").addEventListener("click", async () => {
-  const styleKey = (document.querySelector('#mkStyle .chip[aria-pressed="true"]') || {}).dataset?.v || "diary";
+  const styleKey = (document.querySelector('#mkStyle .chip[aria-pressed="true"]') || {}).dataset?.v || "family";
   const lv = Number($("mkLevel").value) || 2, hero = $("mkHero").value === "hajun", topic = $("mkTopic").value.trim();
   const note = $("mkNote"); note.hidden = false; note.className = "banner"; note.textContent = "✍️ Lily가 이야기를 쓰는 중… (20초쯤)"; $("mkGo").disabled = true;
   try {
@@ -1372,28 +1515,34 @@ function startQuiz(book) {
   $("qTitle").textContent = "🧩 " + book.title; $("qEnd").hidden = true; show("quiz"); quizShow();
 }
 function quizShow() {
-  Q.answered = false; Q.tok++; if (listenCancel) listenCancel();
+  Q.answered = false; Q.tok++; if (earCancel) earCancel();
   const it = Q.items[Q.i]; $("qNum").textContent = `${Q.i + 1} / ${Q.items.length}`; $("qHeard").textContent = "";
   $("qText").textContent = it.q; const box = $("qOpts"); box.innerHTML = "";
   (it.opts || []).forEach(o => { const b = mk("button", "opt"); b.type = "button"; if (o.e) b.append(mk("span", "em", o.e)); b.append(mk("span", "", o.text)); b.onclick = () => quizAnswer(o, b); o.el = b; box.append(b); });
-  $("qListen").hidden = !SR; $("qSkip").textContent = it.t === "say" && !SR ? "말했어요 ✅" : "모르겠어 →";
+  $("qSkip").textContent = "모르겠어 →";
   const tok = Q.tok; if (it.t === "word") return;
-  (async () => { await say(it.q.replace(/\.\.\./g, " blank."), { rate: 0.95 }); if (tok === Q.tok && SR) { await sleep(tvDelay()); if (tok === Q.tok) quizListen(); } })();
+  (async () => { await say(it.q.replace(/\.\.\./g, " blank."), { rate: 0.95 }); if (tok === Q.tok) { await sleep(tvDelay()); if (tok === Q.tok) quizListen(); } })();
 }
-async function quizListen() {
-  const it = Q.items[Q.i]; if (Q.answered || !SR) return; stopSpeech();
-  $("qHeard").textContent = "🎤 듣고 있어요…"; const tok = Q.tok;
-  const t = await listenOnce((x) => { if (tok === Q.tok) $("qHeard").textContent = "🎤 " + x; }, 9000);
+async function quizListen(again) {
+  const it = Q.items[Q.i]; if (Q.answered) return; stopSpeech(); if (earCancel) earCancel();
+  $("qHeard").textContent = "🎤 하준이 차례 — 말로 대답해요"; $("qBar").hidden = false; const tok = Q.tok;
+  const t = await earAnswer(it.q, (x) => { if (tok === Q.tok) $("qHeard").textContent = x; }, 10000);
+  $("qBar").hidden = true;
   if (tok !== Q.tok || Q.answered) return;
-  if (t && t.denied) { $("qHeard").textContent = "마이크 권한이 꺼져 있어요 — 눌러서 골라요"; return; }
-  if (!t) { $("qHeard").textContent = it.opts ? "눌러서 골라도 돼요 🙂" : "다시 🎤 눌러서 말해 봐요"; return; }
+  if (t && t.denied) { $("qHeard").textContent = "마이크를 못 열었어요 — 눌러서 골라요"; return; }
+  if (!t) {
+    if (!again) { $("qHeard").textContent = "🎤 한 번 더 들을게요"; await say(it.opts ? "What do you think?" : "Your turn! Say it!", { rate: 0.95 }); if (tok === Q.tok) { await sleep(tvDelay()); if (tok === Q.tok) quizListen(true); } return; }
+    $("qHeard").textContent = it.opts ? "눌러서 골라도 돼요 🙂" : "🎤 다시 듣기를 누르거나 모르겠어 →"; return;
+  }
   $("qHeard").textContent = "🧒 " + t;
   const H = normT(t).split(" ").map(normW).filter(Boolean);
   if (it.opts) {
     const stop = new Set(["a", "an", "the", "on", "in", "to", "of", "and", "his", "her", "my", "it", "is", "at"]);
     let best = null, bestScore = 0;
     it.opts.forEach(o => { const ws = normT(o.text).split(" ").map(normW).filter(w => w && !stop.has(w)); const sc = ws.filter(w => H.some(h => wordMatch(w, h))).length / Math.max(1, ws.length); if (sc > bestScore) { bestScore = sc; best = o; } });
-    if (best && bestScore >= 0.5) quizAnswer(best, best.el); else $("qHeard").textContent += "  — 다시 말하거나 눌러서 골라요";
+    if (best && bestScore >= 0.5) quizAnswer(best, best.el);
+    else if (!again) { $("qHeard").textContent += "  — 한 번 더!"; setTimeout(() => { if (tok === Q.tok && !Q.answered) quizListen(true); }, 900); }
+    else $("qHeard").textContent += "  — 눌러서 골라도 돼요";
     return;
   }
   const keys = (it.key || []).map(normW).filter(Boolean);
@@ -1401,7 +1550,7 @@ async function quizListen() {
   quizSay(ok, t);
 }
 async function quizAnswer(o, btn) {
-  if (Q.answered) return; Q.answered = true; Q.tok++; if (listenCancel) listenCancel(); stopSpeech();
+  if (Q.answered) return; Q.answered = true; Q.tok++; if (earCancel) earCancel(); stopSpeech();
   const it = Q.items[Q.i], right = it.opts.find(x => x.right);
   if (o.right) { Q.score++; btn.classList.add("right"); chime(); await say("Yes! " + o.text + "!", { rate: 0.95 }); }
   else { btn.classList.add("wrong"); right.el.classList.add("right"); await say("Good try! It's " + right.text + ".", { rate: 0.9 }); }
@@ -1424,12 +1573,13 @@ function quizEnd() {
   say(Q.score >= Q.items.length - 1 ? "Amazing job, Hajun!" : "Good job, Hajun! Let's try again sometime!", { rate: 0.95 });
   recordStats("🧩 " + Q.book.title, Q.score, 0, 1);
 }
-$("qListen").addEventListener("click", () => quizListen());
-$("qRepeat").addEventListener("click", () => { const it = Q.items[Q.i]; if (!it || listenCancel && listenCancel()) return; if (it.t === "word") { say(it.a[0], { rate: 0.8 }); return; } say(it.q.replace(/\.\.\./g, " blank."), { rate: 0.85 }); });
-$("qSkip").addEventListener("click", () => { const it = Q.items[Q.i]; if (!it || Q.answered) return; if (it.opts) quizAnswer({ right: false }, mk("button")); else quizSay(!SR, ""); });
-$("quizBack").addEventListener("click", () => { Q.tok++; if (listenCancel) listenCancel(); stopSpeech(); show("reader"); });
+$("qListen").addEventListener("click", () => quizListen(true));
+$("qRepeat").addEventListener("click", () => { const it = Q.items[Q.i]; if (!it) return; if (earCancel) earCancel(); if (it.t === "word") { say(it.a[0], { rate: 0.8 }); return; } say(it.q.replace(/\.\.\./g, " blank."), { rate: 0.85 }); });
+$("qSkip").addEventListener("click", () => { const it = Q.items[Q.i]; if (!it || Q.answered) return; if (it.opts) quizAnswer({ right: false }, mk("button")); else quizSay(false, ""); });
+$("quizBack").addEventListener("click", () => { Q.tok++; if (earCancel) earCancel(); stopSpeech(); show("reader"); });
 
 // ============ start ============
+window.__lily = { R, Q, Ear, L };   // for checking the app from a test page
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && (!$("talk").hidden || !$("reader").hidden)) { wakeLock = null; keepAwake(true); } });
 show("home");

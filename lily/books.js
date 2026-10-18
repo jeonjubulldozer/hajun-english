@@ -172,3 +172,133 @@ window.LILY_BOOKS = [
     ]
   }
 ];
+
+// ---- 오터 가족 이야기: 페파피그처럼 대화가 가득한 가족 일상 (등장인물·문장 모두 새로 만든 것) ----
+window.LILY_BOOKS.push(
+  {
+    id: "otter-rain", level: 1, style: "가족 대화 (페파피그 느낌)", title: "The Otter Family: A Rainy Day", cover: { e: "🌧️", bg: "#A9C7E3" },
+    blurb: "비 오는 토요일, 수달 가족이 거실에 비밀 아지트를 만들어요.",
+    pages: [
+      { e: "🌧️🦦", s: ["It is Saturday.", "\"Mum! It's raining!\" says Ollie.", "\"Oh dear,\" says Mum. \"No park today.\""] },
+      { e: "🏠🤔", s: ["\"What can we do inside?\" asks Ollie.", "\"Let's build a den!\" says Pip.", "\"A den? With what?\" asks Ollie.", "\"With all the pillows!\" says Pip."] },
+      { e: "🛋️🧺", s: ["They take the pillows from the sofa.", "They take the blankets from the beds.", "\"Hey!\" says Dad. \"Where is my pillow?\"", "\"It's a wall now,\" says Pip."] },
+      { e: "⛺🔦", s: ["The den is big and dark.", "\"We need a light,\" says Ollie.", "Dad gives them a torch. Click!", "\"Wow! It's like a cave!\" says Pip."] },
+      { e: "🔑🦦", s: ["\"Can I come in?\" asks Dad.", "\"What's the password?\" asks Ollie.", "Dad thinks. \"Please?\"", "\"Correct!\" says Pip. \"Come in!\""] },
+      { e: "📚🌈", s: ["They read books in the den all afternoon.", "Then Ollie looks outside.", "\"Look! A rainbow!\"", "\"Rainy days are the best days,\" says Pip."] }
+    ],
+    words: { raining: "비가 오는", inside: "안에서", den: "아지트·작은 굴", pillows: "베개들", blankets: "담요들", wall: "벽", dark: "어두운", torch: "손전등(영국말)", cave: "동굴", password: "비밀번호", correct: "맞았어", rainbow: "무지개" },
+    talk: ["What did Ollie and Pip build?", "What was the password?", "What do you do on rainy days?"],
+    quiz: [
+      { t: "choice", q: "What is the weather like?", a: ["It's raining", "It's snowing", "It's sunny"], e: ["🌧️", "❄️", "☀️"] },
+      { t: "choice", q: "What did they use for the den?", a: ["Pillows and blankets", "Boxes and tape", "Rocks and sticks"], e: ["🛋️", "📦", "🪨"] },
+      { t: "word", q: "'손전등'은 영어로?", a: ["torch", "touch", "towel"] },
+      { t: "say", q: "Say it! Dad said the password: ...", say: "Please?", key: ["please"] },
+      { t: "say", q: "Tell me! What do you like to do on rainy days? Start with: On rainy days, I ...", say: "On rainy days, I read books.", key: ["rainy"], free: true }
+    ]
+  },
+  {
+    id: "otter-soup", level: 1, style: "가족 대화 (페파피그 느낌)", title: "The Otter Family: Pip Wants to Help", cover: { e: "🥕", bg: "#F3B27A" },
+    blurb: "엄마를 돕고 싶은 막내 핍. 그런데 소금을 너무 많이 넣었어요!",
+    pages: [
+      { e: "🍲🥕", s: ["Mum is making soup.", "\"Can I help?\" asks Pip.", "\"Yes, please,\" says Mum. \"You can wash the carrots.\""] },
+      { e: "💦😆", s: ["Pip washes the carrots.", "She washes the potatoes.", "She washes the table, the floor, and Ollie.", "\"Hey! I'm all wet!\" says Ollie."] },
+      { e: "🧂😬", s: ["\"Can I help some more?\" asks Pip.", "\"You can add a little salt,\" says Mum.", "Pip adds a little salt.", "Then she adds a LOT of salt."] },
+      { e: "😝🥛", s: ["Dad tastes the soup.", "\"Mmm... it's very... SALTY!\"", "He drinks a big glass of water.", "Pip looks sad. \"I'm sorry. I wanted to help.\""] },
+      { e: "🤗💡", s: ["\"That's okay,\" says Mum. \"Mistakes help us learn.\"", "\"Let's add more water and more carrots,\" says Ollie.", "\"Can I wash them?\" asks Pip.", "\"Yes!\" says everybody. \"Just the carrots!\""] },
+      { e: "🍲❤️", s: ["Now the soup is perfect.", "\"Who made this yummy soup?\" asks Dad.", "\"We all did!\" says Pip.", "\"Thank you for helping, Pip,\" says Mum."] }
+    ],
+    words: { soup: "수프", help: "돕다", wash: "씻다", carrots: "당근들", potatoes: "감자들", wet: "젖은", salt: "소금", tastes: "맛보다", salty: "짠", mistakes: "실수", perfect: "완벽한", yummy: "맛있는" },
+    talk: ["What did Pip wash?", "Why was the soup salty?", "What did Mum say about mistakes?", "How do you help at home?"],
+    quiz: [
+      { t: "choice", q: "What is Mum making?", a: ["Soup", "Cake", "Pizza"], e: ["🍲", "🎂", "🍕"] },
+      { t: "choice", q: "What did Pip put in the soup?", a: ["A lot of salt", "A lot of sugar", "A lot of ice"], e: ["🧂", "🍬", "🧊"] },
+      { t: "word", q: "'짠'은 영어로?", a: ["salty", "sunny", "sleepy"] },
+      { t: "say", q: "Say it! Mum said: Mistakes help us ...", say: "Mistakes help us learn.", key: ["learn"] },
+      { t: "say", q: "Tell me! How do you help at home? Start with: I help ...", say: "I help my mom.", key: ["help"], free: true }
+    ]
+  },
+  {
+    id: "otter-car", level: 2, style: "가족 대화 (페파피그 느낌)", title: "The Otter Family: Grandpa's Noisy Car", cover: { e: "🚗", bg: "#E57D6E" },
+    blurb: "할아버지의 시끄럽고 오래된 빨간 차로 바닷가 가기. 언덕에서 차가 멈췄어요!",
+    pages: [
+      { e: "🚗💨", s: ["Grandpa Otter has a very old car.", "It is red, it is small, and it is very, very noisy.", "BRRRM! BANG! PUTT-PUTT!"] },
+      { e: "🏖️🙋", s: ["\"Who wants to go to the beach?\" asks Grandpa.", "\"Me!\" shout Ollie and Pip.", "\"Are you sure the car can get there?\" asks Mum.", "\"Of course,\" says Grandpa. \"Probably.\""] },
+      { e: "⛰️🐢", s: ["The car goes up a big hill.", "It goes slower... and slower... and slower.", "\"Come on, little car!\" says Grandpa.", "\"Come on!\" shout Ollie and Pip."] },
+      { e: "🛑😮", s: ["BANG! The car stops.", "\"Oh dear,\" says Grandpa. \"I think it's tired.\"", "\"Cars don't get tired, Grandpa,\" says Ollie.", "\"This one does,\" says Grandpa."] },
+      { e: "💪⬆️", s: ["\"Let's push!\" says Ollie.", "Everybody gets out and pushes.", "\"One, two, three, PUSH!\"", "The car rolls to the top of the hill."] },
+      { e: "🌊🍦", s: ["Then it rolls all the way down to the beach. Wheee!", "\"We made it!\" says Grandpa.", "They eat ice cream and watch the waves.", "\"Grandpa,\" says Pip, \"your car is noisy, but it's the best car in the world.\""] }
+    ],
+    words: { noisy: "시끄러운", beach: "바닷가", sure: "확실한", probably: "아마도", hill: "언덕", slower: "더 느리게", tired: "지친", push: "밀다", rolls: "굴러가다", top: "꼭대기", "made it": "해냈다·도착했다", waves: "파도" },
+    talk: ["Why did the car stop?", "How did they get to the top of the hill?", "What did they do at the beach?", "Have you been to the beach? What did you do?"],
+    quiz: [
+      { t: "choice", q: "What color is Grandpa's car?", a: ["Red", "Blue", "Green"], e: ["🟥", "🟦", "🟩"] },
+      { t: "choice", q: "Where are they going?", a: ["To the beach", "To school", "To the zoo"], e: ["🏖️", "🏫", "🦁"] },
+      { t: "choice", q: "What did everybody do on the hill?", a: ["They pushed the car", "They went home", "They ate lunch"], e: ["💪", "🏠", "🍱"] },
+      { t: "word", q: "'시끄러운'은 영어로?", a: ["noisy", "nosy", "nicely"] },
+      { t: "say", q: "Say it! At the beach, Grandpa said: We ...", say: "We made it!", key: ["made", "it"] }
+    ]
+  },
+  {
+    id: "otter-tooth", level: 2, style: "가족 대화 (페파피그 느낌)", title: "The Otter Family: Ollie's Wobbly Tooth", cover: { e: "🦷", bg: "#D9E4EC" },
+    blurb: "흔들리는 이를 지키려고 조심조심 사과를 먹는 올리. 그런데 유도 시간에…!",
+    pages: [
+      { e: "🦷😮", s: ["\"Mum, my tooth is wobbly!\" says Ollie.", "\"Let me see,\" says Mum. \"Wow, it's very wobbly!\"", "\"Will it fall out?\" asks Ollie.", "\"Yes, soon,\" says Mum."] },
+      { e: "🍎🤔", s: ["At lunch, Ollie eats an apple very carefully.", "He chews on the left. He chews on the right.", "\"Why are you eating like that?\" asks Pip.", "\"I don't want to lose my tooth in the apple!\""] },
+      { e: "🏫👦", s: ["At school, Ollie shows his friend Max.", "\"Look! I can move it with my tongue.\"", "\"Cool!\" says Max. \"I lost two teeth last week.\"", "\"Did it hurt?\" asks Ollie. \"No,\" says Max. \"Not at all.\""] },
+      { e: "🥋🤸", s: ["After school, Ollie goes to judo.", "He does a big forward roll.", "Then he feels something in his mouth.", "\"Coach! My tooth!\""] },
+      { e: "✨😁", s: ["The tooth is in his hand. It is tiny and white.", "\"Well done,\" says Coach. \"That was a strong roll!\"", "Ollie smiles. Now there is a gap in his smile."] },
+      { e: "🌙📦", s: ["That night, Ollie puts the tooth in a little box.", "\"What will you wish for?\" asks Pip.", "Ollie thinks. \"A new tooth. A big, strong one!\"", "\"Good night, gappy,\" says Dad. Ollie laughs."] }
+    ],
+    words: { wobbly: "흔들흔들하는", tooth: "이(하나)", teeth: "이들", "fall out": "빠지다", carefully: "조심조심", chews: "씹다", lose: "잃어버리다", tongue: "혀", hurt: "아프다", "forward roll": "앞구르기", tiny: "아주 작은", gap: "틈·빈 곳", wish: "소원을 빌다" },
+    talk: ["Why did Ollie eat the apple carefully?", "Where did Ollie's tooth fall out?", "Have you lost a tooth? What happened?"],
+    quiz: [
+      { t: "choice", q: "What is wobbly?", a: ["Ollie's tooth", "Ollie's chair", "Ollie's bike"], e: ["🦷", "🪑", "🚲"] },
+      { t: "choice", q: "Where did the tooth come out?", a: ["At judo", "At the beach", "In bed"], e: ["🥋", "🏖️", "🛏️"] },
+      { t: "word", q: "'혀'는 영어로?", a: ["tongue", "tooth", "toes"] },
+      { t: "say", q: "Say it! Ollie said: Mum, my tooth is ...", say: "Mum, my tooth is wobbly!", key: ["wobbly"] },
+      { t: "say", q: "Tell me! Have you lost a tooth? Start with: Yes, I lost ... or No, I haven't.", say: "Yes, I lost two teeth.", key: [], free: true }
+    ]
+  },
+  {
+    id: "otter-bughotel", level: 2, style: "가족 대화 (페파피그 느낌)", title: "The Otter Family: The Bug Hotel", cover: { e: "🐞", bg: "#B8D08D" },
+    blurb: "벌레들이 묵을 '벌레 호텔'을 짓는 날. 첫 손님은 누구일까요?",
+    pages: [
+      { e: "🪵🐞", s: ["\"Dad, what's a bug hotel?\" asks Ollie.", "\"It's a little house for bugs,\" says Dad.", "\"Let's build one!\" says Ollie."] },
+      { e: "🧱🌲", s: ["They find old bricks, sticks, pine cones and leaves.", "\"This is the ladybird room,\" says Ollie.", "\"And this is the beetle room,\" says Pip."] },
+      { e: "🔨🪧", s: ["Dad puts the bricks on top of each other.", "Ollie puts sticks in the holes.", "Pip makes a sign. It says: BUGS WELCOME!"] },
+      { e: "⏳😤", s: ["\"Where are the bugs?\" asks Pip.", "\"We have to wait,\" says Dad.", "Pip waits for one minute.", "\"Where are the bugs NOW?\"", "Everybody laughs."] },
+      { e: "🔍🐜", s: ["The next morning, Ollie gets his magnifying glass.", "\"Look! An ant in the stick room!\"", "\"And a spider in the corner!\" says Pip.", "\"And a beetle!\" says Ollie. \"Hello, Mr Beetle!\""] },
+      { e: "🏨🌙", s: ["\"Our hotel is full,\" says Ollie proudly.", "\"Do bugs pay for their rooms?\" asks Pip.", "\"No,\" says Dad. \"But they help our garden.\"", "\"That's their thank you,\" says Ollie."] }
+    ],
+    words: { hotel: "호텔", build: "짓다", bricks: "벽돌", sticks: "나뭇가지", "pine cones": "솔방울", ladybird: "무당벌레(영국말)", beetle: "딱정벌레", holes: "구멍", sign: "표지판", welcome: "환영해요", wait: "기다리다", "magnifying glass": "돋보기", spider: "거미", proudly: "자랑스럽게", pay: "돈을 내다" },
+    talk: ["What did they use to build the bug hotel?", "Which bugs came to the hotel?", "If you built a bug hotel, which bug would you want?"],
+    quiz: [
+      { t: "choice", q: "What is a bug hotel?", a: ["A little house for bugs", "A big hotel for people", "A car for bugs"], e: ["🏠", "🏨", "🚗"] },
+      { t: "choice", q: "What did Ollie use to look at the bugs?", a: ["A magnifying glass", "A camera", "A torch"], e: ["🔍", "📷", "🔦"] },
+      { t: "word", q: "'돋보기'는 영어로?", a: ["magnifying glass", "magic glass", "glasses"] },
+      { t: "say", q: "Say it! Pip's sign says: BUGS ...", say: "Bugs welcome!", key: ["welcome"] },
+      { t: "say", q: "Tell me! Which bug do you like? Start with: I like ...", say: "I like beetles.", key: ["like"], free: true }
+    ]
+  },
+  {
+    id: "otter-judo", level: 2, style: "가족 대화 (페파피그 느낌)", title: "The Otter Family: Judo Day with Dad", cover: { e: "🥋", bg: "#F1E3C2" },
+    blurb: "아빠와 함께하는 유도 수업 날. 도복은 작고, 낙법은 아프고… 올리가 아빠를 가르쳐요.",
+    pages: [
+      { e: "🥋👨", s: ["\"Dad, can you come to judo today?\" asks Ollie.", "\"Me? On the mat?\" says Dad.", "\"Yes! It's Bring Your Dad Day!\""] },
+      { e: "👕😂", s: ["Dad puts on a white judo uniform.", "It is too small. His arms stick out.", "\"You look funny, Dad,\" says Ollie.", "\"I feel funny,\" says Dad."] },
+      { e: "🙇🙇", s: ["\"First, we bow,\" says Ollie.", "They bow to the mat. They bow to the coach.", "\"Why do we bow?\" asks Dad.", "\"To say thank you and to show respect,\" says Ollie."] },
+      { e: "🤸💥", s: ["\"Now we practise falling,\" says the coach.", "Ollie falls and rolls. Smooth!", "Dad falls and rolls. BOOF!", "\"Ouch,\" says Dad. \"The floor is very hard.\""] },
+      { e: "💪👍", s: ["\"Tuck your chin, Dad,\" says Ollie. \"And slap the mat.\"", "Dad tries again. Roll! Slap!", "\"Better!\" says the coach. \"Ollie is a good teacher.\""] },
+      { e: "🙏😊", s: ["At the end, Dad and Ollie bow to each other.", "\"Thank you for teaching me,\" says Dad.", "\"Thank you for coming,\" says Ollie.", "\"Same time next week?\" asks the coach.", "Dad rubs his back. \"Maybe next year.\""] }
+    ],
+    words: { mat: "매트", uniform: "도복·옷", "stick out": "삐져나오다", bow: "인사하다(절)", respect: "존중", practise: "연습하다", smooth: "부드럽게", hard: "딱딱한", tuck: "집어넣다", chin: "턱", slap: "탁 치다", teacher: "선생님", rubs: "문지르다" },
+    talk: ["Why was Dad's uniform funny?", "Why do we bow in judo?", "What did Ollie teach Dad?", "What would you teach your dad at judo?"],
+    quiz: [
+      { t: "choice", q: "Where does Dad go with Ollie?", a: ["To judo", "To the beach", "To the shop"], e: ["🥋", "🏖️", "🛒"] },
+      { t: "choice", q: "How was Dad's uniform?", a: ["Too small", "Too big", "Too red"], e: ["🤏", "🐘", "🟥"] },
+      { t: "choice", q: "Why do we bow?", a: ["To show respect", "To find bugs", "To sleep"], e: ["🙇", "🐞", "😴"] },
+      { t: "word", q: "'존중'은 영어로?", a: ["respect", "rest", "rescue"] },
+      { t: "say", q: "Say it! Ollie said: Tuck your chin, and slap the ...", say: "Tuck your chin, and slap the mat.", key: ["mat"] }
+    ]
+  }
+);

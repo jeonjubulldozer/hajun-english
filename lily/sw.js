@@ -1,5 +1,5 @@
 // 하준이 영어 도장: 앱으로 설치했을 때 화면이 빨리 열리게 해 주는 작은 도우미 (대화·목소리는 항상 인터넷으로)
-const CACHE = 'lily-dojo-v1';
+const CACHE = 'lily-dojo-v2';
 const CORE = ['./', './index.html', './books.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
