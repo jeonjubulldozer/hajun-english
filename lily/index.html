@@ -164,6 +164,7 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
 .pagehead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .pic { font-size: clamp(44px, 12vw, 72px); line-height: 1.1; letter-spacing: .08em; text-align: center; padding: 6px 0 0; }
 .text { font-family: var(--f-read); font-size: clamp(1.55rem, 5.2vw, 2.6rem); line-height: 1.55; display: flex; flex-direction: column; gap: 6px; }
+.chtitle { font-family: var(--f-read); font-weight: 700; font-size: clamp(1.1rem, 3.6vw, 1.5rem); color: var(--accent); text-align: center; }
 .sent { margin: 0; padding: 2px 8px; border-radius: 10px; transition: background .2s; }
 .sent.now { background: var(--accent-soft); }
 .sent.hajunturn { background: var(--good-soft); }
@@ -251,6 +252,8 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
           <select id="rate"><option value="0.8">느리게</option><option value="0.9">조금 천천히</option><option value="1">보통</option></select></div>
         <div class="field"><label for="readEngine">책 읽기 목소리</label>
           <select id="readEngine"><option value="cloud">Google Cloud (추천)</option><option value="gemini">Gemini 목소리</option><option value="phone">폰 내장 목소리</option></select></div>
+        <div class="field"><label for="minLevel">책 수준 (오늘의 15분·추천 책)</label>
+          <select id="minLevel"><option value="1">쉬운 책부터 (Level 1~)</option><option value="3">챕터북 (Level 3~, 추천)</option><option value="4">도전 (Level 4)</option></select></div>
         <div class="field"><label for="goal">하루 읽기 목표 (소리 내어 읽은 문장)</label>
           <select id="goal"><option value="20">20문장</option><option value="30">30문장</option><option value="50">50문장</option><option value="80">80문장</option></select></div>
         <div class="field"><label for="model">대화 모델</label>
@@ -335,8 +338,8 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
   <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
   <div class="banner" id="photoNote" hidden></div>
   <section id="pickSec"><h2>오늘 읽을 책</h2><div class="shelf" id="pick" style="margin-top:10px"></div></section>
-  <section><h2>🥋 곤충 무술 도장 시리즈</h2><p class="small muted" style="margin:4px 0 10px">하준이가 좋아하는 곤충 도장 친구들이 영어책으로 나와요. 맴맴이=Mem-Mem, 번쩍이=Coach Flash, 집게=Coach Pinch, 꽉이=Coach Grip, 팡이=Coach Pop.</p><div class="shelf" id="bdShelf"></div></section>
-  <section><h2>Lily가 쓴 이야기</h2><p class="small muted" style="margin:4px 0 10px">하준이 수준(Level 1 쉬움 → 3 챕터북 맛보기)으로 쓴 새 이야기예요. 오터 가족 시리즈는 페파피그처럼 대화가 가득해요.</p><div class="shelf" id="shelf"></div></section>
+  <section><h2>🥋 곤충 무술 도장 챕터북</h2><p class="small muted" style="margin:4px 0 10px">곤충 도장 친구들이 나오는 3챕터짜리 챕터북이에요(매직 트리 하우스 정도 수준). 맴맴이=Mem-Mem, 번쩍이=Coach Flash, 집게=Coach Pinch, 꽉이=Coach Grip, 팡이=Coach Pop.</p><div class="shelf" id="bdShelf"></div></section>
+  <section><h2>더 쉬운 이야기</h2><p class="small muted" style="margin:4px 0 10px">워밍업이나 동생과 같이 읽기 좋은 Level 1~2 이야기예요. 오터 가족 시리즈는 페파피그처럼 대화가 가득해요.</p><div class="shelf" id="shelf"></div></section>
   <section id="mineSec" hidden><h2>우리가 만든 이야기</h2><div class="shelf" id="mine" style="margin-top:10px"></div></section>
   <section>
     <h2 style="margin-bottom:6px">진짜 책은 이런 걸로</h2>
@@ -379,7 +382,7 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
     </div></div>
   <div class="field"><label for="mkTopic">소재 (선택)</label><input class="text" id="mkTopic" type="text" placeholder="예: 학교에 나타난 거대 매미, 아빠의 고장 난 로봇" autocomplete="off"></div>
   <div class="grid2">
-    <div class="field"><label for="mkLevel">난이도</label><select id="mkLevel"><option value="1">Level 1 · 아주 쉬움</option><option value="2" selected>Level 2 · 쉬움</option><option value="3">Level 3 · 챕터북 맛보기</option></select></div>
+    <div class="field"><label for="mkLevel">난이도</label><select id="mkLevel"><option value="1">Level 1 · 아주 쉬움</option><option value="2">Level 2 · 쉬움</option><option value="3" selected>Level 3 · 챕터북</option><option value="4">Level 4 · 도전 챕터북</option></select></div>
     <div class="field"><label for="mkHero">주인공</label><select id="mkHero"><option value="new">새 캐릭터</option><option value="hajun">하준이</option></select></div>
   </div>
   <button class="go" id="mkGo" type="button">이야기 써 줘!</button>
@@ -399,6 +402,7 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
     <button class="chip" data-m="echo" type="button">🔁 따라 읽기</button>
     <button class="chip" data-m="solo" type="button">🙋 혼자 읽기</button>
   </div>
+  <div class="chtitle" id="rCh" hidden></div>
   <div class="pic" id="rPic"></div>
   <div class="text" id="rText"></div>
   <div class="readbar">
@@ -461,7 +465,7 @@ function shared() { return load("dojo-live"); }
 function updShared(fn) { const cur = load("dojo-live"); fn(cur); try { localStorage.setItem("dojo-live", JSON.stringify(cur)); } catch {} }
 const st = load("lily2");
 function saveSt() { try { localStorage.setItem("lily2", JSON.stringify(st)); } catch {} }
-(() => { const s = shared(); const d = { voice: s.gVoice || "Sulafat", accent: s.accent || "us", turn: "auto", silence: "900", out: "tv", rate: "0.9", readEngine: s.voiceSource === "gemini" ? "gemini" : s.voiceSource === "phone" ? "phone" : "cloud", model: "gemini-3.8-live", talkMode: "free", talkLen: "10", goal: "30", readMode: "echo" };
+(() => { const s = shared(); const d = { voice: s.gVoice || "Sulafat", accent: s.accent || "us", turn: "auto", silence: "900", out: "tv", rate: "0.9", readEngine: s.voiceSource === "gemini" ? "gemini" : s.voiceSource === "phone" ? "phone" : "cloud", model: "gemini-3.8-live", talkMode: "free", talkLen: "10", goal: "30", readMode: "echo", minLevel: "3" };
   for (const k in d) if (st[k] == null) st[k] = d[k]; st.progress = st.progress || {}; st.myBooks = st.myBooks || []; st.wordKo = st.wordKo || {}; st.readDays = st.readDays || {}; saveSt(); })();
 // the key may live in any of the family apps on this phone (영어 도장, 밤의 쉼표, 곤충 도장)
 function gkey() {
@@ -785,8 +789,8 @@ function renderHome() {
   $("goalFill").style.width = Math.min(100, Math.round(n / goal * 100)) + "%";
   const last = st.lastBook && allBooks().find(b => b.id === st.lastBook.id), nb = nextBook();
   $("nextBookLine").textContent = last && !(st.progress[last.id] && st.progress[last.id].done) ? `이어 읽기: ${last.title}` : nb ? `다음 책: ${nb.title}` : "";
-  const rb = routineBook(), rr = st.routine || {};
-  if (rb) $("routineLine").textContent = `오늘 책: ${rb.title}` + (rr.book === rb.id && rr.times ? " (두 번째 날 — 더 쉬워요)" : "") + " · 누르면 듣기 → 따라 읽기 → 퀴즈 → Lily랑 이야기까지 자동으로";
+  const pk = routinePick();
+  if (pk) $("routineLine").textContent = `오늘: ${pk.b.title}` + (pk.n > 1 ? ` · Chapter ${pk.ch + 1}/${pk.n}` : "") + " · 누르면 듣기 → 따라 읽기 → Lily랑 이야기까지 자동으로";
   const s = shared().stats, box = $("stats"); box.innerHTML = "";
   if (s && s.total && s.total.sessions) {
     let streak = 0; const day = new Date(); if (!s.days[dayKey(day)]) day.setDate(day.getDate() - 1); while (s.days[dayKey(day)]) { streak++; day.setDate(day.getDate() - 1); }
@@ -797,52 +801,65 @@ function renderHome() {
 $("goTalk").addEventListener("click", () => { show("talkSetup"); setTalkMode(st.talkMode); });
 $("goBooks").addEventListener("click", () => show("library"));
 $("goVideos").addEventListener("click", () => { show("videos"); renderVideos(); });
-// ===== 오늘의 15분: 듣기 → 따라 읽기 → 퀴즈 → Lily랑 이야기 (한 권을 이틀 반복하면 셋째 날 새 책) =====
-const RT = { on: false, step: 0, book: null };
-const RT_TEXT = { 1: ["① 듣기 (1/4)", " — Lily가 먼저 읽어 줘요. 그냥 들어요 🎧"], 2: ["② 따라 읽기 (2/4)", " — Lily가 한 문장 읽으면 똑같이 따라 읽어요 🔁"], 3: ["③ 퀴즈 (3/4)", " — 말로 대답해요 🧩"], 4: ["④ Lily랑 이야기 (4/4)", " — 책 이야기를 영어로 해요 💬"] };
-function routineBook() {
+// ===== 오늘의 15분: 하루 한 챕터 — 듣기 → 따라 읽기 → (마지막 챕터면 퀴즈) → Lily랑 이야기 =====
+const RT = { on: false, step: 0, book: null, ch: 0, n: 1 };
+const RT_TEXT = { 1: ["① 듣기 (1/4)", " — Lily가 오늘 챕터를 먼저 읽어 줘요. 그냥 들어요 🎧"], 2: ["② 따라 읽기 (2/4)", " — Lily가 한 문장 읽으면 똑같이 따라 읽어요 🔁"], 3: ["③ 퀴즈 (3/4)", " — 말로 대답해요 🧩"], 4: ["④ Lily랑 이야기 (4/4)", " — 책 이야기를 영어로 해요 💬"] };
+function chaptersOf(b) { const st0 = []; b.pages.forEach((p, i) => { if (i === 0 || p.ch) st0.push(i); }); return st0.map((x, k) => [x, k + 1 < st0.length ? st0[k + 1] : b.pages.length]); }
+function bookOrder() {
+  const minL = Number(st.minLevel) || 3, all = window.LILY_BOOKS || [];
+  const pool = all.filter(x => (x.level || 2) >= minL);
+  return (pool.length ? pool : all).slice().sort((a, c) => ((/^bdc?-/.test(a.id) ? 0 : 10) + (a.level || 2)) - ((/^bdc?-/.test(c.id) ? 0 : 10) + (c.level || 2)));
+}
+function routinePick() {
   const r = st.routine || {}, b = r.book && allBooks().find(x => x.id === r.book);
-  if (b && (r.times || 0) < 2) return b;
-  const order = (window.LILY_BOOKS || []).slice().sort((a, c) => ((/^bd-/.test(a.id) ? 0 : 10) + (a.level || 2)) - ((/^bd-/.test(c.id) ? 0 : 10) + (c.level || 2)));
-  const used = new Set(st.routineDone || []);
-  return order.find(x => !used.has(x.id)) || order[0];
+  if (b && (r.ch || 0) < chaptersOf(b).length && (b.level || 2) >= Math.min(Number(st.minLevel) || 3, 3)) return { b, ch: r.ch || 0, n: chaptersOf(b).length };
+  const used = new Set(st.routineDone || []), order = bookOrder();
+  const nb = order.find(x => !used.has(x.id)) || order[0]; if (!nb) return null;
+  return { b: nb, ch: 0, n: chaptersOf(nb).length };
 }
 function rtShow(step, screenId) {
-  RT.step = step; const bar = $("rtBar"); $("rtStep").textContent = RT_TEXT[step][0]; $("rtHint").textContent = RT_TEXT[step][1];
+  RT.step = step; const bar = $("rtBar"); $("rtStep").textContent = RT_TEXT[step][0] + (RT.n > 1 ? ` · Chapter ${RT.ch + 1}/${RT.n}` : ""); $("rtHint").textContent = RT_TEXT[step][1];
   const scr = $(screenId); if (scr && bar.parentNode !== scr) scr.insertBefore(bar, scr.children[1] || null); bar.hidden = false;
 }
-function rtOff() { RT.on = false; RT.step = 0; $("rtBar").hidden = true; }
-$("rtStop").addEventListener("click", () => { rtOff(); readerStop(); if (earCancel) earCancel(); toast("오늘의 15분을 멈췄어요. 다시 누르면 처음부터 해요."); });
+function rtOff() { RT.on = false; RT.step = 0; $("rtBar").hidden = true; R.limit = null; }
+$("rtStop").addEventListener("click", () => { rtOff(); readerStop(); if (earCancel) earCancel(); toast("오늘의 15분을 멈췄어요. 다시 누르면 오늘 챕터를 처음부터 해요."); });
 $("goRoutine").addEventListener("click", async () => {
-  const b = routineBook(); if (!b) return;
-  const r = st.routine || {}; if (r.book !== b.id) st.routine = { book: b.id, times: 0 }; saveSt();
-  RT.on = true; RT.book = b; unlockAudio();
-  openBook(b, 0); setReadMode("listen"); rtShow(1, "reader");
-  await say("Let's listen to the story first.", { rate: 0.95 });
+  const pk = routinePick(); if (!pk) return;
+  st.routine = { book: pk.b.id, ch: pk.ch }; saveSt();
+  RT.on = true; RT.book = pk.b; RT.ch = pk.ch; RT.n = pk.n; unlockAudio();
+  const [from, to] = chaptersOf(pk.b)[pk.ch];
+  openBook(pk.b, from); R.limit = { from, to }; setReadMode("listen"); rtShow(1, "reader");
+  await say(pk.ch === 0 ? "Let's listen to the story first." : `Let's find out what happens next! Chapter ${pk.ch + 1}.`, { rate: 0.95 });
   if (RT.on && RT.step === 1) readerRun();
 });
 async function routineNext() {
   if (!RT.on) return;
   if (RT.step === 1) {
-    rtShow(2, "reader"); $("rEnd").hidden = true; R.page = 0; R.s = 0; renderPage(); setReadMode("echo"); window.scrollTo({ top: 0, behavior: "smooth" });
+    rtShow(2, "reader"); $("rEnd").hidden = true; R.page = R.limit ? R.limit.from : 0; R.s = 0; renderPage(); setReadMode("echo"); window.scrollTo({ top: 0, behavior: "smooth" });
     await say("Now it's your turn! Listen, and read after me.", { rate: 0.95 });
     if (RT.on && RT.step === 2) readerRun();
   } else if (RT.step === 2) {
-    if (RT.book.quiz && RT.book.quiz.length) { startQuiz(RT.book); rtShow(3, "quiz"); }
+    if (RT.ch === RT.n - 1 && RT.book.quiz && RT.book.quiz.length) { startQuiz(RT.book); rtShow(3, "quiz"); }
     else routineTalk();
   }
 }
-function routineTalk() { if (!RT.on) return; RT.step = 4; $("rtBar").hidden = true; startTalk({ kind: "booktalk", book: RT.book, label: "④ Lily랑 책 이야기 (4/4)", minutes: 5 }); }
+function routineTalk() {
+  if (!RT.on) return; RT.step = 4; $("rtBar").hidden = true;
+  const upto = R.limit ? R.limit.to : RT.book.pages.length;
+  startTalk({ kind: "booktalk", book: RT.book, upto, chapter: RT.ch + 1, chapters: RT.n, label: `④ Lily랑 책 이야기 (4/4)` + (RT.n > 1 ? ` · Chapter ${RT.ch + 1}` : ""), minutes: 5 });
+}
 function routineDone() {
-  if (!RT.on) return; const id = RT.book && RT.book.id; rtOff();
-  const r = st.routine || {}; if (r.book === id) { r.times = (r.times || 0) + 1; st.routine = r; if (r.times >= 2) st.routineDone = (st.routineDone || []).concat([id]).slice(-60); } saveSt();
-  show("home"); toast("🎉 오늘의 15분 끝! 이제 영상 볼 시간이에요", 6000); say("Great job today, Hajun! You did it!", { rate: 0.95 });
+  if (!RT.on) return; const id = RT.book && RT.book.id, next = RT.ch + 1, n = RT.n; rtOff();
+  if (next >= n) { st.routineDone = (st.routineDone || []).concat([id]).slice(-60); st.routine = {}; } else st.routine = { book: id, ch: next };
+  saveSt(); show("home");
+  toast(next >= n ? "🎉 책 한 권 끝! 이제 영상 볼 시간이에요" : `🎉 오늘의 15분 끝! 내일은 Chapter ${next + 1}`, 6000);
+  say(next >= n ? "You finished the whole book, Hajun! Amazing!" : "Great job today, Hajun! See you tomorrow for the next chapter!", { rate: 0.95 });
 }
 function readToday() { return st.readDays[dayKey()] || 0; }
 function noteRead() { const k = dayKey(); st.readDays[k] = (st.readDays[k] || 0) + 1; const ks = Object.keys(st.readDays).sort(); while (ks.length > 120) delete st.readDays[ks.shift()]; saveSt(); }
-function nextBook() { const all = (window.LILY_BOOKS || []).slice().sort((a, b) => ((/^bd-/.test(a.id) ? 0 : 10) + (a.level || 2)) - ((/^bd-/.test(b.id) ? 0 : 10) + (b.level || 2))); return all.find(b => !(st.progress[b.id] && st.progress[b.id].done)) || all[Math.floor(Math.random() * all.length)]; }
+function nextBook() { const all = bookOrder(); return all.find(b => !(st.progress[b.id] && st.progress[b.id].done)) || all[Math.floor(Math.random() * all.length)]; }
 // settings
-[["voice"], ["accent"], ["turn"], ["silence"], ["out"], ["rate"], ["readEngine"], ["model"], ["goal"]].forEach(([id]) => { $(id).value = st[id]; $(id).addEventListener("change", () => { st[id] = $(id).value; saveSt(); if (id === "accent") phoneVoice = null; if (id === "readEngine" || id === "voice" || id === "accent") { TTS.sticky = null; TTS.fails = {}; } }); });
+[["voice"], ["accent"], ["turn"], ["silence"], ["out"], ["rate"], ["readEngine"], ["model"], ["goal"], ["minLevel"]].forEach(([id]) => { $(id).value = st[id]; $(id).addEventListener("change", () => { st[id] = $(id).value; saveSt(); if (id === "accent") phoneVoice = null; if (id === "readEngine" || id === "voice" || id === "accent") { TTS.sticky = null; TTS.fails = {}; } }); });
 $("key").addEventListener("change", () => { const v = $("key").value.trim(); updShared(s => { s.key_gemini = v; }); renderHome(); });
 $("testVoice").addEventListener("click", async () => {
   unlockAudio(); TTS.sticky = null; TTS.fails = {}; ttsLastErr = null; $("testNote").textContent = "가져오는 중…";
@@ -920,13 +937,13 @@ function memBlock() {
 }
 function lilyBase() {
   const gb = st.accent === "gb";
-  return `You are Miss Lily, a warm, playful ${gb ? "British (southern England)" : "American"} English teacher. You are talking LIVE, by voice, with Hajun, an 8-year-old Korean boy. Hajun understands spoken English well, but speaking is hard for him: he needs easy questions, a little time, and lots of encouragement.
+  return `You are Miss Lily, a warm, playful ${gb ? "British (southern England)" : "American"} English teacher. You are talking LIVE, by voice, with Hajun, an 8-year-old Korean boy. Hajun went to an English kindergarten and understands native-speed English like an English-speaking 7-8-year-old, so do NOT simplify your English: talk naturally, with rich, kid-friendly vocabulary. What is still hard for him is producing his own longer sentences.
 
 HOW YOU SOUND: like a real, friendly native speaker talking with a kid — natural speed, contractions, real reactions ("Whoa!", "No way!", "Ha! That's so funny!"). ${gb ? "Use British words and expressions (mum, brilliant, lovely, holiday, biscuit)." : "Use American words (mom, awesome, vacation, cookie)."}
 KEEP EVERY TURN SHORT: 1-3 short sentences plus ONE easy question, about 25 words. Never lecture, never list.
 ENGLISH ONLY: if Hajun speaks Korean, show you understood, say it for him in simple English ("Oh, you mean: I'm hungry!") and invite him to say it. A Korean word only if he is totally stuck.
 RECAST, DON'T CORRECT: when his English has mistakes, say the correct sentence back naturally inside your reaction ("You went to the park yesterday? Fun!"). Never say "wrong". Never explain grammar.
-HELP HIM SPEAK IN SENTENCES: if he answers with one word, give him the whole sentence to copy ("Can you say: I like big beetles?") and cheer when he tries. If he is stuck, ask an either-or question.
+PUSH HIM TO SAY MORE: ask open questions (why, how, what if, tell me about...). When he answers with a word or a short phrase, ask for more ("Ooh, tell me more! Then what happened?"), or give him a longer model sentence to try ("Can you say: I like the rhino beetle because he's super strong?"). Cheer every longer sentence. If he is really stuck, offer an either-or question.
 Be kind, polite, honest and thankful — a good role model. Everything cartoon-safe.
 Messages in [square brackets] come from the app or from Hajun's dad, not from Hajun. Follow them without mentioning them.`;
 }
@@ -939,8 +956,9 @@ function talkSystem(cfg) {
 You start with ONE story sentence (6-12 easy words) and hand it over: "Your turn! What happens next?". Each time he adds something: say his idea back as a correct story sentence ("Yes! Then the mantis did a big judo throw!"), add ONE new sentence that builds on HIS idea, and hand it back. Keep the same characters. If he's stuck, give two choices ("Does the beetle run away, or say sorry?"). After about 8 of his sentences, give a happy ending and retell "our story" in 3-4 short sentences.`;
   if (cfg.kind === "retell") mode = `HAJUN JUST WATCHED ${cfg.show === "a YouTube video" ? "a YouTube video" : "an episode of the cartoon \"" + cfg.show + "\""} WITH ENGLISH SUBTITLES. You did NOT watch this episode, so you don't know what happened — be curious and let him tell you. One easy question at a time: who was in it, where they were, what happened first, then what, the funniest part, what he would do. Say his sentences back correctly and a little longer ("Oh, Peppa jumped in a muddy puddle? Then what?"). If he's stuck, ask either-or questions. You may mention general things everyone knows about the show's characters, but never invent what happened in this episode. At the end, retell his story back to him in 3-4 short sentences and praise him.`;
   if (cfg.kind === "booktalk" || cfg.kind === "bookbuild") {
-    const text = cfg.book.pages.map(p => p.s.join(" ")).join("\n").slice(0, 9000);
-    mode = `YOU AND HAJUN JUST READ "${cfg.book.title}" TOGETHER. The text:\n${text}\n\n` + (cfg.kind === "booktalk"
+    const text = cfg.book.pages.slice(0, cfg.upto || cfg.book.pages.length).map(p => (p.ch ? p.ch + "\n" : "") + p.s.join(" ")).join("\n").slice(0, 9000);
+    const partial = cfg.chapters > 1 && cfg.chapter < cfg.chapters;
+    mode = `YOU AND HAJUN JUST READ "${cfg.book.title}" TOGETHER` + (partial ? ` — up to the end of chapter ${cfg.chapter} of ${cfg.chapters}. You do NOT know what happens in the later chapters, so never tell him; near the end, ask him to guess what will happen in the next chapter and why.` : ".") + ` The text so far:\n${text}\n\n` + (cfg.kind === "booktalk"
       ? `NOW: talk about the story like a fun reading buddy. One question at a time: easy ones first (who / what / where), then why, then "What would YOU do?", and connect it to Hajun's own life (judo, bugs, space, his family). Use words from the story so he can reuse them. After about 8 of his answers, ask: "Do you want to make up what happens next? Let's do it together!" and, if he wants, make the next part one sentence each (you one sentence, he one sentence).`
       : `NOW: MAKE THE NEXT PART of this story together, one sentence each. Start with ONE sentence (6-12 easy words) that continues the story, then: "Your turn! What happens next?". Each time he answers: say his idea back as a correct story sentence, add ONE new sentence building on HIS idea, and hand it back. Same characters, same funny style. If he's stuck, offer two choices. After about 8 of his sentences, wrap up with a happy ending and retell "our new chapter" in 3-4 short sentences.`);
   }
@@ -1341,7 +1359,7 @@ function renderLibrary() {
   const pick = $("pick"); pick.innerHTML = ""; const nb = nextBook(); const last = st.lastBook && allBooks().find(b => b.id === st.lastBook.id && !(st.progress[b.id] && st.progress[b.id].done));
   [last, nb].filter((b, k, a) => b && a.indexOf(b) === k).forEach(b => pick.append(bookCard(b)));
   $("pickSec").hidden = !pick.childElementCount;
-  const isBD = (b) => /^bd-/.test(b.id);
+  const isBD = (b) => /^bdc?-/.test(b.id);
   const bd = $("bdShelf"); bd.innerHTML = ""; (window.LILY_BOOKS || []).filter(isBD).forEach(b => bd.append(bookCard(b)));
   const sh = $("shelf"); sh.innerHTML = ""; (window.LILY_BOOKS || []).filter(b => !isBD(b)).sort((a, b) => (a.level || 2) - (b.level || 2)).forEach(b => sh.append(bookCard(b)));
   const mine = st.myBooks || []; $("mineSec").hidden = !mine.length; $("mine").innerHTML = ""; mine.slice().reverse().forEach(b => $("mine").append(bookCard(b)));
@@ -1352,7 +1370,7 @@ function renderLibrary() {
 const R = { book: null, page: 0, s: 0, mode: "listen", tok: 0, playing: false, resolveTurn: null, read: 0, startAt: 0 };
 function openBook(b, page) {
   if (page == null) page = (st.lastBook && st.lastBook.id === b.id && !(st.progress[b.id] && st.progress[b.id].done)) ? Math.min(st.lastBook.page || 0, b.pages.length - 1) : 0;
-  leaveAll(); R.book = b; R.page = page; if (!b.photo) { st.lastBook = { id: b.id, page }; saveSt(); } R.s = 0; R.playing = false; R.read = 0; R.startAt = Date.now();
+  leaveAll(); R.limit = null; R.book = b; R.page = page; if (!b.photo) { st.lastBook = { id: b.id, page }; saveSt(); } R.s = 0; R.playing = false; R.read = 0; R.startAt = Date.now();
   R.mode = st.readMode || "listen"; setReadMode(R.mode);
   $("rTitle").textContent = b.title; $("rEnd").hidden = true; $("photoMore").hidden = !b.photo;
   show("reader"); renderPage(); keepAwake(true);
@@ -1362,6 +1380,7 @@ $("rModes").addEventListener("click", (e) => { const c = e.target.closest(".chip
 function renderPage() {
   const b = R.book, p = b.pages[R.page]; if (!b.photo) { st.lastBook = { id: b.id, page: R.page }; saveSt(); }
   $("rPage").textContent = `${R.page + 1} / ${b.pages.length}`;
+  { let ct = ""; for (let k = R.page; k >= 0; k--) if (b.pages[k].ch) { ct = b.pages[k].ch; break; } $("rCh").textContent = ct; $("rCh").hidden = !ct; }
   if (p.art && window.BugArt) { const pic = $("rPic"); pic.textContent = ""; const c = document.createElement("canvas"); c.setAttribute("aria-hidden", "true"); try { BugArt.scene(c, p.art); pic.append(c); } catch { pic.textContent = p.e || ""; } }
   else $("rPic").textContent = p.e || "";
   const box = $("rText"); box.innerHTML = "";
@@ -1467,7 +1486,7 @@ async function readerRun() {
   while (tok === R.tok) {
     const p = R.book.pages[R.page];
     if (R.s >= p.s.length) {
-      if (R.page < R.book.pages.length - 1) { await sleep(800); if (tok !== R.tok) return; R.page++; R.s = 0; renderPage(); window.scrollTo({ top: 0, behavior: "smooth" }); continue; }
+      if (R.page < (R.limit ? R.limit.to : R.book.pages.length) - 1) { await sleep(800); if (tok !== R.tok) return; R.page++; R.s = 0; renderPage(); window.scrollTo({ top: 0, behavior: "smooth" }); continue; }
       R.playing = false; R.s = 0; playBtn(); bookFinished(); return;
     }
     const i = R.s, who = whoReads(i);
@@ -1480,7 +1499,7 @@ let ac = null;
 function chime() { try { ac = ac || new AudioContext(); const t = ac.currentTime; [784, 1047].forEach((f, k) => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = f; g.gain.setValueAtTime(0.0001, t + k * 0.09); g.gain.exponentialRampToValueAtTime(0.12, t + k * 0.09 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + k * 0.09 + 0.35); o.connect(g); g.connect(ac.destination); o.start(t + k * 0.09); o.stop(t + k * 0.09 + 0.4); }); } catch {} }
 function goalCheck() { const n = readToday(), g = Number(st.goal) || 30; if (n === g && !st.goalShown?.[dayKey()]) { st.goalShown = { [dayKey()]: true }; saveSt(); toast(`🎉 오늘 목표 ${g}문장 달성!`, 4000); say("Wow, Hajun! You read " + g + " sentences today. Amazing!", { rate: 0.95 }); return true; } return false; }
 function bookFinished() {
-  if (RT.on && (RT.step === 1 || RT.step === 2)) { const b0 = R.book; if (!b0.photo) { const pr = st.progress[b0.id] || { times: 0 }; pr.done = true; pr.times = (pr.times || 0) + 1; st.progress[b0.id] = pr; saveSt(); } readerFinishStats(); setTimeout(routineNext, 900); return; }
+  if (RT.on && (RT.step === 1 || RT.step === 2)) { const b0 = R.book; if (!b0.photo && RT.ch === RT.n - 1) { const pr = st.progress[b0.id] || { times: 0 }; pr.done = true; pr.times = (pr.times || 0) + 1; st.progress[b0.id] = pr; saveSt(); } readerFinishStats(); setTimeout(routineNext, 900); return; }
   const b = R.book; if (!b.photo) { const pr = st.progress[b.id] || { times: 0 }; pr.done = true; pr.times = (pr.times || 0) + 1; st.progress[b.id] = pr; saveSt(); }
   $("rEnd").hidden = false; $("rQuiz").hidden = !(b.quiz && b.quiz.length);
   $("rEndNote").textContent = R.read ? `하준이가 ${R.read}문장을 소리 내어 읽었어요.` : "다음엔 🤝 번갈아 읽기나 🔁 따라 읽기로 하준이도 소리 내어 읽어 봐요.";
@@ -1571,24 +1590,24 @@ const STYLE = {
   sport: "judo / wrestling / taekwondo training: trying hard, falling and getting up, respect for coaches and partners, funny moments at the dojo",
   mystery: "a small, funny mystery with clues the reader can spot, solved by a clever kid"
 };
-const LEVELDESC = { 1: "very short sentences (4-8 words), the most common words, mostly present tense, lots of repetition", 2: "short sentences (5-10 words), simple past tense, a few new words that the story makes clear", 3: "sentences up to 14 words, some describing words and dialogue, still easy for a young reader" };
+const LEVELDESC = { 1: "very short sentences (4-8 words), the most common words, mostly present tense, lots of repetition", 2: "short sentences (5-10 words), simple past tense, a few new words that the story makes clear", 3: "early chapter-book level for a 7-8-year-old native speaker: past-tense narration, varied sentences of 8-18 words, lively dialogue, vivid verbs (grabbed, whispered, zoomed) and a few new words made clear by the story; 3 short chapters", 4: "confident chapter-book level for an 8-9-year-old native speaker: rich vocabulary, a few idioms, varied sentence lengths up to 22 words, real suspense and humour, inner thoughts; 3 chapters" };
 $("dailyBook").addEventListener("click", () => { show("make"); document.querySelectorAll("#mkStyle .chip").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === "family"))); $("mkTopic").value = ""; $("mkGo").click(); });
 $("mkGo").addEventListener("click", async () => {
   const styleKey = (document.querySelector('#mkStyle .chip[aria-pressed="true"]') || {}).dataset?.v || "family";
   const lv = Number($("mkLevel").value) || 2, hero = $("mkHero").value === "hajun", topic = $("mkTopic").value.trim();
   const note = $("mkNote"); note.hidden = false; note.className = "banner"; note.textContent = "✍️ Lily가 이야기를 쓰는 중… (20초쯤)"; $("mkGo").disabled = true;
   try {
-    const r = await gem([{ text: `Write a completely ORIGINAL children's story for Hajun, an 8-year-old Korean boy who understands spoken English well and is just starting to read English.
+    const r = await gem([{ text: `Write a completely ORIGINAL children's story for Hajun, an 8-year-old Korean boy who went to an English kindergarten and understands English like a native 7-8-year-old; his own speaking and reading are catching up, so the story should be at his listening level, not baby-ish.
 STYLE: ${STYLE[styleKey]}.
 TOPIC: ${topic || "anything fun that fits the style"}.
 HERO: ${hero ? "Hajun himself (8, loves judo, bugs and space, has a little sister named Hana)" : "brand-new characters you invent"}.
 Never copy or imitate characters, titles, catchphrases or sentences from existing books — everything must be new.
 LEVEL ${lv}: ${LEVELDESC[lv]}.
-6 pages, 3-5 sentences per page. Kid humour, sound effects, a little repetition, real dialogue. Values live quietly in the background (kindness, courage, hard work, honesty, thankfulness), never preachy. Cartoon-safe.
+${lv >= 3 ? "3 chapters, 8 pages in total: put \"ch\": \"Chapter N · <title>\" on the first page of each chapter; 3-5 sentences per page." : "6 pages, 3-5 sentences per page."} Kid humour, sound effects, a little repetition, real dialogue. Values live quietly in the background (kindness, courage, hard work, honesty, thankfulness), never preachy. Cartoon-safe.
 Reply ONLY JSON:
-{"title":"","cover":"<1 emoji>","blurb_ko":"<one Korean sentence for the parent>","pages":[{"e":"<2 emoji for the picture>","s":["<sentence>","..."]}],"words":{"<harder word from the story>":"<short Korean meaning>"},"talk":["<3 questions about the story>"],"quiz":[{"t":"choice","q":"<question>","a":["<correct answer>","<wrong>","<wrong>"],"e":["<emoji>","<emoji>","<emoji>"]},{"t":"word","q":"'<Korean word>'는 영어로?","a":["<correct English word>","<similar-looking wrong word>","<wrong word>"]},{"t":"say","q":"Say it! <a sentence from the story with its last word(s) replaced by ...>","say":"<the full sentence>","key":["<the missing word(s)>"]}]}
-Give 5 quiz items: 2-3 "choice", 1 "word", 1-2 "say". Give 8-12 words.` }], { models: SMART, max: 6000, temp: 0.95 });
-    const pages = (r.pages || []).map(p => ({ e: String(p.e || "📖"), s: (p.s || []).map(String).filter(Boolean) })).filter(p => p.s.length);
+{"title":"","cover":"<1 emoji>","blurb_ko":"<one Korean sentence for the parent>","pages":[{"ch":"<only on a chapter's first page>","e":"<2 emoji for the picture>","s":["<sentence>","..."]}],"words":{"<harder word from the story>":"<short Korean meaning>"},"talk":["<3 questions about the story>"],"quiz":[{"t":"choice","q":"<question>","a":["<correct answer>","<wrong>","<wrong>"],"e":["<emoji>","<emoji>","<emoji>"]},{"t":"word","q":"'<Korean word>'는 영어로?","a":["<correct English word>","<similar-looking wrong word>","<wrong word>"]},{"t":"say","q":"Say it! <a sentence from the story with its last word(s) replaced by ...>","say":"<the full sentence>","key":["<the missing word(s)>"]}]}
+Give 6 quiz items: 3 "choice" (include why/how questions, not only who/what), 1 "word", 2 "say" (one of them an opinion question with "free": true). Give 10-15 words.` }], { models: SMART, max: 6000, temp: 0.95 });
+    const pages = (r.pages || []).map(p => Object.assign({ e: String(p.e || "📖"), s: (p.s || []).map(String).filter(Boolean) }, p.ch ? { ch: String(p.ch) } : {})).filter(p => p.s.length);
     if (pages.length < 3) throw { code: "failed", message: "이야기가 짧게 나왔어요" };
     const pal = ["#F2C66D", "#9BC59D", "#B9C4E8", "#E7A98C", "#C9B8E0", "#E8D9B5", "#7FB8A4"];
     const book = { id: "my-" + Date.now(), level: lv, style: (document.querySelector('#mkStyle .chip[aria-pressed="true"]') || {}).textContent || "", title: String(r.title || "Our Story"), cover: { e: String(r.cover || "📖").slice(0, 4), bg: pal[Math.floor(Math.random() * pal.length)] }, blurb: r.blurb_ko || "", pages, words: r.words || {}, talk: r.talk || [], quiz: Array.isArray(r.quiz) ? r.quiz.filter(q => q && q.q && ((q.a && q.a.length >= 2) || q.say)) : [] };
