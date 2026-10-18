@@ -52,7 +52,13 @@ h1 .comma { color: var(--lamp); }
 .banner .url { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .banner code { font-size: 12.5px; word-break: break-all; color: var(--moon); }
 
-.list { border-top: 1px solid var(--line); }
+.list { display: flex; flex-direction: column; }
+.group { display: flex; flex-direction: column; gap: 2px; padding: 30px 6px 10px; border-bottom: 1px solid var(--line); }
+.group:first-child { padding-top: 0; }
+.group h2 { font-family: var(--f-display); font-size: 23px; margin: 0; }
+.group span { font-size: 13px; color: var(--dusk); }
+.sel2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+@media (max-width: 360px) { .sel2 { grid-template-columns: 1fr; } }
 .row { border-bottom: 1px solid var(--line); }
 .row.open { background: var(--ink); border-radius: 0 0 4px 4px; }
 .head {
@@ -148,7 +154,7 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
   <header>
     <div class="when" id="when"></div>
     <h1>밤의 쉼표<span class="comma">,</span></h1>
-    <p class="lede">캄, 헤드스페이스, 마보, 할로우가 잠들기 명상을 만드는 방식을 하나씩 따라 만든 여덟 가지 세션이에요. 목소리는 제미나이 성우 목소리로 처음 한 번 녹음해 휴대폰에 저장해 두고, 음악과 빗소리, 파도 소리는 그 자리에서 만들어 틀어요.</p>
+    <p class="lede">감사와 기도, 명상과 이야기, 하준이 영어 잠자리까지 열여섯 가지 세션이에요. 캄, 헤드스페이스, 마보, 할로우가 잠들기 명상을 만드는 방식을 따라 만들었어요. 목소리는 제미나이 성우 목소리로 처음 한 번 녹음해 휴대폰에 저장해 두고, 음악과 빗소리, 파도 소리는 그 자리에서 만들어 틀어요.</p>
   </header>
 
   <div class="banner" id="banner" hidden></div>
@@ -248,10 +254,10 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
 const F = 'f';
 const SESSIONS = [
   {
-    id: 'gratitude', title: '감사하며 잠들기',
+    id: 'gratitude', group: 'faith', title: '감사하며 잠들기',
     desc: '오늘 고마웠던 것을 하나씩 떠올려요. 말 사이가 점점 길어지고 목소리가 잦아들다가, 마지막엔 음악만 남아요. 떠올릴 거리는 들을 때마다 조금씩 바뀌어요.',
     ref: '참고: 캄 「감사하는 마음으로 잠들기」',
-    durs: [20, 30, 50], def: 50, sound: 'pad', end: 'fade', narr: 0.6, grow: 2.6,
+    durs: [20, 30, 50], def: 50, music: 'pad', nature: 'none', end: 'fade', narr: 0.6, grow: 2.6,
     script: [
       { ph: '자리 잡기' },
       ['편안히 누워 볼게요.', 6],
@@ -314,54 +320,198 @@ const SESSIONS = [
     ]
   },
   {
-    id: 'prayer', title: '감사 기도로 잠들기',
-    desc: '하루를 처음부터 되짚으며 감사하고, 무거웠던 것은 주님께 맡기고, 시편 말씀을 들으며 잠들어요.',
+    id: 'prayer', group: 'faith', title: '감사 기도로 잠들기',
+    desc: '좋으신 하나님 앞에서 오늘 받은 은혜를 하나씩 세고, 염려는 감사로 바꾸어 맡기고, 시편 23편을 들으며 잠들어요.',
     ref: '참고: 할로우 저녁 성찰(Examen) · 어바이드',
-    durs: [20, 30, 45], def: 30, sound: 'pad', end: 'fade', narr: 0.62, grow: 2.4,
+    durs: [20, 30, 45], def: 30, music: 'hymn', nature: 'none', end: 'fade', narr: 0.62, grow: 2.4,
     script: [
       { ph: '머무르기' },
       ['편안히 누워 볼게요.', 6],
-      ['오늘 하루를 마무리하며, 하나님 앞에 잠시 머물러 봅니다.', 8],
-      ['좋은 말을 고르지 않아도 괜찮아요. 있는 그대로 나아가면 됩니다.', 10],
+      ['오늘 하루를 마무리하며, 좋으신 하나님 앞에 잠시 머물러 봅니다.', 8],
+      ['좋은 말을 고르지 않아도 괜찮아요. 아버지 품에 안기듯, 있는 그대로 나아가면 됩니다.', 10],
       ['숨을 천천히 들이마시고, 길게 내쉬어요.', 10],
       ['숨에 짧은 기도를 실어 볼게요.', 5],
-      ['들이쉬며, 주님.', 4, F],
-      ['내쉬며, 평안.', 7, F],
-      ['들이쉬며, 주님.', 4, F],
-      ['내쉬며, 평안.', 7, F],
+      ['들이쉬며, 좋으신 하나님.', 4, F],
+      ['내쉬며, 감사합니다.', 7, F],
+      ['들이쉬며, 좋으신 하나님.', 4, F],
+      ['내쉬며, 감사합니다.', 7, F],
       ['이제 혼자서 몇 번 더 이어 가 보세요.', 30],
       { ph: '감사' },
-      ['오늘 하루를 처음부터 천천히 되짚어 볼게요.', 8],
-      ['아침에 눈을 떴던 순간을 떠올려 보세요. 새 하루가 거저 주어졌어요.', 18],
-      ['오늘 만난 사람들을 한 명씩 떠올려 봅니다. 그들을 통해 받은 것이 있었나요.', 22],
-      ['오늘 먹은 음식, 머문 자리, 아프지 않고 움직여 준 몸. 모두 받은 것들이에요.', 20],
-      ['가장 감사했던 순간 하나를 골라, 그 순간에 잠시 머물러 보세요.', 24],
-      ['하나님, 오늘 주신 은혜에 감사드립니다.', 16],
-      { ph: '내려놓기' },
-      ['이번엔 아쉬웠던 순간도 떠올려 볼게요.', 8],
-      ['날이 섰던 말, 미뤄 둔 일, 마음이 무거웠던 일.', 14],
-      ['붙잡고 자책하지 않아도 돼요. 그대로 주님 손에 올려 드립니다.', 18],
-      ['수고하고 무거운 짐 진 자들아 다 내게로 오라. 내가 너희를 쉬게 하리라.', 20],
-      ['무거운 것은 내려놓고, 주시는 쉼을 받아들입니다.', 20],
-      ['사랑하는 사람들의 이름을 하나씩 떠올리며, 그들도 주님께 맡겨 드립니다.', 30],
-      ['내일 일은 내일 염려해도 돼요. 지금은 그저 쉬면 됩니다.', 22],
+      ['오늘 하루를 처음부터 되짚으며, 받은 은혜를 하나씩 세어 볼게요.', 8],
+      ['아침에 눈을 뜬 순간. 하나님은 오늘도 새 하루를 선물로 주셨어요.', 16],
+      ['여호와의 인자와 긍휼이 무궁하시므로, 이것들이 아침마다 새로우니 주의 성실하심이 크시도소이다.', 18],
+      {
+        pool: [
+          '오늘 먹은 밥 한 끼를 떠올려 보세요. 일용할 양식을 주신 하나님, 감사합니다.',
+          '오늘 함께한 가족의 얼굴을 떠올려 보세요. 사랑하는 가족을 주신 하나님, 감사합니다.',
+          '오늘 아프지 않고 움직여 준 몸을 느껴 보세요. 건강을 주신 하나님, 감사합니다.',
+          '오늘 맡겨진 일을 떠올려 보세요. 일할 힘과 지혜를 주신 하나님, 감사합니다.',
+          '오늘 웃었던 순간을 떠올려 보세요. 기쁨을 주신 하나님, 감사합니다.',
+          '오늘 만난 고마운 사람을 떠올려 보세요. 좋은 사람들을 곁에 두신 하나님, 감사합니다.',
+          '아이들이 자라는 모습을 떠올려 보세요. 귀한 자녀를 맡겨 주신 하나님, 감사합니다.',
+          '지금 누운 따뜻한 자리를 느껴 보세요. 쉴 곳을 주신 하나님, 감사합니다.',
+          '오늘 운동하며 흘린 땀을 떠올려 보세요. 단련할 수 있는 몸과 의지를 주신 하나님, 감사합니다.',
+          '오늘 새로 배운 것을 떠올려 보세요. 깨닫게 하시는 하나님, 감사합니다.'
+        ], n: [3, 6], p: 20
+      },
+      ['가장 감사했던 순간 하나를 골라, 그 순간에 잠시 머물러 보세요.', 22],
+      ['하나님, 오늘도 넘치도록 부어 주신 복에 감사드립니다.', 16],
+      { ph: '맡기기' },
+      ['마음에 걸리는 일이 있다면, 그것도 감사로 바꾸어 주님께 올려 드려요.', 10],
+      ['아무 것도 염려하지 말고, 다만 모든 일에 기도와 간구로, 너희 구할 것을 감사함으로 하나님께 아뢰라.', 16],
+      ['그리하면 모든 지각에 뛰어난 하나님의 평강이, 그리스도 예수 안에서 너희 마음과 생각을 지키시리라.', 20],
+      ['희망을 주시는 하나님이 내일도 앞서 가세요. 그러니 지금은 마음을 놓아도 돼요.', 22],
+      ['사랑하는 사람들의 이름을 하나씩 떠올리며, 그들 위에도 하나님의 복을 빌어 줍니다.', 30],
       { ph: '말씀' },
       ['시편 말씀을 천천히 들어 봅니다.', 6],
       ['여호와는 나의 목자시니 내게 부족함이 없으리로다.', 12],
       ['그가 나를 푸른 풀밭에 누이시며 쉴 만한 물 가로 인도하시는도다.', 18],
-      ['푸른 풀밭에 누워 있는 나를 그려 보세요. 서두를 일이 하나도 없는 곳이에요.', 26],
+      ['내 잔이 넘치나이다. 내 평생에 선하심과 인자하심이 반드시 나를 따르리니.', 26],
+      ['선하심과 인자하심이 나를 따라오는 인생. 하나님이 주신 내 삶이 그래요.', 28],
       ['내가 평안히 눕고 자기도 하리니, 나를 안전히 살게 하시는 이는 오직 여호와이시니이다.', 30],
-      ['주님이 지켜 주시는 잠이에요.', 30],
-      ['이제 마음을 놓고,', 32],
+      ['좋으신 하나님이 지켜 주시는 잠이에요.', 30],
+      ['감사한 마음 그대로,', 32],
       ['평안히 잠드세요.', 34],
       ['아멘.', 0]
     ]
   },
   {
-    id: 'body', title: '몸 풀며 잠들기',
+    id: 'goodgod', group: 'faith', title: '좋으신 하나님',
+    desc: '좋으신 하나님, 사랑과 희망과 용기와 복을 주시는 하나님을 한 분 한 분 이름 부르듯 묵상하며 잠들어요. 들을 때마다 함께 묵상할 모습이 조금씩 바뀌어요.',
+    ref: '하나님의 성품 묵상 · 말씀 낭독',
+    durs: [20, 30, 45], def: 30, music: 'hymn', nature: 'none', end: 'fade', narr: 0.62, grow: 2.3,
+    script: [
+      { ph: '머무르기' },
+      ['편안히 누워 볼게요.', 6],
+      ['오늘 밤에는 하나님이 어떤 분이신지, 이름을 부르듯 천천히 묵상해 볼 거예요.', 8],
+      ['숨을 깊게 들이쉬고, 길게 내쉬어요.', 8],
+      ['한 번 더. 몸의 무게를 침대에 다 맡겨요.', 10],
+      ['여호와께 감사하라. 그는 선하시며 그 인자하심이 영원함이로다.', 14],
+      { ph: '좋으신 하나님' },
+      ['좋으신 하나님.', 6],
+      ['너희는 여호와의 선하심을 맛보아 알지어다. 그에게 피하는 자는 복이 있도다.', 12],
+      ['내 삶에서 하나님의 선하심을 맛보았던 순간을 하나 떠올려 보세요.', 22],
+      { ph: '사랑' },
+      ['사랑을 주시는 하나님.', 6],
+      ['하나님은 사랑이시라. 사랑 안에 거하는 자는 하나님 안에 거하고, 하나님도 그 안에 거하시느니라.', 12],
+      ['오늘 나를 사랑해 준 사람들을 떠올려 보세요. 그 사랑도 하나님이 보내 주신 거예요.', 22],
+      { ph: '희망' },
+      ['희망을 주시는 하나님.', 6],
+      ['너희를 향한 나의 생각은 평안이요 재앙이 아니니라. 너희에게 미래와 희망을 주는 것이니라.', 12],
+      ['내일을 생각할 때, 걱정 대신 하나님이 준비해 두신 좋은 것들을 그려 보세요.', 22],
+      { ph: '용기' },
+      ['용기를 주시는 하나님.', 6],
+      ['강하고 담대하라. 두려워하지 말며 놀라지 말라. 네가 어디로 가든지 네 하나님 여호와가 너와 함께 하느니라.', 12],
+      ['앞으로 해낼 일을 떠올려 보세요. 그 길을 하나님이 함께 걸으세요.', 22],
+      { ph: '복' },
+      ['복을 주시는 하나님.', 6],
+      ['온갖 좋은 은사와 온전한 선물이 다 위로부터 빛들의 아버지께로부터 내려오나니.', 12],
+      ['내가 누리는 좋은 것들을 하나씩 떠올려 보세요. 모두 위에서 내려온 선물이에요.', 22],
+      { ph: '더 깊이' },
+      {
+        pool: [
+          [['평안을 주시는 하나님.', 6], ['평안을 너희에게 끼치노니 곧 나의 평안을 너희에게 주노라. 너희는 마음에 근심하지도 말고 두려워하지도 말라.', 12], ['그 평안이 지금 내 가슴에 가득 차오르는 것을 느껴 보세요.', 22]],
+          [['나를 붙드시는 하나님.', 6], ['두려워하지 말라. 내가 너와 함께 함이라. 내가 너를 굳세게 하리라. 참으로 너를 도와 주리라.', 12], ['여기까지 걸어온 것도, 붙들어 주신 손이 있었기 때문이에요.', 22]],
+          [['지켜 주시는 하나님.', 6], ['너를 지키시는 이가 졸지 아니하시리로다. 이스라엘을 지키시는 이는 졸지도 아니하시고 주무시지도 아니하시리로다.', 12], ['내가 잠든 동안에도 하나님은 깨어 계세요. 그러니 마음 놓고 잠들어도 돼요.', 22]],
+          [['날마다 새 은혜를 주시는 하나님.', 6], ['여호와의 인자와 긍휼이 무궁하시므로, 이것들이 아침마다 새로우니 주의 성실하심이 크시도소이다.', 12], ['내일 아침에도 새로운 은혜가 나를 기다리고 있어요.', 22]],
+          [['기쁨을 주시는 하나님.', 6], ['항상 기뻐하라. 쉬지 말고 기도하라. 범사에 감사하라.', 12], ['오늘 하루 안에 숨어 있던 작은 기쁨들을 찾아보세요.', 22]],
+          [['소망이 넘치게 하시는 하나님.', 6], ['소망의 하나님이 모든 기쁨과 평강을 믿음 안에서 너희에게 충만하게 하사, 성령의 능력으로 소망이 넘치게 하시기를 원하노라.', 12], ['그 소망이 내 마음에 넘쳐흐르는 것을 느껴 보세요.', 22]]
+        ], n: [1, 3]
+      },
+      { ph: '감사' },
+      ['이렇게 좋으신 하나님이 나의 아버지세요.', 16],
+      ['그러니 내 인생은 복 받은 인생이에요. 받은 사랑과 은혜가 넘치는 삶이에요.', 20],
+      ['좋으신 하나님, 사랑을 주시는 하나님, 희망과 용기를 주시는 하나님. 감사합니다.', 26],
+      ['이제 그 품 안에서,', 30],
+      ['평안히 잠드세요.', 36],
+      ['아멘.', 0]
+    ]
+  },
+  {
+    id: 'blessings', group: 'faith', title: '받은 복 세며 잠들기',
+    desc: '하나님께 받은 복을 하나씩 세어 보다가, 그 복을 가족에게 빌어 주며 잠들어요. 세는 복은 들을 때마다 달라져요.',
+    ref: '복 세기 감사 묵상 · 시편 103편',
+    durs: [20, 30, 45], def: 30, music: 'piano', nature: 'none', end: 'fade', narr: 0.6, grow: 2.3,
+    script: [
+      { ph: '머무르기' },
+      ['편안히 누워 볼게요.', 6],
+      ['오늘 밤에는 하나님께 받은 복을 하나씩 세어 보며 잠들 거예요.', 8],
+      ['복을 세다 보면, 걱정은 작아지고 감사는 커져요.', 10],
+      ['숨을 천천히 들이쉬고, 길게 내쉬어요.', 10],
+      ['내 영혼아 여호와를 송축하며, 그의 모든 은택을 잊지 말지어다.', 14],
+      { ph: '복 세기' },
+      ['하나씩 세어 볼게요.', 6],
+      {
+        pool: [
+          '오늘도 숨 쉬며 살아 있다는 것. 생명 그 자체가 복이에요.',
+          '함께 사는 가족이 있다는 것. 아침마다 마주하는 얼굴들이 복이에요.',
+          '아이들이 건강하게 자라고 있다는 것. 그 웃음소리가 복이에요.',
+          '부모님을 떠올려 보세요. 나를 낳고 길러 주신 분들이 복이에요.',
+          '걷고, 달리고, 운동할 수 있는 튼튼한 몸이 복이에요.',
+          '나에게 맡겨진 일. 누군가에게 도움이 되는 일을 할 수 있다는 것이 복이에요.',
+          '배우고 깨달을 수 있는 머리와 마음이 복이에요.',
+          '비바람을 막아 주는 집과 따뜻한 잠자리가 복이에요.',
+          '오늘 먹은 따뜻한 밥 한 끼가 복이에요.',
+          '함께 웃어 주는 친구들과 좋은 이웃들이 복이에요.',
+          '함께 예배하고 기도하는 믿음의 식구들이 복이에요.',
+          '어려운 시간을 지나며 단단해진 마음도 복이에요.',
+          '실수해도 다시 시작할 수 있는 내일이 있다는 것이 복이에요.',
+          '하나님을 아버지라 부를 수 있다는 것. 그것이 가장 큰 복이에요.'
+        ], n: [5, 10], p: 22
+      },
+      ['세어 보니, 받은 복이 참 많지요.', 16],
+      ['내 잔이 넘치나이다.', 18],
+      ['넘치는 잔을 들고, 하나님께 감사를 올려 드려요.', 22],
+      { ph: '축복하기' },
+      ['이제 받은 복을 흘려보내 볼게요.', 8],
+      ['사랑하는 가족을 한 사람씩 떠올리며 마음속으로 말해 주세요. 하나님이 너에게 복 주시기를.', 30],
+      ['내일 만날 사람들에게도, 하나님의 복이 흘러가기를.', 30],
+      ['복 받은 사람은, 복을 나누는 사람이 돼요.', 30],
+      ['오늘도 복 받은 하루였어요.', 34],
+      ['감사한 마음으로, 편안히 잠드세요.', 0]
+    ]
+  },
+  {
+    id: 'blessword', group: 'faith', title: '축복의 말씀 들으며 잠들기',
+    desc: '민수기 6장의 축복, 시편 121편의 지키심, 이사야와 예레미야의 용기와 희망의 말씀을 천천히 들으며 잠들어요.',
+    ref: '말씀 낭독 · 축복 기도',
+    durs: [20, 30, 45], def: 30, music: 'harp', nature: 'none', end: 'fade', narr: 0.6, grow: 2.4,
+    script: [
+      { ph: '머무르기' },
+      ['편안히 누워 볼게요.', 6],
+      ['오늘 밤에는 하나님이 나에게 주시는 축복의 말씀을 들으며 잠들 거예요.', 8],
+      ['말씀이 귀로 들어와 가슴에 내려앉도록, 그냥 듣기만 하면 돼요.', 10],
+      ['숨을 깊게 들이쉬고, 길게 내쉬어요.', 10],
+      { ph: '축복의 말씀' },
+      ['여호와는 네게 복을 주시고 너를 지키시기를 원하며,', 8],
+      ['여호와는 그의 얼굴을 네게 비추사 은혜 베푸시기를 원하며,', 8],
+      ['여호와는 그 얼굴을 네게로 향하여 드사 평강 주시기를 원하노라.', 14],
+      ['하나님의 얼굴이 나를 향해 환하게 웃고 계신 모습을 그려 보세요.', 22],
+      { ph: '지키심' },
+      ['여호와께서 너를 실족하지 아니하게 하시며, 너를 지키시는 이가 졸지 아니하시리로다.', 16],
+      ['여호와께서 너의 출입을 지금부터 영원까지 지키시리로다.', 18],
+      ['오늘 내가 나가고 들어온 모든 길을, 하나님이 지켜 주셨어요.', 22],
+      { ph: '용기와 희망' },
+      ['두려워하지 말라. 내가 너와 함께 함이라. 놀라지 말라. 나는 네 하나님이 됨이라.', 16],
+      ['내가 너를 굳세게 하리라. 참으로 너를 도와 주리라.', 18],
+      ['용기를 주시는 하나님이, 내일도 나를 굳세게 하실 거예요.', 22],
+      ['너희를 향한 나의 생각은 평안이요 재앙이 아니니라. 너희에게 미래와 희망을 주는 것이니라.', 18],
+      ['희망을 주시는 하나님이, 나와 우리 가족의 내일을 이미 좋은 것으로 준비해 두셨어요.', 26],
+      { ph: '잠들기' },
+      ['네가 누울 때에 두려워하지 아니하겠고, 네가 누운즉 네 잠이 달리로다.', 22],
+      ['달콤한 잠을 주시는 하나님, 감사합니다.', 26],
+      ['다시 한 번, 축복의 말씀을 들으며 잠들어요.', 20],
+      ['여호와는 네게 복을 주시고 너를 지키시기를 원하며,', 16],
+      ['그 얼굴을 네게 비추사 은혜 베푸시기를 원하며,', 20],
+      ['평강 주시기를 원하노라.', 40],
+      ['아멘.', 0]
+    ]
+  },
+  {
+    id: 'body', group: 'rest', title: '몸 풀며 잠들기',
     desc: '발끝에서 머리끝까지 차례로 힘을 풀어요. 생각보다 몸이 먼저 잠들게 하는 방식이에요.',
     ref: '참고: 마보 · 캄 바디스캔',
-    durs: [20, 30, 45], def: 30, sound: 'padwaves', end: 'fade', narr: 0.6, grow: 2.2,
+    durs: [20, 30, 45], def: 30, music: 'pad', nature: 'waves', end: 'fade', narr: 0.6, grow: 2.2,
     script: [
       { ph: '자리 잡기' },
       ['편안히 누워 볼게요. 팔은 몸 옆에 내려놓고, 손바닥은 편한 쪽으로 두세요.', 8],
@@ -405,10 +555,10 @@ const SESSIONS = [
     ]
   },
   {
-    id: 'breath', title: '숨 세며 잠들기',
+    id: 'breath', group: 'rest', title: '숨 세며 잠들기',
     desc: '넷에 들이쉬고, 일곱 동안 멈추고, 여덟에 내쉬는 호흡을 한 뒤 열부터 하나까지 숨을 세요. 생각이 많은 날에 좋아요.',
     ref: '참고: 헤드스페이스 와인드다운 · 4-7-8 호흡',
-    durs: [15, 20, 30], def: 20, sound: 'padrain', end: 'fade', narr: 0.65, grow: 1.8,
+    durs: [15, 20, 30], def: 20, music: 'pad', nature: 'rain', end: 'fade', narr: 0.65, grow: 1.8,
     script: [
       { ph: '자리 잡기' },
       ['편하게 누워서 눈을 감아 볼게요.', 6],
@@ -435,10 +585,10 @@ const SESSIONS = [
     ]
   },
   {
-    id: 'story', title: '밤 기차를 타고 바다 마을로',
+    id: 'story', group: 'rest', title: '밤 기차를 타고 바다 마을로',
     desc: '빗속을 달리는 밤 기차를 타고 작은 바다 마을의 여관까지 가요. 사건도 긴장도 없는, 끝까지 안 들어도 되는 이야기예요.',
     ref: '참고: 캄 슬립 스토리 · 헤드스페이스 슬립캐스트',
-    durs: [30, 45, 60], def: 45, sound: 'padrain', end: 'fade', narr: 0.5, grow: 2.4,
+    durs: [30, 45, 60], def: 45, music: 'pad', nature: 'rain', end: 'fade', narr: 0.5, grow: 2.4,
     script: [
       { ph: '준비' },
       ['오늘은 이야기를 들으며 잠들어 볼게요.', 6],
@@ -484,10 +634,10 @@ const SESSIONS = [
     ]
   },
   {
-    id: 'nap', title: '낮잠',
+    id: 'nap', group: 'rest', title: '낮잠',
     desc: '짧게 자리를 잡고 음악 속에서 쉬다가, 정한 시간이 되면 종소리와 목소리로 부드럽게 깨워 줘요.',
     ref: '참고: 파워냅 세션 · 깨워 주는 종소리',
-    durs: [15, 20, 25, 30], def: 20, sound: 'pad', end: 'wake', narr: 0.22, grow: 1.6,
+    durs: [15, 20, 25, 30], def: 20, music: 'pad', nature: 'none', end: 'wake', narr: 0.22, grow: 1.6,
     script: [
       { ph: '자리 잡기' },
       ['낮잠 시간이에요. {min}분 뒤에 부드럽게 깨워 드릴게요.', 5],
@@ -513,10 +663,10 @@ const SESSIONS = [
     ]
   },
   {
-    id: 'sos', title: '다시 잠들기',
+    id: 'sos', group: 'rest', title: '다시 잠들기',
     desc: '한밤중에 깼을 때 듣는 짧은 안내예요. 시계는 보지 말고, 몸이 다시 잠을 기억해 내게 해요.',
     ref: '참고: 헤드스페이스 나이트타임 SOS',
-    durs: [15, 30], def: 30, sound: 'brown', end: 'fade', narr: 0.35, grow: 2.2,
+    durs: [15, 30], def: 30, music: 'none', nature: 'brown', end: 'fade', narr: 0.35, grow: 2.2,
     script: [
       { ph: '다시 눕기' },
       ['잠에서 깼군요. 괜찮아요.', 6],
@@ -539,12 +689,193 @@ const SESSIONS = [
     ]
   },
   {
-    id: 'sound', title: '소리만',
+    id: 'sound', group: 'rest', title: '소리만',
     desc: '목소리 없이 음악이나 빗소리, 파도 소리만 틀어 둬요. 시간을 정하거나 계속 켜 둘 수 있어요.',
     ref: '참고: 헤드스페이스 사운드스케이프 · 슬립 라디오',
-    durs: [30, 60, 120, 0], def: 60, sound: 'rain', end: 'fade', narr: 0, grow: 1,
+    durs: [30, 60, 120, 0], def: 60, music: 'none', nature: 'rain', end: 'fade', narr: 0, grow: 1,
     script: [{ ph: '소리만' }]
+  },
+  {
+    id: 'en-thanks', group: 'kids', lang: 'en', title: 'Thank You, God',
+    desc: '하나님께 오늘의 좋은 것들을 감사하는 아이용 잠자리 기도예요. 엄마, 아빠, 가족, 유도하는 튼튼한 몸, 곤충 친구들까지 감사하고, 하나님이 희망과 용기와 사랑을 주신다는 말로 잠들어요.',
+    ref: 'English · 감사 기도',
+    durs: [10, 15, 20], def: 15, music: 'musicbox', nature: 'none', end: 'fade', narr: 0.55, grow: 2.0,
+    script: [
+      { ph: 'Getting cozy' },
+      ['Hi, sweetheart. It is time to rest.', 5],
+      ['Lie down and get cozy under your blanket.', 6],
+      ['Let us take a big breath in, and a slow breath out.', 7],
+      ['One more time. Breathe in, and breathe out.', 8],
+      ['Tonight, let us say thank you to God for all the good things today.', 8],
+      { ph: 'Thank you' },
+      {
+        pool: [
+          'Thank you, God, for Mom and Dad, who love me so much.',
+          'Thank you, God, for my family, and for all the fun we had together.',
+          'Thank you, God, for my strong body that can run and jump and do judo.',
+          'Thank you, God, for the yummy food I ate today.',
+          'Thank you, God, for my friends and my teachers.',
+          'Thank you, God, for bugs and beetles and all the little creatures you made.',
+          'Thank you, God, for the sun in the morning and the moon at night.',
+          'Thank you, God, for my warm bed and my soft pillow.',
+          'Thank you, God, for helping me be brave today.',
+          'Thank you, God, for all the new things I learned today.',
+          'Thank you, God, for every hug I got today.'
+        ], n: [4, 7], p: 14
+      },
+      ['What else are you thankful for? You can tell God in your heart.', 20],
+      { ph: 'God is good' },
+      ['God is good. God loves you very, very much.', 12],
+      ['God gives you hope. God gives you courage. God gives you love.', 14],
+      ['You are a blessed boy. God is with you, all through the night.', 18],
+      ['Now let your eyes feel heavy, and rest in the love of God.', 24],
+      ['Good night, sweetheart.', 0]
+    ]
+  },
+  {
+    id: 'en-body', group: 'kids', lang: 'en', title: 'Sleepy Body',
+    desc: '발가락부터 얼굴까지 꼼지락했다가 풀어 주며 몸을 졸린 곰처럼 무겁게 만들고, 구름을 타고 밤하늘을 둥둥 떠다녀요.',
+    ref: 'English · 아이 바디스캔',
+    durs: [10, 15, 20], def: 15, music: 'piano', nature: 'rain', end: 'fade', narr: 0.55, grow: 2.0,
+    script: [
+      { ph: 'Getting cozy' },
+      ['Hello, little one. Let us get our body ready for sleep.', 5],
+      ['Lie on your back, and let your arms rest beside you.', 6],
+      ['Take a big breath in, like you are smelling a flower.', 5, F],
+      ['And blow it out slowly, like you are blowing out a candle.', 7],
+      ['Let us do that again. Smell the flower,', 4, F],
+      ['and blow out the candle.', 8],
+      { ph: 'Sleepy body' },
+      ['Now wiggle your toes. Wiggle, wiggle, wiggle.', 6],
+      ['And stop. Your toes are sleepy now.', 10],
+      ['Make your legs heavy, heavy, like a big sleepy bear.', 12],
+      ['Your tummy goes up and down, up and down, like a gentle wave.', 14],
+      ['Squeeze your hands into fists. Squeeze tight.', 4, F],
+      ['And let go. Your hands are soft and floppy, like a teddy bear.', 12],
+      ['Lift your shoulders up to your ears,', 3, F],
+      ['and let them drop. Ahh.', 12],
+      ['Make a big silly face. Scrunch it up!', 3, F],
+      ['And let it go. Your face is soft and calm.', 14],
+      ['Your eyes are heavy. Your whole body is warm and cozy.', 18],
+      { ph: 'Floating' },
+      ['Imagine you are lying on a soft, fluffy cloud.', 16],
+      ['The cloud floats slowly across the night sky.', 18],
+      ['You can see the moon smiling at you, and the stars twinkling.', 22],
+      ['Everything is quiet. Everything is safe.', 26],
+      ['Your body is resting, and you are drifting into sleep.', 30],
+      ['Good night.', 0]
+    ]
+  },
+  {
+    id: 'en-stars', group: 'kids', lang: 'en', title: 'Counting Stars',
+    desc: '배를 풍선처럼 부풀리는 숨을 쉬고, 숨을 내쉴 때마다 별을 하나씩 열부터 하나까지 세며 잠들어요.',
+    ref: 'English · 풍선 호흡 · 별 세기',
+    durs: [10, 15, 20], def: 15, music: 'harp', nature: 'night', end: 'fade', narr: 0.6, grow: 1.8,
+    script: [
+      { ph: 'Getting cozy' },
+      ['Hi there. Let us count some stars together tonight.', 5],
+      ['First, put your hands on your tummy.', 5],
+      ['Breathe in slowly, and fill your tummy like a big balloon.', 5, F],
+      ['Now breathe out, and let the balloon get small.', 7, F],
+      ['Again. Fill up the balloon,', 4, F],
+      ['and let it out, slowly.', 7, F],
+      ['One more. Big balloon,', 4, F],
+      ['and small balloon.', 8, F],
+      ['You can rest your hands now.', 6],
+      { ph: 'Counting stars' },
+      ['Imagine a dark blue sky full of twinkly stars.', 8],
+      ['Every time you breathe out, one star will twinkle. Let us count them, from ten down to one.', 6],
+      ['Ten. A big, bright star.', 7, F],
+      ['Nine. A little blue star.', 7.5, F],
+      ['Eight. A sparkly star.', 7.5, F],
+      ['Seven. A star shaped like a beetle.', 8, F],
+      ['Six. A sleepy yellow star.', 8, F],
+      ['Five. A star that winks at you.', 8.5, F],
+      ['Four. A quiet star.', 8.5, F],
+      ['Three. A soft, soft star.', 9, F],
+      ['Two. A tiny little star.', 9, F],
+      ['One. The moon says good night.', 12, F],
+      ['Now count the stars by yourself, very slowly, in your head.', 40],
+      ['If you lose count, that is okay. Just start again.', 50],
+      ['The stars are watching over you, and God is watching over you too.', 40],
+      ['Sleep tight.', 0]
+    ]
+  },
+  {
+    id: 'en-firefly', group: 'kids', lang: 'en', title: 'Little Firefly Lumi',
+    desc: '반딧불이 루미가 무당벌레, 달팽이, 개구리, 장수풍뎅이, 귀뚜라미에게 차례로 잘 자라고 인사하는 조용한 정원 이야기예요.',
+    ref: 'English · 잠자리 이야기',
+    durs: [10, 15, 20], def: 15, music: 'harp', nature: 'night', end: 'fade', narr: 0.6, grow: 2.0,
+    script: [
+      { ph: 'Getting cozy' },
+      ['Get cozy in your bed. It is story time.', 5],
+      ['You do not have to listen to the end. You can fall asleep any time.', 6],
+      ['Take a slow breath in, and a slow breath out.', 8],
+      { ph: 'Story' },
+      ['Little Firefly Lumi.', 6],
+      ['In a quiet garden behind a little house, there lived a tiny firefly named Lumi.', 5],
+      ['Every night, when the sun went down, Lumi turned on her soft yellow light.', 6],
+      ['Tonight, Lumi had one special job. She wanted to say good night to all her friends.', 8],
+      ['First, she flew to the tall green grass. There was Ladybug, curled up on a leaf.', 8],
+      ['Good night, Ladybug, Lumi whispered. Ladybug smiled and closed her eyes.', 10],
+      ['Next, Lumi floated past the flower pots. Snail was there, tucked inside his round shell.', 10],
+      ['Good night, Snail. Snail did not answer. He was already fast asleep.', 12],
+      ['Lumi flew over the little pond. The water was still, like a mirror.', 12],
+      ['Frog was sitting on a lily pad, looking up at the moon.', 12],
+      ['Good night, Frog. Frog gave a big, wide yawn. Ribbit, he said softly.', 14],
+      ['Under an old log, Lumi found Rhino Beetle, the strongest bug in the garden.', 14],
+      ['Even strong bugs need to rest, said Beetle. Strong bodies grow while we sleep.', 16],
+      ['Good night, Beetle. Beetle tucked in his big horn and settled down.', 16],
+      ['Lumi flew higher, up into the branches of the big tree.', 16],
+      ['The leaves moved gently in the breeze. Swish, swish.', 18],
+      ['Cricket was playing a quiet song. Chirp, chirp. Chirp, chirp.', 18],
+      ['Good night, Cricket. Cricket played softer, and softer, and softer.', 20],
+      ['Now the whole garden was sleeping.', 20],
+      ['Lumi found a soft leaf at the top of the tree. She lay down, and her little light grew dim.', 22],
+      ['She looked up at the stars and said, thank you, God, for my friends, and for this beautiful night.', 24],
+      ['Then Lumi closed her eyes.', 26],
+      ['And the garden was quiet, and safe, and full of love.', 30],
+      ['Good night, little one.', 0]
+    ]
+  },
+  {
+    id: 'en-blessing', group: 'kids', lang: 'en', title: 'God Is With Me',
+    desc: '"두려워하지 마라, 내가 너와 함께한다", "강하고 담대하라" 같은 말씀과 축복 기도를 아이 눈높이 영어로 들려주고, 함께 짧게 기도하며 잠들어요.',
+    ref: 'English · 축복 기도',
+    durs: [10, 15, 20], def: 15, music: 'musicbox', nature: 'none', end: 'fade', narr: 0.55, grow: 2.0,
+    script: [
+      { ph: 'Getting cozy' },
+      ['Hi, sweetheart. Let us snuggle in and get ready to sleep.', 5],
+      ['Take a deep breath in, and let it out slowly.', 8],
+      ['Tonight, let us listen to some special words from God.', 8],
+      { ph: 'God is with me' },
+      ['God says, do not be afraid, for I am with you.', 12],
+      ['God is with you at school. God is with you when you play. And God is with you right now, in your bed.', 16],
+      ['God says, be strong and brave, for I am with you wherever you go.', 12],
+      ['God gives you courage, so you can try new things and never give up.', 16],
+      ['God loves you. God loves you so, so much. More than all the stars in the sky.', 16],
+      { ph: 'Blessing' },
+      ['Here is a blessing for you.', 6],
+      ['The Lord bless you, and keep you.', 8],
+      ['The Lord make his face shine upon you, and be gracious to you.', 8],
+      ['The Lord turn his face toward you, and give you peace.', 16],
+      { ph: 'Sleepy prayer' },
+      ['Let us pray together, quietly, in your heart.', 6],
+      ['Dear God, thank you for loving me.', 8],
+      ['Thank you for my family. Please keep us safe tonight.', 10],
+      ['Help me to be kind, and brave, and strong, like you.', 12],
+      ['I will lie down and sleep in peace, because you keep me safe.', 16],
+      ['In Jesus name, amen.', 20],
+      ['God is good. You are loved. You are blessed.', 26],
+      ['Now close your eyes, and rest.', 30],
+      ['Good night.', 0]
+    ]
   }
+];
+const GROUPS = [
+  ['faith', '감사와 기도', '좋으신 하나님께 감사하며 잠들어요'],
+  ['rest', '몸과 마음 쉬기', '명상, 이야기, 낮잠, 소리'],
+  ['kids', '하준이 영어 잠자리', 'English bedtime for kids']
 ];
 
 </script>
@@ -557,10 +888,12 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
-const prefs = Object.assign({ gvoice: 'Sulafat', gkey: '', voice: '', rate: 0.85, pitch: 0.95, voiceVol: 1, musicVol: 0.55, subs: false, keep: false, durs: {}, snd: {} }, store.get('swim.prefs', {}));
+const prefs = Object.assign({ gvoice: 'Sulafat', gkey: '', voice: '', rate: 0.85, pitch: 0.95, voiceVol: 1, musicVol: 0.55, subs: false, keep: false, durs: {}, snd: {}, mus: {}, nat: {} }, store.get('swim.prefs', {}));
 const savePrefs = () => store.set('swim.prefs', prefs);
 
-const SOUNDS = { pad: '잔잔한 음악', padrain: '음악 + 빗소리', padwaves: '음악 + 파도 소리', rain: '빗소리', waves: '파도 소리', brown: '포근한 소음' };
+const MUSIC = { pad: '잔잔한 앰비언트', piano: '포근한 피아노', harp: '별빛 하프', hymn: '찬송 오르간', musicbox: '오르골 자장가', shuffle: '그날그날 다르게', none: '음악 없음' };
+const NATURE = { none: '없음', rain: '빗소리', waves: '파도 소리', stream: '시냇물', night: '풀벌레 소리', brown: '포근한 소음' };
+function soundLabel(m, n) { return [m !== 'none' ? MUSIC[m] : '', n !== 'none' ? NATURE[n] : ''].filter(Boolean).join(' · ') || '조용히'; }
 const TTS = ('speechSynthesis' in window) && typeof window.SpeechSynthesisUtterance === 'function';
 let VOICES = [];
 
@@ -585,61 +918,70 @@ function renderList() {
   const list = $('#list');
   const rec = recommendId();
   list.innerHTML = '';
-  SESSIONS.forEach((s) => {
-    const row = document.createElement('div');
-    row.className = 'row';
-    row.id = 'row-' + s.id;
-    const mins = s.durs.filter(x => x > 0);
-    const range = mins.length > 1 ? `${mins[0]}–${mins[mins.length - 1]}분` : `${mins[0]}분`;
-    row.innerHTML = `
-      <button class="head" type="button" aria-expanded="false" aria-controls="panel-${s.id}">
-        <span class="t">${s.title}${s.id === rec ? '<span class="pick">지금 추천</span>' : ''}</span>
-        <span class="mins">${range}</span>
-        <span class="d">${s.desc}</span>
-        <span class="ref">${s.ref}</span>
-      </button>
-      <div class="panel" id="panel-${s.id}" hidden>
-        <div>
-          <div class="fieldlabel" id="dl-${s.id}">길이</div>
-          <div class="chips" role="group" aria-labelledby="dl-${s.id}"></div>
-        </div>
-        <div>
-          <label class="fieldlabel" for="snd-${s.id}">배경 소리</label>
-          <select id="snd-${s.id}"></select>
-        </div>
-        <button class="go" type="button" id="go-${s.id}">시작하기</button>
-      </div>`;
-    const chips = row.querySelector('.chips');
-    const cur = prefs.durs[s.id] != null && s.durs.includes(prefs.durs[s.id]) ? prefs.durs[s.id] : s.def;
-    s.durs.forEach((m) => {
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = 'chip'; b.textContent = durLabel(m);
-      b.setAttribute('aria-pressed', String(m === cur));
-      b.addEventListener('click', () => {
-        prefs.durs[s.id] = m; savePrefs();
-        chips.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c === b)));
-      });
-      chips.appendChild(b);
-    });
-    const sel = row.querySelector('select');
-    Object.entries(SOUNDS).forEach(([k, v]) => {
-      const o = document.createElement('option'); o.value = k; o.textContent = v; sel.appendChild(o);
-    });
-    sel.value = prefs.snd[s.id] || s.sound;
-    sel.addEventListener('change', () => { prefs.snd[s.id] = sel.value; savePrefs(); });
-    const head = row.querySelector('.head');
-    const panel = row.querySelector('.panel');
-    head.addEventListener('click', () => {
-      const open = panel.hidden;
-      document.querySelectorAll('.row').forEach(r => { r.classList.remove('open'); r.querySelector('.panel').hidden = true; r.querySelector('.head').setAttribute('aria-expanded', 'false'); });
-      if (open) { panel.hidden = false; row.classList.add('open'); head.setAttribute('aria-expanded', 'true'); }
-    });
-    row.querySelector('.go').addEventListener('click', () => {
-      const T = prefs.durs[s.id] != null && s.durs.includes(prefs.durs[s.id]) ? prefs.durs[s.id] : s.def;
-      startSession(s, T, sel.value);
-    });
-    list.appendChild(row);
+  GROUPS.forEach(([gid, gname, gsub]) => {
+    const h = document.createElement('div'); h.className = 'group'; h.id = 'group-' + gid;
+    h.innerHTML = `<h2>${gname}</h2><span>${gsub}</span>`;
+    list.appendChild(h);
+    SESSIONS.filter(s => s.group === gid).forEach(s => list.appendChild(makeRow(s, rec)));
   });
+}
+function fillSelect(sel, map, value) {
+  Object.entries(map).forEach(([k, v]) => { const o = document.createElement('option'); o.value = k; o.textContent = v; sel.appendChild(o); });
+  sel.value = map[value] ? value : Object.keys(map)[0];
+}
+function makeRow(s, rec) {
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.id = 'row-' + s.id;
+  const mins = s.durs.filter(x => x > 0);
+  const range = mins.length > 1 ? `${mins[0]}–${mins[mins.length - 1]}분` : `${mins[0]}분`;
+  row.innerHTML = `
+    <button class="head" type="button" aria-expanded="false" aria-controls="panel-${s.id}">
+      <span class="t">${s.title}${s.id === rec ? '<span class="pick">지금 추천</span>' : ''}</span>
+      <span class="mins">${range}</span>
+      <span class="d">${s.desc}</span>
+      <span class="ref">${s.ref}</span>
+    </button>
+    <div class="panel" id="panel-${s.id}" hidden>
+      <div>
+        <div class="fieldlabel" id="dl-${s.id}">길이</div>
+        <div class="chips" role="group" aria-labelledby="dl-${s.id}"></div>
+      </div>
+      <div class="sel2">
+        <div><label class="fieldlabel" for="mus-${s.id}">음악</label><select id="mus-${s.id}"></select></div>
+        <div><label class="fieldlabel" for="nat-${s.id}">자연의 소리</label><select id="nat-${s.id}"></select></div>
+      </div>
+      <button class="go" type="button" id="go-${s.id}">시작하기</button>
+    </div>`;
+  const chips = row.querySelector('.chips');
+  const cur = prefs.durs[s.id] != null && s.durs.includes(prefs.durs[s.id]) ? prefs.durs[s.id] : s.def;
+  s.durs.forEach((m) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = durLabel(m);
+    b.setAttribute('aria-pressed', String(m === cur));
+    b.addEventListener('click', () => {
+      prefs.durs[s.id] = m; savePrefs();
+      chips.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c === b)));
+    });
+    chips.appendChild(b);
+  });
+  const mus = row.querySelector('#mus-' + s.id), nat = row.querySelector('#nat-' + s.id);
+  fillSelect(mus, MUSIC, prefs.mus[s.id] || s.music);
+  fillSelect(nat, NATURE, prefs.nat[s.id] || s.nature);
+  mus.addEventListener('change', () => { prefs.mus[s.id] = mus.value; savePrefs(); });
+  nat.addEventListener('change', () => { prefs.nat[s.id] = nat.value; savePrefs(); });
+  const head = row.querySelector('.head');
+  const panel = row.querySelector('.panel');
+  head.addEventListener('click', () => {
+    const open = panel.hidden;
+    document.querySelectorAll('.row').forEach(r => { r.classList.remove('open'); r.querySelector('.panel').hidden = true; r.querySelector('.head').setAttribute('aria-expanded', 'false'); });
+    if (open) { panel.hidden = false; row.classList.add('open'); head.setAttribute('aria-expanded', 'true'); }
+  });
+  row.querySelector('.go').addEventListener('click', () => {
+    const T = prefs.durs[s.id] != null && s.durs.includes(prefs.durs[s.id]) ? prefs.durs[s.id] : s.def;
+    startSession(s, T, mus.value, nat.value);
+  });
+  return row;
 }
 
 /* ---------- 설정 ---------- */
@@ -689,8 +1031,9 @@ const GVOICES = [
 const SAMPLE_TEXT = '편안히 누워 볼게요. 오늘 하루를 지나온 몸에게, 수고했다고 말해 주세요.';
 const STYLES = {
   calm: 'Voice direction: a Korean woman guiding a sleep meditation, speaking Korean. Very slow, soft and low, warm, close to the microphone, almost a whisper but every word clear. Gentle, unhurried breaths between phrases. Soothing and intimate, like a trusted narrator at bedtime. Never bright, cheerful or announcer-like.',
-  prayer: 'Voice direction: a Korean woman leading a quiet bedtime prayer and Scripture reading, speaking Korean. Very slow, soft, low and tender, reverent and peaceful, close to the microphone, almost a whisper but clear. Unhurried breaths between phrases. Never bright or preachy.',
+  prayer: 'Voice direction: a Korean woman leading a warm bedtime prayer of thanksgiving and reading Scripture, speaking Korean. Very slow, soft and low, tender and reverent, full of gratitude, peace and quiet hope, close to the microphone, almost a whisper but clear. Unhurried breaths between phrases. Never bright, preachy or dramatic.',
   story: 'Voice direction: a Korean woman telling a gentle bedtime story, speaking Korean. Slow, soft and warm, softly descriptive, close to the microphone, calm and intimate, like reading to someone drifting off to sleep. Never dramatic or cheerful.',
+  kid: 'Voice direction: a warm, gentle American mom tucking her seven-year-old son into bed, speaking English. Slow, soft, cozy and loving, simple clear words, close to the microphone, calm and reassuring. Never loud, excited or sing-song.',
   wake: 'Voice direction: a Korean woman gently waking someone from a short nap, speaking Korean. Soft and warm, a little brighter than a whisper, still slow and kind.'
 };
 const STYLE_LATE = ' Now even slower and quieter, drowsy, letting the ends of phrases fade softly.';
@@ -698,7 +1041,8 @@ const TTS_MODELS = ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts', 'gemini
 let ttsModelIdx = 0, ttsExhaustedAt = 0;
 const sleepMs = (ms) => new Promise(r => setTimeout(r, ms));
 const clipKey = (voice, tier, text) => voice + '|' + tier + '|' + text;
-function kindOf(s) { return s.id === 'prayer' ? 'prayer' : s.id === 'story' ? 'story' : 'calm'; }
+const FAITH = ['prayer', 'goodgod', 'blessings', 'blessword'];
+function kindOf(s) { return s.lang === 'en' ? 'kid' : FAITH.includes(s.id) ? 'prayer' : s.id === 'story' ? 'story' : 'calm'; }
 function fillText(t, T) { return t.replace('{min}', String(T)); }
 function styleFor(tier) { const [kind, late] = tier.split('-'); return (STYLES[kind] || STYLES.calm) + (late ? STYLE_LATE : ''); }
 function dojoKey() { try { const d = JSON.parse(localStorage.getItem('dojo-live') || '{}'); return String(d.key_gemini || '').trim(); } catch (e) { return ''; } }
@@ -783,17 +1127,18 @@ async function synth(text, tier, voice) {
     }
     if (moveOn) { ttsModelIdx = mi + 1; if (ttsModelIdx >= TTS_MODELS.length) ttsExhaustedAt = Date.now(); }
   }
-  try { return await cloudSynth(text, voice, key); } catch (e) {}
+  try { return await cloudSynth(text, voice, key, tier); } catch (e) {}
   if (ttsModelIdx >= TTS_MODELS.length) ttsExhaustedAt = Date.now();
   const err = last || { code: 'tts_failed', message: '' };
   err.fatal = err.code === 'rate_limited';
   throw err;
 }
 // 제미나이 쪽 한도가 다 차면 같은 키로 구글 클라우드 목소리(Chirp 3 HD, 같은 이름)를 써 봐요
-async function cloudSynth(text, voice, key) {
+async function cloudSynth(text, voice, key, tier) {
+  const loc = String(tier || '').startsWith('kid') ? 'en-US' : 'ko-KR';
   const r = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {
     method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
-    body: JSON.stringify({ input: { text }, voice: { languageCode: 'ko-KR', name: 'ko-KR-Chirp3-HD-' + voice }, audioConfig: { audioEncoding: 'MP3', speakingRate: 0.85 } })
+    body: JSON.stringify({ input: { text }, voice: { languageCode: loc, name: loc + '-Chirp3-HD-' + voice }, audioConfig: { audioEncoding: 'MP3', speakingRate: 0.85 } })
   });
   if (!r.ok) throw { code: 'cloud' };
   const j = await r.json(); if (!j.audioContent) throw { code: 'cloud' };
@@ -879,7 +1224,7 @@ function allLines() {
       s.script.forEach((st, j) => {
         const tier = kind + (j / L > 0.62 ? '-late' : '');
         if (Array.isArray(st)) { const t = fillText(st[0], T); out.set(tier + '|' + t, { say: t, tier }); }
-        else if (st.pool) st.pool.forEach(t => out.set(tier + '|' + t, { say: t, tier }));
+        else if (st.pool) st.pool.forEach(t => (Array.isArray(t) ? t.map(x => x[0]) : [t]).forEach(x => out.set(tier + '|' + x, { say: x, tier })));
       });
     });
     (s.wake || []).forEach(st => { if (Array.isArray(st)) out.set('wake|' + st[0], { say: st[0], tier: 'wake' }); });
@@ -986,6 +1331,20 @@ const PROG = [
   [45, 52, 57, 59, 61]  // A6sus
 ];
 const BELLS = [62, 64, 66, 69, 71, 74, 76, 78, 81];
+
+// 오르골 곡 (모두 저작권이 끝난 옛 곡): [음높이(MIDI), 박자]
+const MELODIES = [
+  // 반짝반짝 작은 별 (전래)
+  [[72, 1], [72, 1], [79, 1], [79, 1], [81, 1], [81, 1], [79, 2], [77, 1], [77, 1], [76, 1], [76, 1], [74, 1], [74, 1], [72, 2],
+   [79, 1], [79, 1], [77, 1], [77, 1], [76, 1], [76, 1], [74, 2], [79, 1], [79, 1], [77, 1], [77, 1], [76, 1], [76, 1], [74, 2],
+   [72, 1], [72, 1], [79, 1], [79, 1], [81, 1], [81, 1], [79, 2], [77, 1], [77, 1], [76, 1], [76, 1], [74, 1], [74, 1], [72, 3]],
+  // 브람스 자장가 (1868) 앞부분
+  [[76, 0.5], [76, 0.5], [79, 2], [76, 0.5], [76, 0.5], [79, 2], [76, 0.5], [79, 0.5], [84, 1], [83, 1.5], [81, 0.5], [81, 1], [79, 2],
+   [74, 0.5], [76, 0.5], [77, 1], [74, 1], [74, 0.5], [76, 0.5], [77, 2], [74, 0.5], [77, 0.5], [83, 1], [81, 1.5], [79, 0.5], [83, 1], [84, 3]],
+  // 예수 사랑하심은 (1862) 1절
+  [[79, 1], [76, 1], [76, 1], [74, 1], [76, 1], [79, 1], [79, 2], [81, 1], [81, 1], [84, 1], [81, 1], [81, 1], [79, 1], [79, 2],
+   [79, 1], [76, 1], [76, 1], [74, 1], [76, 1], [79, 1], [79, 2], [81, 1], [81, 1], [79, 1], [84, 1], [76, 1], [74, 1], [72, 3]]
+];
 
 class Engine {
   constructor() {
@@ -1124,15 +1483,185 @@ class Engine {
     const s = this.src('brown'); const lp = this.filt('lowpass', 520, 0.5); const g = this.gain(0.55, out); s.connect(lp); lp.connect(g);
     return { stop(fade) { out.gain.setTargetAtTime(0, ctx.currentTime, fade / 4); setTimeout(() => { try { s.stop(); out.disconnect(); } catch (e) {} }, fade * 1000 + 600); } };
   }
-  setSound(kind) {
+  // ----- 포근한 피아노: 화음을 천천히 펼쳐 치는 부드러운 피아노 -----
+  layerPiano(level) {
+    const ctx = this.ctx, E = this;
+    const out = this.gain(0, this.music); out.gain.setTargetAtTime(level, ctx.currentTime, 2);
+    const send = this.gain(0.7, this.reverb); out.connect(send);
+    const lp = this.filt('lowpass', 2400, 0.3, out);
+    let alive = true, ci = Math.floor(Math.random() * PROG.length), step = 0;
+    const note = (m, t, amp) => {
+      const f = mtof(m), g = ctx.createGain();
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(amp, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(amp * 0.35, t + 0.7); g.gain.exponentialRampToValueAtTime(0.0001, t + 5.5);
+      g.connect(E.pan((Math.random() - 0.5) * 0.5, lp));
+      [[1, 1], [2.003, 0.3], [3.01, 0.09], [4.02, 0.035]].forEach(([r, a]) => {
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f * r;
+        const og = ctx.createGain(); og.gain.value = a; o.connect(og); og.connect(g); o.start(t); o.stop(t + 6);
+      });
+    };
+    const SEQ = [0, 1, 2, 3, 2, 1, 2, 0];
+    const tick = () => {
+      if (!alive) return;
+      const chord = PROG[ci % PROG.length], t = ctx.currentTime + 0.05;
+      const upper = chord.slice(1).map(m => m + 12);
+      if (step === 0) note(chord[0] + 12, t, 0.05);
+      note(upper[SEQ[step % SEQ.length] % upper.length], t + (step === 0 ? 0.3 : 0), 0.055 + Math.random() * 0.02);
+      step++;
+      if (step >= 5 + Math.floor(Math.random() * 3)) { step = 0; ci++; E.later(tick, 2800 + Math.random() * 2600); }
+      else E.later(tick, 1300 + Math.random() * 1000);
+    };
+    E.later(tick, 1200);
+    return { stop(fade) { alive = false; out.gain.setTargetAtTime(0, ctx.currentTime, fade / 4); setTimeout(() => { try { out.disconnect(); } catch (e) {} }, fade * 1000 + 600); } };
+  }
+  // ----- 별빛 하프: 높은 음으로 가끔 반짝이는 하프 + 아주 낮은 울림 -----
+  layerHarp(level) {
+    const ctx = this.ctx, E = this;
+    const out = this.gain(0, this.music); out.gain.setTargetAtTime(level, ctx.currentTime, 2);
+    const send = this.gain(1.0, this.reverb); out.connect(send);
+    const lp = this.filt('lowpass', 6000, 0.3, out);
+    const drone = this.gain(0, lp); drone.gain.setTargetAtTime(0.03, ctx.currentTime, 4);
+    const ds = [mtof(50), mtof(57)].map((f) => { const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f; o.connect(drone); o.start(); return o; });
+    let alive = true, ci = Math.floor(Math.random() * PROG.length);
+    const pluck = (m, t, amp) => {
+      const f = mtof(m), g = ctx.createGain();
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(amp, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.4);
+      g.connect(E.pan((Math.random() - 0.5) * 0.9, lp));
+      [['triangle', 1, 0.7], ['sine', 2, 0.18], ['sine', 3, 0.05]].forEach(([type, r, a]) => {
+        const o = ctx.createOscillator(); o.type = type; o.frequency.value = f * r;
+        const og = ctx.createGain(); og.gain.value = a; o.connect(og); og.connect(g); o.start(t); o.stop(t + 3.6);
+      });
+    };
+    const phrase = () => {
+      if (!alive) return;
+      const notes = PROG[ci++ % PROG.length].slice(1).map(m => m + 12);
+      const seq = Math.random() < 0.5 ? notes : notes.concat([notes[notes.length - 2]]);
+      const sp = 0.3 + Math.random() * 0.15, t0 = ctx.currentTime + 0.05;
+      seq.forEach((m, k) => pluck(m, t0 + k * sp, 0.04 - k * 0.003));
+      E.later(phrase, (seq.length * sp + 5 + Math.random() * 6) * 1000);
+    };
+    E.later(phrase, 1500);
+    return { stop(fade) { alive = false; out.gain.setTargetAtTime(0, ctx.currentTime, fade / 4); setTimeout(() => { try { ds.forEach(o => o.stop()); out.disconnect(); } catch (e) {} }, fade * 1000 + 600); } };
+  }
+  // ----- 찬송 오르간: 찬송가처럼 천천히 바뀌는 오르간 화음 -----
+  layerHymn(level) {
+    const ctx = this.ctx, E = this;
+    const out = this.gain(0, this.music); out.gain.setTargetAtTime(level, ctx.currentTime, 2);
+    const send = this.gain(0.6, this.reverb); out.connect(send);
+    const lp = this.filt('lowpass', 2000, 0.3, out);
+    const HYMN = [[50, 54, 57, 62], [43, 55, 59, 62], [50, 54, 57, 62], [45, 52, 57, 61], [47, 54, 59, 62], [43, 50, 55, 59], [45, 52, 55, 61], [50, 54, 57, 62]];
+    let alive = true, ci = 0;
+    const voice = (m, t, dur) => {
+      const f = mtof(m), g = ctx.createGain(), amp = 0.03;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(amp, t + 2.5); g.gain.setValueAtTime(amp, t + dur - 3.5); g.gain.linearRampToValueAtTime(0, t + dur);
+      g.connect(lp);
+      [[1, 1], [2, 0.5], [3, 0.22], [4, 0.12], [6, 0.04]].forEach(([r, a]) => {
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f * r + (r === 1 ? 0 : 0.2);
+        const og = ctx.createGain(); og.gain.value = a; o.connect(og); og.connect(g); o.start(t); o.stop(t + dur + 0.2);
+      });
+    };
+    const chord = () => {
+      if (!alive) return;
+      const c = HYMN[ci++ % HYMN.length], t = ctx.currentTime + 0.05, dur = 11;
+      c.forEach(m => voice(m, t, dur));
+      E.later(chord, (dur - 3) * 1000);
+    };
+    chord();
+    return { stop(fade) { alive = false; out.gain.setTargetAtTime(0, ctx.currentTime, fade / 4); setTimeout(() => { try { out.disconnect(); } catch (e) {} }, fade * 1000 + 600); } };
+  }
+  // ----- 오르골 자장가: 반짝반짝 작은 별, 브람스 자장가, 예수 사랑하심은 (모두 옛 곡) -----
+  layerMusicBox(level) {
+    const ctx = this.ctx, E = this;
+    const out = this.gain(0, this.music); out.gain.setTargetAtTime(level, ctx.currentTime, 2);
+    const send = this.gain(0.9, this.reverb); out.connect(send);
+    const lp = this.filt('lowpass', 7000, 0.3, out);
+    let alive = true, mi = Math.floor(Math.random() * MELODIES.length);
+    const tine = (m, t, amp) => {
+      const f = mtof(m), g = ctx.createGain();
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(amp, t + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, t + 2.4);
+      g.connect(E.pan((m - 76) / 30, lp));
+      [[1, 1], [3.0, 0.16], [6.1, 0.04]].forEach(([r, a]) => {
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f * r;
+        const og = ctx.createGain(); og.gain.value = a; o.connect(og); og.connect(g); o.start(t); o.stop(t + 2.5);
+      });
+    };
+    const play = () => {
+      if (!alive) return;
+      const mel = MELODIES[mi++ % MELODIES.length], beat = 0.68;
+      let t = ctx.currentTime + 0.1;
+      mel.forEach(([m, b]) => { tine(m, t, 0.05); t += b * beat; });
+      const len = mel.reduce((a, x) => a + x[1], 0) * beat;
+      E.later(play, (len + 9 + Math.random() * 7) * 1000);
+    };
+    E.later(play, 1500);
+    return { stop(fade) { alive = false; out.gain.setTargetAtTime(0, ctx.currentTime, fade / 4); setTimeout(() => { try { out.disconnect(); } catch (e) {} }, fade * 1000 + 600); } };
+  }
+  // ----- 시냇물: 졸졸 흐르는 물소리와 가끔 보글 소리 -----
+  layerStream(level) {
+    const ctx = this.ctx, E = this;
+    const out = this.gain(0, this.music); out.gain.setTargetAtTime(level, ctx.currentTime, 2);
+    const n1 = this.src('white'); const bp1 = this.filt('bandpass', 1200, 0.8); const g1 = this.gain(0.22, out); n1.connect(bp1); bp1.connect(g1);
+    const n2 = this.src('pink'); const bp2 = this.filt('bandpass', 3200, 1.2); const g2 = this.gain(0.1, out); n2.connect(bp2); bp2.connect(g2);
+    const n3 = this.src('brown'); const lp3 = this.filt('lowpass', 500, 0.5); const g3 = this.gain(0.16, out); n3.connect(lp3); lp3.connect(g3);
+    let alive = true;
+    const babble = () => {
+      if (!alive) return;
+      const t = ctx.currentTime;
+      g1.gain.setTargetAtTime(0.12 + Math.random() * 0.2, t, 0.05); bp1.frequency.setTargetAtTime(800 + Math.random() * 1000, t, 0.08);
+      g2.gain.setTargetAtTime(0.05 + Math.random() * 0.1, t, 0.04); bp2.frequency.setTargetAtTime(2500 + Math.random() * 1500, t, 0.06);
+      E.later(babble, 90 + Math.random() * 170);
+    };
+    const bubble = () => {
+      if (!alive) return;
+      const t = ctx.currentTime + 0.02, f = 380 + Math.random() * 500;
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 2.2, t + 0.07);
+      const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.025, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+      o.connect(g); g.connect(E.pan((Math.random() - 0.5) * 1.2, out)); o.start(t); o.stop(t + 0.12);
+      E.later(bubble, 400 + Math.random() * 2200);
+    };
+    babble(); E.later(bubble, 800);
+    return { stop(fade) { alive = false; out.gain.setTargetAtTime(0, ctx.currentTime, fade / 4); setTimeout(() => { try { n1.stop(); n2.stop(); n3.stop(); out.disconnect(); } catch (e) {} }, fade * 1000 + 600); } };
+  }
+  // ----- 풀벌레 밤: 멀리서 우는 귀뚜라미들과 낮은 밤바람 -----
+  layerNight(level) {
+    const ctx = this.ctx, E = this;
+    const out = this.gain(0, this.music); out.gain.setTargetAtTime(level, ctx.currentTime, 2);
+    const wind = this.src('brown'); const wlp = this.filt('lowpass', 350, 0.5); const wg = this.gain(0.12, out); wind.connect(wlp); wlp.connect(wg);
+    const far = this.filt('lowpass', 7000, 0.3, out); const send = this.gain(0.5, this.reverb); far.connect(send);
+    let alive = true;
+    const swell = () => { if (!alive) return; wg.gain.setTargetAtTime(0.06 + Math.random() * 0.1, ctx.currentTime, 3); E.later(swell, 5000 + Math.random() * 4000); };
+    const cricket = (f, pan, amp) => {
+      const p = E.pan(pan, far);
+      let singing = Math.random() < 0.7, left = 8 + Math.random() * 16;
+      const period = 0.7 + Math.random() * 0.35;
+      const chirp = () => {
+        if (!alive) return;
+        if (singing) {
+          const t0 = ctx.currentTime + 0.02;
+          for (let k = 0; k < 3; k++) {
+            const t = t0 + k * 0.045;
+            const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f + Math.random() * 30;
+            const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(amp, t + 0.006); g.gain.linearRampToValueAtTime(0, t + 0.022);
+            o.connect(g); g.connect(p); o.start(t); o.stop(t + 0.03);
+          }
+          left -= period;
+          if (left <= 0) { singing = false; left = 4 + Math.random() * 12; }
+        } else { left -= period; if (left <= 0) { singing = true; left = 8 + Math.random() * 18; } }
+        E.later(chirp, period * 1000 * (0.95 + Math.random() * 0.1));
+      };
+      E.later(chirp, Math.random() * 2000);
+    };
+    cricket(4300, -0.6, 0.016); cricket(4700, 0.5, 0.012); cricket(4500, 0.1, 0.009);
+    swell();
+    return { stop(fade) { alive = false; out.gain.setTargetAtTime(0, ctx.currentTime, fade / 4); setTimeout(() => { try { wind.stop(); out.disconnect(); } catch (e) {} }, fade * 1000 + 600); } };
+  }
+  setSound(music, nature) {
     this.layers.forEach(l => l.stop(4)); this.layers = [];
-    const L = this.layers;
-    if (kind === 'pad') L.push(this.layerPad(1));
-    if (kind === 'padrain') { L.push(this.layerPad(0.85)); L.push(this.layerRain(0.45)); }
-    if (kind === 'padwaves') { L.push(this.layerPad(0.85)); L.push(this.layerWaves(0.5)); }
-    if (kind === 'rain') L.push(this.layerRain(1));
-    if (kind === 'waves') L.push(this.layerWaves(1));
-    if (kind === 'brown') L.push(this.layerBrown(1));
+    const both = music !== 'none' && nature !== 'none';
+    const M = { pad: 'layerPad', piano: 'layerPiano', harp: 'layerHarp', hymn: 'layerHymn', musicbox: 'layerMusicBox' };
+    const N = { rain: 'layerRain', waves: 'layerWaves', stream: 'layerStream', night: 'layerNight', brown: 'layerBrown' };
+    if (M[music]) this.layers.push(this[M[music]](both ? 0.85 : 1));
+    if (N[nature]) this.layers.push(this[N[nature]](both ? 0.45 : 1));
   }
   bowl(gain) {
     const ctx = this.ctx, t = ctx.currentTime + 0.05, f = 293.66;
@@ -1157,10 +1686,10 @@ class Engine {
 }
 
 /* ---------- 낭독 ---------- */
-function makeUtter(text, prog) {
+function makeUtter(text, prog, lang) {
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'ko-KR';
-  const v = pickVoice(); if (v) u.voice = v;
+  u.lang = lang === 'en' ? 'en-US' : 'ko-KR';
+  const v = lang === 'en' ? null : pickVoice(); if (v) u.voice = v;
   u.rate = clamp(prefs.rate * (1 - 0.12 * prog), 0.5, 1.5);
   u.pitch = clamp(prefs.pitch * (1 - 0.05 * prog), 0.5, 1.5);
   u.volume = clamp(prefs.voiceVol * (1 - 0.35 * prog), 0.05, 1);
@@ -1173,8 +1702,8 @@ let R = null;          // 지금 재생 중인 세션
 let wakeLock = null;
 
 class Run {
-  constructor(s, T, sound) {
-    this.s = s; this.T = T; this.sound = sound;
+  constructor(s, T, music, nature) {
+    this.s = s; this.T = T; this.music = music; this.nature = nature;
     this.stopped = false; this.paused = false; this.pauseGen = 0;
     this.active = 0; this.last = performance.now();
     this.phase = ''; this.ended = false;
@@ -1206,7 +1735,7 @@ function buildPlan(s, T) {
     else if (st.ph) out.push({ ph: st.ph });
     else if (st.pool) {
       const n = Math.round(st.n[0] + (st.n[1] - st.n[0]) * ti);
-      shuffle(st.pool.slice()).slice(0, n).forEach(t => out.push({ say: t, p: st.p, tier }));
+      shuffle(st.pool.slice()).slice(0, n).forEach(t => { if (Array.isArray(t)) t.forEach(([x, p]) => out.push({ say: x, p, tier })); else out.push({ say: t, p: st.p, tier }); });
     }
   });
   return out;
@@ -1215,7 +1744,7 @@ function splitChunks(text) { return text.split(/(?<=[.?!])\s+/).map(x => x.trim(
 function planScale(run, plan) {
   const s = run.s, T = run.T;
   if (!T || !s.narr) return 1;
-  const cps = prefs.gvoice !== 'phone' ? 4.8 : 7.5 * prefs.rate;
+  const cps = prefs.gvoice !== 'phone' ? (s.lang === 'en' ? 9 : 4.8) : 7.5 * prefs.rate;
   let speech = 0, fixed = 0, flex = 0;
   const N = Math.max(1, plan.length - 1);
   plan.forEach((x, i) => {
@@ -1231,7 +1760,7 @@ function speakChunk(run, text, prog) {
   if (!TTS) return run.wait(Math.max(2.2, text.length / 6.5));
   return new Promise((res) => {
     let u;
-    try { u = makeUtter(text, prog); } catch (e) { res(); return; }
+    try { u = makeUtter(text, prog, run.s.lang); } catch (e) { res(); return; }
     let done = false;
     const fin = () => { if (done) return; done = true; clearTimeout(to); res(); };
     u.onend = fin; u.onerror = fin;
@@ -1279,7 +1808,7 @@ async function runSession(run) {
     if (p > 0) await run.wait(p);
   }
   if (run.stopped) return;
-  setPhase(run, s.end === 'wake' ? '쉬는 중' : (s.narr ? '음악만' : SOUNDS[run.sound]));
+  setPhase(run, s.end === 'wake' ? '쉬는 중' : (s.narr ? '음악만' : soundLabel(run.music, run.nature)));
   fadeSub(true);
 
   if (s.end === 'wake') {
@@ -1364,14 +1893,15 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && R && !R.ended && !R.stopped) lockScreen();
 });
 
-function startSession(s, T, sound) {
+function startSession(s, T, music, nature) {
+  if (music === 'shuffle') { const pool = s.lang === 'en' ? ['pad', 'piano', 'harp', 'musicbox'] : ['pad', 'piano', 'harp', 'hymn']; music = pool[Math.floor(Math.random() * pool.length)]; }
   if (R) stopRun(R);
-  const run = new Run(s, T, sound);
+  const run = new Run(s, T, music, nature);
   R = run;
   // 소리와 목소리는 버튼을 누른 이 순간에 열어야 휴대폰이 허락해 줘요
   try { run.engine = new Engine(); run.engine.ctx.resume(); } catch (e) { run.engine = null; }
   if (TTS) { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = 'ko-KR'; speechSynthesis.speak(u); } catch (e) {} }
-  if (run.engine) { run.engine.setSound(sound); run.engine.fadeIn(8); }
+  if (run.engine) { run.engine.setSound(music, nature); run.engine.fadeIn(8); }
   else run.engine = { setSound() {}, fadeIn() {}, fadeOut() {}, bowl() {}, setMusicVol() {}, close() {}, ctx: null };
 
   $('#pTitle').textContent = s.title;
