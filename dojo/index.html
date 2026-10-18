@@ -599,8 +599,14 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.
 const prefs=Object.assign({gv:'Leda',on:true,gkey:''},store.get('insect-dojo.prefs',{}));
 const savePrefs=()=>store.set('insect-dojo.prefs',prefs);
 READ=prefs.on!==false;
-function dojoKey(){try{const d=JSON.parse(localStorage.getItem('dojo-live')||'{}');return String(d.key_gemini||'').trim()}catch(e){return''}}
+function dojoKey(){
+  try{const d=JSON.parse(localStorage.getItem('dojo-live')||'{}');if(d.key_gemini)return String(d.key_gemini).trim()}catch(e){}
+  try{const s=JSON.parse(localStorage.getItem('swim.prefs')||'{}');if(s.gkey)return String(s.gkey).trim()}catch(e){}
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k==='insect-dojo.prefs')continue;const m=(localStorage.getItem(k)||'').match(/AIza[0-9A-Za-z_\-]{30,}/);if(m)return m[0]}}catch(e){}
+  return'';
+}
 const gKey=()=>(prefs.gkey||dojoKey()||'').trim();
+const UA=navigator.userAgent,ANDROID=/Android/i.test(UA),INCHROME=/Chrome\//.test(UA)&&!/SamsungBrowser|; wv\)|EdgA|OPR|Whale|NAVER|KAKAOTALK|Instagram|FBAN/i.test(UA);
 const sleepMs=ms=>new Promise(r=>setTimeout(r,ms));
 const IDB=(()=>{const mem=new Map();let dbp=null;
   function db(){if(!dbp)dbp=new Promise(res=>{try{const r=indexedDB.open('insect-dojo',1);r.onupgradeneeded=()=>r.result.createObjectStore('clips');r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)}catch(e){res(null)}});return dbp}
@@ -679,7 +685,7 @@ let PF=0;
 function readyCount(){const ts=[...new Set(SC.map(sayOf))];return[ts.filter(t=>{const e=CLIP[ckey(prefs.gv,t)];return e&&e.state==='ready'}).length,ts.length]}
 function showReady(){
   if(!READ){setV('목소리를 껐어요. 자막으로 봐요.');return}
-  if(!gKey()){setV(ONSITE?'영어 도장 앱의 제미나이 키를 못 찾았어요. 키를 붙여 넣어 주세요.':'목소리는 하준이 사이트 버전에서 나와요.');return}
+  if(!gKey()){setV(!ONSITE?'목소리는 하준이 사이트 버전에서 나와요.':(ANDROID&&!INCHROME)?'이 브라우저에는 영어 도장 키가 없어요. 크롬으로 열면 목소리가 나와요.':'이 크롬에서 영어 도장 키를 못 찾았어요. 영어 도장이 열리는 크롬인지 확인하거나, 키를 붙여 넣어 주세요.');return}
   const [n,t]=readyCount();setV(n>=t?'목소리 준비 끝 · 바로 나와요':`목소리 받아 두는 중 ${n} / ${t} · 처음 한 번만 해요`);
 }
 async function prefetch(){
@@ -691,7 +697,7 @@ async function prefetch(){
     showReady();
   }
 }
-function keyUI(){const has=!!gKey();keyIn.hidden=has||!ONSITE;siteLink.hidden=has||ONSITE}
+function keyUI(){const has=!!gKey(),toChrome=ONSITE&&ANDROID&&!INCHROME;keyIn.hidden=has||!ONSITE;siteLink.hidden=has||(ONSITE&&!toChrome);if(toChrome&&!has){siteLink.textContent='크롬으로 열기 ↗';siteLink.href='intent://'+location.host+location.pathname+'#Intent;scheme=https;package=com.android.chrome;end';siteLink.removeAttribute('target')}}
 GVOICES.forEach(([v,n])=>{const o=document.createElement('option');o.value=v;o.textContent=n;gvSel.appendChild(o)});
 gvSel.value=GVOICES.some(g=>g[0]===prefs.gv)?prefs.gv:'Leda';
 gvSel.onchange=()=>{prefs.gv=gvSel.value;savePrefs();if(PLAY&&cur>=0)startNarr(cur);prefetch()};
