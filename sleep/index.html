@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0d1016">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
 <title>밤의 쉼표</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -102,6 +105,8 @@ input[type=range] { accent-color: var(--lamp); width: 100%; margin: 4px 0 0; }
 .ghost:disabled { opacity: .6; }
 input.text { width: 100%; background: var(--night); color: var(--moon); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
 .bank { display: flex; flex-direction: column; gap: 8px; }
+.install { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; margin-top: 6px; }
+.installbtn { border-color: var(--lamp); color: var(--lamp); font-weight: 600; }
 .notes { margin: 0; padding-left: 18px; color: var(--dusk); display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
 .notes b { color: var(--moon); font-weight: 600; }
 
@@ -154,7 +159,11 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
   <header>
     <div class="when" id="when"></div>
     <h1>밤의 쉼표<span class="comma">,</span></h1>
-    <p class="lede">감사와 기도, 명상과 이야기, 하준이 영어 잠자리까지 열여섯 가지 세션이에요. 캄, 헤드스페이스, 마보, 할로우가 잠들기 명상을 만드는 방식을 따라 만들었어요. 목소리는 제미나이 성우 목소리로 처음 한 번 녹음해 휴대폰에 저장해 두고, 음악과 빗소리, 파도 소리는 그 자리에서 만들어 틀어요.</p>
+    <p class="lede">감사와 기도, 명상과 이야기, 하준이 영어 잠자리까지 열여섯 가지 세션이에요. 캄, 헤드스페이스, 마보, 할로우가 잠들기 명상을 만드는 방식을 따라 만들었어요. 목소리는 구글 제미나이 성우 목소리를 처음 한 번 받아 와서 휴대폰에 저장해 두고, 음악과 빗소리, 파도 소리는 그 자리에서 만들어 틀어요.</p>
+    <div class="install" id="install">
+      <button class="ghost installbtn" id="installBtn" type="button">휴대폰에 앱으로 설치하기</button>
+      <p class="hint" id="installHint">설치하면 홈 화면에 달 아이콘이 생기고, 주소창 없이 앱처럼 열려요.</p>
+    </div>
   </header>
 
   <div class="banner" id="banner" hidden></div>
@@ -195,8 +204,9 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
       <input class="range" type="range" id="mvol" min="0" max="1" step="0.05">
     </div>
     <div class="bank">
-      <button class="ghost" id="bankBtn" type="button">모든 세션 미리 녹음해 두기</button>
+      <button class="ghost" id="bankBtn" type="button">목소리 전부 미리 받아 두기</button>
       <p class="hint" id="bankState"></p>
+      <p class="hint">와이파이에서 한 번 눌러 두면 모든 세션의 목소리를 미리 받아 둬요. 그러면 처음 듣는 세션도 기다림 없이 바로 나오고, 인터넷이 없어도 들을 수 있어요. 안 눌러도 세션마다 처음 들을 때 저절로 받아 와요.</p>
     </div>
     <p class="hint" id="voiceHint" aria-live="polite"></p>
   </section>
@@ -205,7 +215,7 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
     <h2 id="how-h">쓰는 법</h2>
     <ul class="notes">
       <li><b>화면을 끄지 말고 그대로 두세요.</b> 시작하면 화면이 저절로 까맣게 바뀌어요. 전원 버튼으로 끄면 목소리나 음악이 멈출 수 있어요.</li>
-      <li>처음 듣는 세션은 시작할 때 목소리를 녹음하느라 앞부분에 음악만 조금 더 길게 나와요. 한 번 녹음한 건 휴대폰에 저장돼서 다음부터는 바로 나와요.</li>
+      <li>목소리는 문장마다 처음 한 번 구글 제미나이에서 받아 와 휴대폰에 저장해요. 그래서 처음 듣는 세션은 앞부분에 음악만 조금 더 길게 나오고, 다음부터는 기다림 없이 바로 나와요.</li>
       <li>말 사이는 뒤로 갈수록 길어지고 목소리는 조금씩 작아져요. 낭독이 끝나면 음악만 남았다가 정한 시간에 서서히 꺼져요.</li>
       <li>소리 크기는 휴대폰 미디어 음량을 따라요. 재생 중에도 화면을 한 번 두드리면 음량과 일시정지가 나와요.</li>
     </ul>
@@ -699,7 +709,7 @@ const SESSIONS = [
     id: 'en-thanks', group: 'kids', lang: 'en', title: 'Thank You, God',
     desc: '하나님께 오늘의 좋은 것들을 감사하는 아이용 잠자리 기도예요. 엄마, 아빠, 가족, 유도하는 튼튼한 몸, 곤충 친구들까지 감사하고, 하나님이 희망과 용기와 사랑을 주신다는 말로 잠들어요.',
     ref: 'English · 감사 기도',
-    durs: [10, 15, 20], def: 15, music: 'musicbox', nature: 'none', end: 'fade', narr: 0.55, grow: 2.0,
+    durs: [10, 15, 20], def: 15, music: 'musicbox', nature: 'night', end: 'fade', narr: 0.55, grow: 2.0,
     script: [
       { ph: 'Getting cozy' },
       ['Hi, sweetheart. It is time to rest.', 5],
@@ -736,7 +746,7 @@ const SESSIONS = [
     id: 'en-body', group: 'kids', lang: 'en', title: 'Sleepy Body',
     desc: '발가락부터 얼굴까지 꼼지락했다가 풀어 주며 몸을 졸린 곰처럼 무겁게 만들고, 구름을 타고 밤하늘을 둥둥 떠다녀요.',
     ref: 'English · 아이 바디스캔',
-    durs: [10, 15, 20], def: 15, music: 'piano', nature: 'rain', end: 'fade', narr: 0.55, grow: 2.0,
+    durs: [10, 15, 20], def: 15, music: 'piano', nature: 'night', end: 'fade', narr: 0.55, grow: 2.0,
     script: [
       { ph: 'Getting cozy' },
       ['Hello, little one. Let us get our body ready for sleep.', 5],
@@ -842,7 +852,7 @@ const SESSIONS = [
     id: 'en-blessing', group: 'kids', lang: 'en', title: 'God Is With Me',
     desc: '"두려워하지 마라, 내가 너와 함께한다", "강하고 담대하라" 같은 말씀과 축복 기도를 아이 눈높이 영어로 들려주고, 함께 짧게 기도하며 잠들어요.',
     ref: 'English · 축복 기도',
-    durs: [10, 15, 20], def: 15, music: 'musicbox', nature: 'none', end: 'fade', narr: 0.55, grow: 2.0,
+    durs: [10, 15, 20], def: 15, music: 'musicbox', nature: 'night', end: 'fade', narr: 0.55, grow: 2.0,
     script: [
       { ph: 'Getting cozy' },
       ['Hi, sweetheart. Let us snuggle in and get ready to sleep.', 5],
@@ -1148,9 +1158,9 @@ function errCopy(e) {
   if (!e) return '';
   if (e.code === 'no_key') return '제미나이 키가 없어요. 위 칸에 붙여 넣어 주세요.';
   if (e.code === 'bad_key') return '제미나이 키가 맞지 않아요. 키를 다시 확인해 주세요.';
-  if (e.code === 'rate_limited') return '제미나이 목소리 사용 한도에 잠시 걸렸어요. 조금 뒤에 다시 하면 이어서 녹음돼요. (' + (e.message || '') + ')';
+  if (e.code === 'rate_limited') return '제미나이 목소리 사용 한도에 잠시 걸렸어요. 조금 뒤에 다시 하면 이어서 받아 와요. (' + (e.message || '') + ')';
   if (e.code === 'network') return e.message;
-  return '목소리 녹음이 안 됐어요. (' + (e.message || e.code) + ')';
+  return '목소리를 받아 오지 못했어요. (' + (e.message || e.code) + ')';
 }
 
 /* ---------- 설정 화면 ---------- */
@@ -1191,8 +1201,8 @@ function renderVoices() {
 }
 function renderKey(typed) {
   const st = $('#keyState'), f = $('#keyField');
-  if (dojoKey()) { st.textContent = '영어 앱(Miss Lily)에 저장된 제미나이 키로 녹음해요. 따로 넣을 건 없어요.'; f.hidden = true; }
-  else if (prefs.gkey) { st.textContent = '붙여 넣은 제미나이 키로 녹음해요.'; f.hidden = false; }
+  if (dojoKey()) { st.textContent = '영어 앱(Miss Lily)에 저장된 제미나이 키로 목소리를 받아 와요. 따로 넣을 건 없어요.'; f.hidden = true; }
+  else if (prefs.gkey) { st.textContent = '붙여 넣은 제미나이 키로 목소리를 받아 와요.'; f.hidden = false; }
   else { st.textContent = '제미나이 키를 찾지 못했어요. 영어 앱을 쓰던 휴대폰 크롬에서 열었는지 확인하거나, 아래 칸에 키를 붙여 넣어 주세요.'; f.hidden = false; }
   if (!typed) $('#gkey').value = prefs.gkey || '';
 }
@@ -1240,23 +1250,23 @@ async function refreshBankState() {
   const lines = allLines();
   const have = lines.filter(l => keys.has(clipKey(v, l.tier, l.say))).length;
   if (bankRun) return;
-  el.textContent = `이 목소리로 녹음된 문장 ${have} / ${lines.length}` + (have === lines.length ? ' · 전부 준비됐어요. 인터넷 없이도 들을 수 있어요.' : ' · 처음 듣는 세션은 시작할 때 저절로 녹음돼요.');
+  el.textContent = `이 목소리로 받아 둔 문장 ${have} / ${lines.length}` + (have === lines.length ? ' · 전부 준비됐어요. 인터넷 없이도 들을 수 있어요.' : ' · 안 받아 둔 세션은 처음 들을 때 저절로 받아 와요.');
 }
 async function toggleBank() {
   if (bankRun) { bankRun.stop = true; return; }
   const v = prefs.gvoice; if (v === 'phone') return;
   const me = bankRun = { stop: false };
-  const btn = $('#bankBtn'); btn.textContent = '녹음 멈추기'; hint('');
+  const btn = $('#bankBtn'); btn.textContent = '그만 받기'; hint('');
   const keys = new Set(await IDB.keys());
   const todo = allLines().filter(l => !keys.has(clipKey(v, l.tier, l.say)));
   let n = 0;
   for (const l of todo) {
     if (me.stop) break;
-    $('#bankState').textContent = `녹음하는 중 ${++n} / ${todo.length} · 화면을 켜 두세요`;
+    $('#bankState').textContent = `받아 오는 중 ${++n} / ${todo.length} · 화면을 켜 두세요`;
     try { const buf = await synth(l.say, l.tier, v); await IDB.put(clipKey(v, l.tier, l.say), buf); }
     catch (e) { hint(errCopy(e)); if (e.fatal) break; await sleepMs(3000); }
   }
-  bankRun = null; btn.textContent = '모든 세션 미리 녹음해 두기';
+  bankRun = null; btn.textContent = '목소리 전부 미리 받아 두기';
   refreshBankState();
 }
 
@@ -1279,13 +1289,13 @@ function startPrefetch(run, items) {
       if (run.stopped) { ent.resolve(null); continue; }
       let buf = cached.has(k) ? await IDB.get(k) : null;
       if (!buf && !run.noGen) {
-        setNote(`목소리 녹음 중 ${++made} / ${need} · 이 세션은 처음 한 번만 해요`);
+        setNote(`목소리 받아 오는 중 ${++made} / ${need} · 이 세션은 처음 한 번만 해요`);
         try { buf = await synth(it.say, it.tier, v); IDB.put(k, buf); }
         catch (e) { run.genErr = e; if (e.fatal || e.code === 'network') run.noGen = true; setNote(errCopy(e) + ' 남은 부분은 휴대폰 기본 목소리로 읽어요.'); buf = null; }
       }
       ent.resolve(buf);
     }
-    if (!run.genErr && made && !run.stopped) setNote('목소리 녹음을 마쳤어요. 다음부터는 바로 나와요.');
+    if (!run.genErr && made && !run.stopped) setNote('목소리를 다 받아 왔어요. 다음부터는 바로 나와요.');
   })();
 }
 async function playClip(run, buf, prog) {
@@ -1980,6 +1990,20 @@ function initPlayer() {
 }
 
 renderWhen(); setInterval(renderWhen, 30000);
+/* 앱으로 설치 */
+let installEvt = null;
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+if (isStandalone()) $('#install').hidden = true;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; });
+window.addEventListener('appinstalled', () => { installEvt = null; $('#installBtn').hidden = true; $('#installHint').textContent = '설치했어요. 이제 홈 화면의 밤의 쉼표 달 아이콘으로 여세요.'; });
+$('#installBtn').addEventListener('click', async () => {
+  if (installEvt) {
+    const ev = installEvt; installEvt = null;
+    try { ev.prompt(); const r = await ev.userChoice; if (r && r.outcome === 'accepted') return; } catch (e) {}
+  }
+  $('#installHint').textContent = '크롬 오른쪽 위 점 세 개(⋮)를 누르고 "홈 화면에 추가" 또는 "앱 설치"를 누르면 돼요.';
+});
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); }); }
 renderList();
 initSettings();
 initPlayer();
