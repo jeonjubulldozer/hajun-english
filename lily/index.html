@@ -169,6 +169,9 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
 .sent.now { background: var(--accent-soft); }
 .sent.hajunturn { background: var(--good-soft); }
 .w { cursor: pointer; border-radius: 6px; }
+.w.dim { opacity: .32; }
+#rSpeed { gap: 6px; }
+#rSpeed .chip { padding: 5px 11px; font-size: 14px; }
 .w.on { text-decoration: underline; text-decoration-thickness: 4px; text-decoration-color: var(--accent); text-underline-offset: 6px; }
 .w.got { color: var(--good); }
 .readbar { display: flex; flex-direction: column; gap: 10px; }
@@ -245,11 +248,13 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
         <div class="field"><label for="turn">대답 방식</label>
           <select id="turn"><option value="auto">자동 — 말 끝나면 바로 (루라처럼)</option><option value="manual">버튼 — 눌러서 시작, 눌러서 끝</option></select></div>
         <div class="field"><label for="silence">말 끝 기다림 (자동일 때)</label>
-          <select id="silence"><option value="600">0.6초 (빠르게)</option><option value="900">0.9초 (추천)</option><option value="1500">1.5초</option><option value="2500">2.5초 (천천히 생각할 때)</option></select></div>
+          <select id="silence"><option value="600">0.6초 (빠르게)</option><option value="900">0.9초</option><option value="1200">1.2초 (추천)</option><option value="1500">1.5초</option><option value="2500">2.5초 (천천히 생각할 때)</option></select></div>
+        <div class="field"><label for="talkPace">Lily 대화 속도</label>
+          <select id="talkPace"><option value="slow">천천히 또박또박 (추천)</option><option value="normal">원어민 보통 속도</option></select></div>
         <div class="field"><label for="out">소리 나가는 곳</label>
           <select id="out"><option value="phone">폰 스피커</option><option value="tv">TV (화면 미러링)</option></select></div>
         <div class="field"><label for="rate">책 읽는 속도</label>
-          <select id="rate"><option value="0.8">느리게</option><option value="0.9">조금 천천히</option><option value="1">보통</option></select></div>
+          <select id="rate"><option value="0.7">🐢 느리게</option><option value="0.8">🙂 조금 천천히 (추천)</option><option value="0.9">보통</option><option value="1">빠르게</option></select></div>
         <div class="field"><label for="readEngine">책 읽기 목소리</label>
           <select id="readEngine"><option value="cloud">Google Cloud (추천)</option><option value="gemini">Gemini 목소리</option><option value="phone">폰 내장 목소리</option></select></div>
         <div class="field"><label for="minLevel">책 수준 (오늘의 15분·추천 책)</label>
@@ -402,6 +407,9 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
     <button class="chip" data-m="echo" type="button">🔁 따라 읽기</button>
     <button class="chip" data-m="solo" type="button">🙋 혼자 읽기</button>
   </div>
+  <div class="chips" id="rSpeed" aria-label="읽는 속도"><span class="small muted" style="align-self:center">읽는 속도</span>
+    <button class="chip" type="button" data-r="0.7">🐢 느리게</button><button class="chip" type="button" data-r="0.8">🙂 보통</button><button class="chip" type="button" data-r="0.9">🐇 빠르게</button>
+  </div>
   <div class="chtitle" id="rCh" hidden></div>
   <div class="pic" id="rPic"></div>
   <div class="text" id="rText"></div>
@@ -465,8 +473,11 @@ function shared() { return load("dojo-live"); }
 function updShared(fn) { const cur = load("dojo-live"); fn(cur); try { localStorage.setItem("dojo-live", JSON.stringify(cur)); } catch {} }
 const st = load("lily2");
 function saveSt() { try { localStorage.setItem("lily2", JSON.stringify(st)); } catch {} }
-(() => { const s = shared(); const d = { voice: s.gVoice || "Sulafat", accent: s.accent || "us", turn: "auto", silence: "900", out: "tv", rate: "0.9", readEngine: s.voiceSource === "gemini" ? "gemini" : s.voiceSource === "phone" ? "phone" : "cloud", model: "gemini-3.8-live", talkMode: "free", talkLen: "10", goal: "30", readMode: "echo", minLevel: "3" };
-  for (const k in d) if (st[k] == null) st[k] = d[k]; st.progress = st.progress || {}; st.myBooks = st.myBooks || []; st.wordKo = st.wordKo || {}; st.readDays = st.readDays || {}; saveSt(); })();
+(() => { const s = shared(); const d = { voice: s.gVoice || "Sulafat", accent: s.accent || "us", turn: "auto", silence: "900", out: "tv", rate: "0.8", readEngine: s.voiceSource === "gemini" ? "gemini" : s.voiceSource === "phone" ? "phone" : "cloud", model: "gemini-3.8-live", talkMode: "free", talkLen: "10", goal: "30", readMode: "echo", minLevel: "3", talkPace: "slow" };
+  for (const k in d) if (st[k] == null) st[k] = d[k]; st.progress = st.progress || {}; st.myBooks = st.myBooks || []; st.wordKo = st.wordKo || {}; st.readDays = st.readDays || {};
+  if (st.paceFix !== 1) { if (Number(st.rate) >= 0.9) st.rate = "0.8"; if (st.silence === "900" || st.silence === "600") st.silence = "1200"; st.paceFix = 1; }   // 2026-10-19: everyone one notch slower
+  saveSt(); })();
+const readRate = () => Number(st.rate) || 0.8;
 // the key may live in any of the family apps on this phone (영어 도장, 밤의 쉼표, 곤충 도장)
 function gkey() {
   const s = shared(); if (s.key_gemini) return String(s.key_gemini).trim();
@@ -622,7 +633,7 @@ const player = new Audio(); player.preload = "auto";
 let speakTok = 0, finCur = null;
 function stopSpeech() { speakTok++; try { player.pause(); } catch {} try { synth && synth.cancel(); } catch {} const f = finCur; finCur = null; if (f) f(false); }
 // say(): speak text; onTime(fraction 0..1) drives word highlighting; resolves true when finished, false if stopped
-async function say(text, { rate = Number(st.rate) || 0.9, onTime } = {}) {
+async function say(text, { rate = readRate(), onTime } = {}) {
   stopSpeech(); const tok = speakTok;
   let blob = null; try { blob = await getAudio(text, rate); } catch {}
   if (tok !== speakTok) return false;
@@ -859,7 +870,7 @@ function readToday() { return st.readDays[dayKey()] || 0; }
 function noteRead() { const k = dayKey(); st.readDays[k] = (st.readDays[k] || 0) + 1; const ks = Object.keys(st.readDays).sort(); while (ks.length > 120) delete st.readDays[ks.shift()]; saveSt(); }
 function nextBook() { const all = bookOrder(); return all.find(b => !(st.progress[b.id] && st.progress[b.id].done)) || all[Math.floor(Math.random() * all.length)]; }
 // settings
-[["voice"], ["accent"], ["turn"], ["silence"], ["out"], ["rate"], ["readEngine"], ["model"], ["goal"], ["minLevel"]].forEach(([id]) => { $(id).value = st[id]; $(id).addEventListener("change", () => { st[id] = $(id).value; saveSt(); if (id === "accent") phoneVoice = null; if (id === "readEngine" || id === "voice" || id === "accent") { TTS.sticky = null; TTS.fails = {}; } }); });
+[["voice"], ["accent"], ["turn"], ["silence"], ["out"], ["rate"], ["readEngine"], ["model"], ["goal"], ["minLevel"], ["talkPace"]].forEach(([id]) => { $(id).value = st[id]; $(id).addEventListener("change", () => { st[id] = $(id).value; saveSt(); if (id === "accent") phoneVoice = null; if (id === "readEngine" || id === "voice" || id === "accent") { TTS.sticky = null; TTS.fails = {}; } }); });
 $("key").addEventListener("change", () => { const v = $("key").value.trim(); updShared(s => { s.key_gemini = v; }); renderHome(); });
 $("testVoice").addEventListener("click", async () => {
   unlockAudio(); TTS.sticky = null; TTS.fails = {}; ttsLastErr = null; $("testNote").textContent = "가져오는 중…";
@@ -939,7 +950,7 @@ function lilyBase() {
   const gb = st.accent === "gb";
   return `You are Miss Lily, a warm, playful ${gb ? "British (southern England)" : "American"} English teacher. You are talking LIVE, by voice, with Hajun, an 8-year-old Korean boy. Hajun went to an English kindergarten and understands native-speed English like an English-speaking 7-8-year-old, so do NOT simplify your English: talk naturally, with rich, kid-friendly vocabulary. What is still hard for him is producing his own longer sentences.
 
-HOW YOU SOUND: like a real, friendly native speaker talking with a kid — natural speed, contractions, real reactions ("Whoa!", "No way!", "Ha! That's so funny!"). ${gb ? "Use British words and expressions (mum, brilliant, lovely, holiday, biscuit)." : "Use American words (mom, awesome, vacation, cookie)."}
+HOW YOU SOUND: like a real, friendly native speaker talking with a kid — ${st.talkPace === "normal" ? "natural speed" : "a calm, unhurried pace, about 20% slower than normal conversation, with a short pause after each sentence, like a good teacher talking with a young child (keep your vocabulary rich; only slow down the delivery)"}, contractions, real reactions ("Whoa!", "No way!", "Ha! That's so funny!"). ${gb ? "Use British words and expressions (mum, brilliant, lovely, holiday, biscuit)." : "Use American words (mom, awesome, vacation, cookie)."}
 KEEP EVERY TURN SHORT: 1-3 short sentences plus ONE easy question, about 25 words. Never lecture, never list.
 ENGLISH ONLY: if Hajun speaks Korean, show you understood, say it for him in simple English ("Oh, you mean: I'm hungry!") and invite him to say it. A Korean word only if he is totally stuck.
 RECAST, DON'T CORRECT: when his English has mistakes, say the correct sentence back naturally inside your reaction ("You went to the park yesterday? Fun!"). Never say "wrong". Never explain grammar.
@@ -1375,7 +1386,9 @@ function openBook(b, page) {
   $("rTitle").textContent = b.title; $("rEnd").hidden = true; $("photoMore").hidden = !b.photo;
   show("reader"); renderPage(); keepAwake(true);
 }
-function setReadMode(m) { R.mode = m; st.readMode = m; saveSt(); document.querySelectorAll("#rModes .chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.m === m))); }
+function speedChips() { document.querySelectorAll("#rSpeed .chip").forEach(c => c.setAttribute("aria-pressed", String(Math.abs(Number(c.dataset.r) - readRate()) < 0.01))); }
+$("rSpeed").addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (!c) return; st.rate = c.dataset.r; saveSt(); $("rate").value = st.rate; speedChips(); toast(c.textContent + " — 다음 문장부터 적용돼요", 2000); });
+function setReadMode(m) { speedChips(); R.mode = m; st.readMode = m; saveSt(); document.querySelectorAll("#rModes .chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.m === m))); }
 $("rModes").addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (!c) return; const was = R.playing; readerStop(); setReadMode(c.dataset.m); if (was) readerRun(); });
 function renderPage() {
   const b = R.book, p = b.pages[R.page]; if (!b.photo) { st.lastBook = { id: b.id, page: R.page }; saveSt(); }
@@ -1405,27 +1418,64 @@ $("rNext").addEventListener("click", () => { readerStop(); if (R.page < R.book.p
 $("readerBack").addEventListener("click", () => { rtOff(); readerFinishStats(); readerStop(); Mic.close(); keepAwake(false); show("library"); });
 function whoReads(i) { return R.mode === "listen" ? "lily" : R.mode === "solo" ? "hajun" : R.mode === "echo" ? "both" : (i % 2 === 0 ? "lily" : "hajun"); }
 function charWeights(toks) { const w = toks.map(t => t.raw.length + 2); const tot = w.reduce((a, b) => a + b, 0); let acc = 0; return w.map(x => (acc += x) / tot); }
-async function lilyReads(i, tok) {
-  const p = R.book.pages[R.page], text = p.s[i], toks = p._toks[i], cw = charWeights(toks);
-  focusSent(i); $("turnNote").textContent = "";
-  const rate = Number(st.rate) || 0.9;
-  const nexts = [p.s[i + 1], p.s[i + 2]].concat(R.page + 1 < R.book.pages.length ? [R.book.pages[R.page + 1].s[0]] : []);
-  prefetch(nexts, rate);
-  const ok = await say(text, { rate, onTime: (f) => { if (tok !== R.tok) return; const adj = Math.max(0, (f - 0.04) / 0.92); let j = cw.findIndex(c => c >= adj); if (j < 0) j = toks.length - 1; markWord(i, j); } });
+async function lilyReads(i, tok, a = 0, b = null) {
+  const p = R.book.pages[R.page], all = toksOf(p)[i]; if (b == null) b = all.length;
+  const toks = all.slice(a, b), text = partText(p, i, a, b), cw = charWeights(toks);
+  focusSent(i); dimOutside(i, a, a === 0 && b === all.length ? null : b); $("turnNote").textContent = "";
+  const rate = lilyRate(i);
+  for (const [t, r] of upcoming(4)) prefetch([t], r);
+  const ok = await say(text, { rate, onTime: (f) => { if (tok !== R.tok) return; const adj = Math.max(0, (f - 0.04) / 0.92); let j = cw.findIndex(c => c >= adj); if (j < 0) j = toks.length - 1; markWord(i, a + j); } });
   clearMarks();
   if (ttsLastErr && !$("rTitle").dataset.warned && st.readEngine !== "phone") { $("rTitle").dataset.warned = "1"; toast(ttsErrKo(ttsLastErr), 6000); }
   return ok && tok === R.tok;
 }
+// Long sentences are split into short phrases for Hajun's turns: Lily says a phrase, he repeats it, then the next phrase.
+const CONJ = new Set(["and", "but", "so", "because", "when", "then", "until", "while", "who", "which", "that", "where", "before", "after", "if", "or", "with"]);
+const PREP = new Set(["of", "into", "from", "over", "under", "through", "about", "without", "across", "behind", "around", "like", "at", "on", "in", "to", "for"]);
+function phrasesOf(toks, max = 8) {
+  const real = (a, b) => { let n = 0; for (let k = a; k < b; k++) if (!toks[k].opt) n++; return n; };
+  const cut = (a, b) => {
+    const n = real(a, b); if (n <= max + 1) return [[a, b]];
+    let best = -1, bestScore = 1e9;
+    for (let k = a + 2; k <= b - 2; k++) {
+      const prev = toks[k - 1].raw, cur = toks[k].raw; let w = null;
+      if (/[,;:—–]["”’]?$/.test(prev)) w = 0; else if (/[.!?]["”’]?$/.test(prev)) w = 0; else if (/^["“]/.test(cur)) w = 0.5; else if (CONJ.has(normW(cur))) w = 1.5; else if (PREP.has(normW(cur))) w = 2.5;
+      if (w == null) continue;
+      const l = real(a, k), r = real(k, b); if (l < 3 || r < 3) continue;
+      const sc = w * 3 + Math.abs(l - r); if (sc < bestScore) { bestScore = sc; best = k; }
+    }
+    if (best < 0 && n > 12) { let c = 0; for (let k = a; k < b; k++) { if (!toks[k].opt) c++; if (c >= Math.ceil(n / 2)) { best = k + 1; break; } } }
+    if (best <= a || best >= b) return [[a, b]];
+    return cut(a, best).concat(cut(best, b));
+  };
+  return cut(0, toks.length);
+}
+const toksOf = (p) => p._toks || (p._toks = p.s.map(tokenize));
+function partsFor(p, i) { const t = toksOf(p)[i]; return whoReads(i) === "lily" ? [[0, t.length]] : phrasesOf(t); }
+function partText(p, i, a, b) { const t = toksOf(p)[i]; return (a === 0 && b === t.length) ? p.s[i] : t.slice(a, b).map(x => x.raw).join(" "); }
+function lilyRate(i) { const r = readRate(); return whoReads(i) === "both" ? Math.max(0.65, r - 0.08) : r; }
+function upcoming(n) {   // the next few things Lily will read, so their audio is ready in time
+  const out = []; let pg = R.page, i = R.s;
+  while (out.length < n && pg < R.book.pages.length) {
+    const p = R.book.pages[pg];
+    for (; i < p.s.length && out.length < n; i++) { const who = whoReads(i); if (who === "hajun") continue; for (const [a, b] of partsFor(p, i)) out.push([partText(p, i, a, b), lilyRate(i)]); }
+    pg++; i = 0;
+  }
+  return out;
+}
+function dimOutside(i, a, b) { const el = sentEl(i); if (!el) return; el.querySelectorAll(".w").forEach(w => { const j = Number(w.dataset.j); w.classList.toggle("dim", b != null && (j < a || j >= b)); }); }
 // Hajun's turn: the app listens, colours the words he read, and moves on by itself (buttons are only a backup)
 const PRAISE = ["Great reading! ⭐", "Nice! ⭐", "You did it! ⭐", "Super! ⭐", "Awesome reading! ⭐", "Well done! ⭐"];
-function hajunReads(i, tok) {
+function hajunReads(i, tok, a = 0, b = null) {
   return new Promise(async (resolve) => {
-    const p = R.book.pages[R.page], toks = p._toks[i], el = sentEl(i);
-    const wEl = (j) => el && el.querySelector(`.w[data-j="${j}"]`);
+    const p = R.book.pages[R.page], all = toksOf(p)[i], el = sentEl(i); if (b == null) b = all.length;
+    const toks = all.slice(a, b), text = partText(p, i, a, b), lastPart = b === all.length, phrase = !(a === 0 && lastPart);
+    const wEl = (j) => el && el.querySelector(`.w[data-j="${a + j}"]`);
     const real = toks.map((t, j) => j).filter(j => !toks[j].opt);
-    focusSent(i, "hajunturn"); $("hajunBtns").hidden = false;
-    el && el.querySelectorAll(".w").forEach(w => w.classList.remove("got", "miss"));
+    focusSent(i, "hajunturn"); dimOutside(i, a, phrase ? b : null); $("hajunBtns").hidden = false;
+    if (a === 0) el && el.querySelectorAll(".w").forEach(w => w.classList.remove("got", "miss")); else toks.forEach((t, j) => wEl(j)?.classList.remove("got", "miss"));
     toks.forEach((t, j) => { if (t.opt) wEl(j)?.classList.add("got"); });
+    if (!real.length) { $("hajunBtns").hidden = true; setTimeout(() => resolve("ok"), 300); return; }
     let finished = false, attempt = 1, best = null, quietTries = 0, timer = null, listenAt = 0;
     const note = (t) => { $("turnNote").textContent = t; };
     const bar = (on) => { $("earBar").hidden = !on; if (!on) $("earLv").style.width = "0"; };
@@ -1433,15 +1483,15 @@ function hajunReads(i, tok) {
     R.resolveTurn = finish;
     const paint = (res, final) => { real.forEach(j => { const w = wEl(j); if (!w) return; if (res.ok.has(j)) { w.classList.add("got"); w.classList.remove("miss"); } else if (final) w.classList.add("miss"); }); };
     const success = (res, weak) => {
-      if (finished) return; clearInterval(timer); earStop(); bar(false); R.read++; noteRead();
+      if (finished) return; clearInterval(timer); earStop(); bar(false); if (lastPart) { R.read++; noteRead(); }
       if (res) paint(res, true);
-      if (!weak) chime(); note(weak ? "Good try! 👍 다음 문장!" : PRAISE[Math.floor(Math.random() * PRAISE.length)]);
-      setTimeout(() => finish("ok"), weak ? 900 : 650);
+      if (!weak) chime(); note(weak ? (lastPart ? "Good try! 👍 다음 문장!" : "Good try! 👍") : lastPart ? PRAISE[Math.floor(Math.random() * PRAISE.length)] : "Good! 👍");
+      setTimeout(() => finish("ok"), weak ? 1300 : lastPart ? 1100 : 700);
     };
     const helpRead = async () => {   // Lily reads it once, then it's his turn again
       clearInterval(timer); earStop(); bar(false); note("같이 읽어 볼까? 잘 듣고 따라 읽어요 👂");
-      await lilyReads(i, tok); if (finished || tok !== R.tok) return false;
-      focusSent(i, "hajunturn"); await sleep(tvDelay()); return !finished && tok === R.tok;
+      await lilyReads(i, tok, a, b); if (finished || tok !== R.tok) return false;
+      focusSent(i, "hajunturn"); dimOutside(i, a, phrase ? b : null); await sleep(Math.max(600, tvDelay())); return !finished && tok === R.tok;
     };
     const listen = () => {
       if (finished || tok !== R.tok) return;
@@ -1451,7 +1501,7 @@ function hajunReads(i, tok) {
         onStart: () => note("👂 듣고 있어요…"),
         onPause: async (chunks, speechMs) => {
           if (finished || tok !== R.tok) return;
-          let res = null; try { res = await checkReading(p.s[i], toks, chunks); } catch (e) { res = null; }
+          let res = null; try { res = await checkReading(text, toks, chunks); } catch (e) { res = null; }
           if (finished || tok !== R.tok) return;
           if (!res) { if (speechMs >= Math.max(700, real.length * 300)) success(null, true); return; }   // can't check right now: don't block him
           if (!best || res.ratio >= best.ratio) best = res; paint(res, false);
@@ -1486,13 +1536,17 @@ async function readerRun() {
   while (tok === R.tok) {
     const p = R.book.pages[R.page];
     if (R.s >= p.s.length) {
-      if (R.page < (R.limit ? R.limit.to : R.book.pages.length) - 1) { await sleep(800); if (tok !== R.tok) return; R.page++; R.s = 0; renderPage(); window.scrollTo({ top: 0, behavior: "smooth" }); continue; }
+      if (R.page < (R.limit ? R.limit.to : R.book.pages.length) - 1) { await sleep(1500); if (tok !== R.tok) return; R.page++; R.s = 0; renderPage(); window.scrollTo({ top: 0, behavior: "smooth" }); continue; }
       R.playing = false; R.s = 0; playBtn(); bookFinished(); return;
     }
-    const i = R.s, who = whoReads(i);
-    if (who === "lily" || who === "both") { const ok = await lilyReads(i, tok); if (!ok) return; }
-    if (who === "hajun" || who === "both") { await sleep(who === "both" ? tvDelay() : 150); if (tok !== R.tok) return; const r = await hajunReads(i, tok); if (r === "stop" || tok !== R.tok) return; }
-    R.s++; if (who !== "lily" && goalCheck()) await sleep(3500); await sleep(R.mode === "listen" ? 260 : 450);
+    const i = R.s, who = whoReads(i), parts = partsFor(p, i);
+    for (const [a, b] of parts) {
+      if (who === "lily" || who === "both") { const ok = await lilyReads(i, tok, a, b); if (!ok) return; }
+      if (who === "hajun" || who === "both") { await sleep(who === "both" ? Math.max(600, tvDelay()) : 300); if (tok !== R.tok) return; const r = await hajunReads(i, tok, a, b); if (r === "stop" || tok !== R.tok) return; }
+      if (parts.length > 1) await sleep(400);
+    }
+    dimOutside(i, 0, null);
+    R.s++; if (who !== "lily" && goalCheck()) await sleep(3500); await sleep(R.mode === "listen" ? 800 : 900);
   }
 }
 let ac = null;
@@ -1632,7 +1686,7 @@ function quizShow() {
   (it.opts || []).forEach(o => { const b = mk("button", "opt"); b.type = "button"; if (o.e) b.append(mk("span", "em", o.e)); b.append(mk("span", "", o.text)); b.onclick = () => quizAnswer(o, b); o.el = b; box.append(b); });
   $("qSkip").textContent = "모르겠어 →";
   const tok = Q.tok; if (it.t === "word") return;
-  (async () => { await say(it.q.replace(/\.\.\./g, " blank."), { rate: 0.95 }); if (tok === Q.tok) { await sleep(tvDelay()); if (tok === Q.tok) quizListen(); } })();
+  (async () => { await say(it.q.replace(/\.\.\./g, " blank."), { rate: readRate() + 0.05 }); if (tok === Q.tok) { await sleep(tvDelay()); if (tok === Q.tok) quizListen(); } })();
 }
 async function quizListen(again) {
   const it = Q.items[Q.i]; if (Q.answered) return; stopSpeech(); if (earCancel) earCancel();
@@ -1691,7 +1745,7 @@ $("qSkip").addEventListener("click", () => { const it = Q.items[Q.i]; if (!it ||
 $("quizBack").addEventListener("click", () => { rtOff(); Q.tok++; if (earCancel) earCancel(); stopSpeech(); show("reader"); });
 
 // ============ start ============
-window.__lily = { R, Q, Ear, L };   // for checking the app from a test page
+window.__lily = { R, Q, Ear, L, phrasesOf, tokenize };   // for checking the app from a test page
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && (!$("talk").hidden || !$("reader").hidden)) { wakeLock = null; keepAwake(true); } });
 show("home");
