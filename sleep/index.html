@@ -1,0 +1,1461 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0d1016">
+<title>밤의 쉼표</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* Layout: one quiet column read like a bedside programme; the player is a black room lit by one lamp glow that dims as you fall asleep. Single dark theme on purpose. */
+:root {
+  color-scheme: dark;
+  --night: #0d1016;
+  --ink: #151a23;
+  --line: #262d39;
+  --moon: #ece6da;
+  --dusk: #9aa1ac;
+  --lamp: #e2b074;
+  --lamp-rgb: 226, 176, 116;
+  --lamp-ink: #1b1307;
+  --deep: #030407;
+  --warn-bg: #221a10;
+  --warn-line: #6b4f2a;
+  --warn-fg: #f1dab8;
+  --f-display: 'Gowun Batang', 'Nanum Myeongjo', 'AppleMyungjo', serif;
+  --f-body: 'IBM Plex Sans KR', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { background: var(--night); color: var(--moon); margin: 0; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+body {
+  font-family: var(--f-body); font-size: 15px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 22px 56px;
+  -webkit-tap-highlight-color: transparent;
+}
+.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--lamp); outline-offset: 3px; border-radius: 6px; }
+
+header { display: flex; flex-direction: column; gap: 8px; }
+.when { font-size: 13px; color: var(--dusk); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 36px; line-height: 1.2; margin: 0; text-wrap: balance; }
+h1 .comma { color: var(--lamp); }
+.lede { margin: 0; color: var(--dusk); max-width: 62ch; }
+
+.banner { border: 1px solid var(--warn-line); background: var(--warn-bg); color: var(--warn-fg); border-radius: 10px; padding: 12px 14px; font-size: 14px; display: flex; flex-direction: column; gap: 8px; }
+.banner .url { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.banner code { font-size: 12.5px; word-break: break-all; color: var(--moon); }
+
+.list { border-top: 1px solid var(--line); }
+.row { border-bottom: 1px solid var(--line); }
+.row.open { background: var(--ink); border-radius: 0 0 4px 4px; }
+.head {
+  all: unset; box-sizing: border-box; cursor: pointer; width: 100%;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; row-gap: 4px;
+  padding: 16px 6px;
+}
+.head:focus-visible { outline: 2px solid var(--lamp); outline-offset: -2px; }
+.t { font-family: var(--f-display); font-size: 20px; font-weight: 700; line-height: 1.35; min-width: 0; }
+.mins { font-size: 13px; color: var(--dusk); font-variant-numeric: tabular-nums; align-self: center; white-space: nowrap; }
+.d { grid-column: 1 / -1; color: var(--dusk); font-size: 14px; min-width: 0; }
+.ref { grid-column: 1 / -1; font-size: 12px; letter-spacing: .03em; color: rgba(var(--lamp-rgb), .78); }
+.pick { display: inline-block; margin-left: 8px; font-family: var(--f-body); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; color: var(--lamp-ink); background: var(--lamp); border-radius: 999px; padding: 1px 8px; vertical-align: 3px; }
+.panel { padding: 0 6px 20px; display: flex; flex-direction: column; gap: 14px; }
+.fieldlabel { font-size: 12.5px; color: var(--dusk); letter-spacing: .04em; margin-bottom: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 6px 14px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { background: var(--moon); color: var(--night); border-color: var(--moon); font-weight: 600; }
+select, .range { width: 100%; }
+select { appearance: none; background: var(--night); color: var(--moon); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; font: inherit; }
+.go { border: 0; border-radius: 12px; background: var(--lamp); color: var(--lamp-ink); font-weight: 600; font-size: 16px; padding: 14px; cursor: pointer; }
+.go:active { transform: translateY(1px); }
+
+section h2 { font-family: var(--f-display); font-size: 21px; margin: 0 0 4px; }
+.settings { display: flex; flex-direction: column; gap: 16px; }
+.field { display: flex; flex-direction: column; }
+.field .top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.field output { font-size: 13px; color: var(--dusk); font-variant-numeric: tabular-nums; }
+input[type=range] { accent-color: var(--lamp); width: 100%; margin: 4px 0 0; }
+.ghost { border: 1px solid var(--line); background: transparent; border-radius: 10px; padding: 10px 14px; cursor: pointer; }
+.toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+.toggle input { accent-color: var(--lamp); width: 20px; height: 20px; flex: none; }
+.hint { font-size: 13px; color: var(--dusk); margin: 0; }
+.voices { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.vrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+.vpick { display: flex; align-items: baseline; gap: 4px 10px; flex-wrap: wrap; cursor: pointer; min-width: 0; }
+.vpick input { accent-color: var(--lamp); width: 18px; height: 18px; align-self: center; flex: none; margin: 0; }
+.vname { font-weight: 500; }
+.vsub { font-size: 12.5px; color: var(--dusk); }
+.small { padding: 7px 12px; font-size: 13.5px; flex: none; }
+.ghost:disabled { opacity: .6; }
+input.text { width: 100%; background: var(--night); color: var(--moon); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+.bank { display: flex; flex-direction: column; gap: 8px; }
+.notes { margin: 0; padding-left: 18px; color: var(--dusk); display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.notes b { color: var(--moon); font-weight: 600; }
+
+/* Player */
+.player {
+  position: fixed; inset: 0; z-index: 50; background: var(--deep); color: var(--moon);
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) max(20px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 24px) max(20px, env(safe-area-inset-left, 0px));
+  overflow-y: auto; overscroll-behavior: contain;
+}
+.ui { transition: opacity 2.4s ease; width: 100%; max-width: 440px; }
+.player.dim .ui { opacity: 0; pointer-events: none; }
+.ptop { text-align: center; display: flex; flex-direction: column; gap: 4px; }
+.ptitle { font-family: var(--f-display); font-size: 22px; font-weight: 700; }
+.phase { font-size: 13px; color: var(--dusk); letter-spacing: .05em; }
+.stage { flex: 1; display: grid; place-items: center; width: 100%; min-height: 220px; position: relative; }
+.orb {
+  width: min(64vw, 280px); aspect-ratio: 1; max-width: 100%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--lamp-rgb), .5) 0%, rgba(var(--lamp-rgb), .14) 42%, rgba(var(--lamp-rgb), 0) 70%);
+  opacity: var(--glow, .85); transition: opacity 4s ease;
+  animation: breathe 10s ease-in-out infinite;
+}
+.player.dim .orb { opacity: calc(var(--glow, .85) * .3); }
+.player.paused .orb { animation-play-state: paused; }
+@keyframes breathe { 0% { transform: scale(.8); } 40% { transform: scale(1); } 100% { transform: scale(.8); } }
+.sub {
+  position: absolute; left: 0; right: 0; bottom: 0; text-align: center;
+  font-family: var(--f-display); font-size: 17px; line-height: 1.6; color: rgba(236, 230, 218, .62);
+  min-height: 3.2em; padding-inline: 8px; text-wrap: balance;
+}
+.clock { font-size: 30px; font-weight: 500; letter-spacing: .02em; font-variant-numeric: tabular-nums; text-align: center; }
+.clock small { display: block; font-size: 12.5px; font-weight: 400; color: var(--dusk); letter-spacing: .04em; }
+.pctl { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.btnrow { display: flex; gap: 10px; }
+.btnrow button { flex: 1; }
+.pbtn { border: 1px solid var(--line); background: var(--ink); border-radius: 12px; padding: 12px; cursor: pointer; font-weight: 500; }
+.pbtn.main { background: var(--moon); color: var(--night); border-color: var(--moon); }
+.wl { font-size: 12.5px; color: var(--dusk); text-align: center; margin: 0; }
+.tap { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); text-align: center; font-size: 12px; color: rgba(154, 161, 172, .35); transition: opacity 2s; pointer-events: none; }
+.player:not(.dim) .tap { opacity: 0; }
+.done { text-align: center; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+.done p { font-family: var(--f-display); font-size: 24px; margin: 0; }
+@media (prefers-reduced-motion: reduce) { .orb { animation: none; } .ui, .orb { transition: none; } }
+@media (min-width: 700px) { h1 { font-size: 44px; } body { padding-block: 48px 72px; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="when" id="when"></div>
+    <h1>밤의 쉼표<span class="comma">,</span></h1>
+    <p class="lede">캄, 헤드스페이스, 마보, 할로우가 잠들기 명상을 만드는 방식을 하나씩 따라 만든 여덟 가지 세션이에요. 목소리는 제미나이 성우 목소리로 처음 한 번 녹음해 휴대폰에 저장해 두고, 음악과 빗소리, 파도 소리는 그 자리에서 만들어 틀어요.</p>
+  </header>
+
+  <div class="banner" id="banner" hidden></div>
+
+  <div class="list" id="list"></div>
+
+  <section class="settings" aria-labelledby="set-h">
+    <h2 id="set-h">목소리와 소리</h2>
+    <p class="hint" id="keyState"></p>
+    <div class="field" id="keyField" hidden>
+      <label class="fieldlabel" for="gkey">제미나이 API 키</label>
+      <input class="text" id="gkey" type="password" autocomplete="off" placeholder="AIza… 로 시작하는 키">
+    </div>
+    <div>
+      <div class="fieldlabel">읽어 주는 목소리 · 들어 보고 고르세요</div>
+      <div class="voices" id="voices" role="radiogroup" aria-label="목소리 고르기"></div>
+    </div>
+    <div class="settings" id="phoneOpts" hidden>
+      <div class="field">
+        <label class="fieldlabel" for="voice">휴대폰 목소리 종류</label>
+        <select id="voice"></select>
+      </div>
+      <div class="field">
+        <div class="top"><label class="fieldlabel" for="rate">말 빠르기</label><output id="rateOut"></output></div>
+        <input class="range" type="range" id="rate" min="0.6" max="1.1" step="0.05">
+      </div>
+      <div class="field">
+        <div class="top"><label class="fieldlabel" for="pitch">목소리 높이</label><output id="pitchOut"></output></div>
+        <input class="range" type="range" id="pitch" min="0.7" max="1.2" step="0.05">
+      </div>
+    </div>
+    <div class="field">
+      <div class="top"><label class="fieldlabel" for="vvol">목소리 크기</label><output id="vvolOut"></output></div>
+      <input class="range" type="range" id="vvol" min="0.2" max="1" step="0.05">
+    </div>
+    <div class="field">
+      <div class="top"><label class="fieldlabel" for="mvol">음악 크기</label><output id="mvolOut"></output></div>
+      <input class="range" type="range" id="mvol" min="0" max="1" step="0.05">
+    </div>
+    <div class="bank">
+      <button class="ghost" id="bankBtn" type="button">모든 세션 미리 녹음해 두기</button>
+      <p class="hint" id="bankState"></p>
+    </div>
+    <p class="hint" id="voiceHint" aria-live="polite"></p>
+  </section>
+
+  <section aria-labelledby="how-h">
+    <h2 id="how-h">쓰는 법</h2>
+    <ul class="notes">
+      <li><b>화면을 끄지 말고 그대로 두세요.</b> 시작하면 화면이 저절로 까맣게 바뀌어요. 전원 버튼으로 끄면 목소리나 음악이 멈출 수 있어요.</li>
+      <li>처음 듣는 세션은 시작할 때 목소리를 녹음하느라 앞부분에 음악만 조금 더 길게 나와요. 한 번 녹음한 건 휴대폰에 저장돼서 다음부터는 바로 나와요.</li>
+      <li>말 사이는 뒤로 갈수록 길어지고 목소리는 조금씩 작아져요. 낭독이 끝나면 음악만 남았다가 정한 시간에 서서히 꺼져요.</li>
+      <li>소리 크기는 휴대폰 미디어 음량을 따라요. 재생 중에도 화면을 한 번 두드리면 음량과 일시정지가 나와요.</li>
+    </ul>
+  </section>
+</div>
+
+<div class="player" id="player" hidden>
+  <div class="ui ptop">
+    <div class="ptitle" id="pTitle"></div>
+    <div class="phase" id="pPhase"></div>
+  </div>
+  <div class="stage">
+    <div class="orb" id="orb"></div>
+    <div class="sub" id="sub" aria-live="polite"></div>
+  </div>
+  <div class="ui" id="pBottom">
+    <div class="clock" id="pClock"></div>
+    <div class="pctl" id="pCtl">
+      <div class="btnrow">
+        <button class="pbtn main" id="pPause" type="button">일시정지</button>
+        <button class="pbtn" id="pStop" type="button">끝내기</button>
+      </div>
+      <div class="field">
+        <div class="top"><label class="fieldlabel" for="pvvol">목소리</label><output id="pvvolOut"></output></div>
+        <input type="range" id="pvvol" min="0.2" max="1" step="0.05">
+      </div>
+      <div class="field">
+        <div class="top"><label class="fieldlabel" for="pmvol">음악</label><output id="pmvolOut"></output></div>
+        <input type="range" id="pmvol" min="0" max="1" step="0.05">
+      </div>
+      <label class="toggle"><span>자막 보기</span><input type="checkbox" id="pSubs"></label>
+      <label class="toggle" id="keepRow"><span>끝나도 음악 계속 틀어 두기</span><input type="checkbox" id="pKeep"></label>
+      <p class="wl" id="pNote" aria-live="polite"></p>
+      <p class="wl" id="pWl"></p>
+    </div>
+    <div class="done" id="pDone" hidden>
+      <p id="pDoneMsg">푹 쉬셨어요.</p>
+      <button class="pbtn main" id="pBack" type="button">처음으로</button>
+    </div>
+  </div>
+  <div class="tap" id="tapHint">화면을 두드리면 조작 버튼이 나와요</div>
+</div>
+
+<script>
+/* 세션 대본. [문장, 뒤에 쉬는 초, 'f'=간격 고정] / {ph:단계 이름} / {pool:[...], n:[최소,최대], p:쉬는 초} */
+const F = 'f';
+const SESSIONS = [
+  {
+    id: 'gratitude', title: '감사하며 잠들기',
+    desc: '오늘 고마웠던 것을 하나씩 떠올려요. 말 사이가 점점 길어지고 목소리가 잦아들다가, 마지막엔 음악만 남아요. 떠올릴 거리는 들을 때마다 조금씩 바뀌어요.',
+    ref: '참고: 캄 「감사하는 마음으로 잠들기」',
+    durs: [20, 30, 50], def: 50, sound: 'pad', end: 'fade', narr: 0.6, grow: 2.6,
+    script: [
+      { ph: '자리 잡기' },
+      ['편안히 누워 볼게요.', 6],
+      ['베개에 머리를 기대고, 이불이 몸을 덮고 있는 무게를 느껴 보세요.', 8],
+      ['지금부터는 아무것도 잘 해낼 필요가 없는 시간이에요.', 7],
+      ['목소리와 음악을 따라오기만 하면 됩니다.', 9],
+      ['코로 천천히 숨을 들이마시고,', 4, F],
+      ['입으로 길게 내쉬어 볼게요.', 7],
+      ['한 번 더. 깊게 들이마시고,', 4, F],
+      ['후우. 내쉬면서 어깨를 아래로 내려놓아요.', 9],
+      ['이제 숨은 저절로 드나들게 두세요.', 10],
+      ['오늘 하루를 지나온 몸에게, 수고했다고 말해 주세요.', 12],
+      { ph: '감사 떠올리기' },
+      ['잠들기 전에, 오늘 고마웠던 것들을 하나씩 떠올려 볼까요.', 7],
+      ['대단한 일이 아니어도 괜찮아요. 작은 것일수록 더 좋아요.', 10],
+      ['떠오르는 게 없으면, 그냥 숨을 쉬며 기다려도 돼요.', 12],
+      {
+        pool: [
+          '오늘 내 곁에 있어 준 사람을 한 명 떠올려 보세요. 그 사람의 얼굴을 잠시 바라봅니다.',
+          '오늘 먹은 것 중에 맛있었던 한 가지를 떠올려 보세요. 그 맛과 온기를 다시 느껴 봅니다.',
+          '오늘 들었던 웃음소리를 떠올려 보세요. 누구의 웃음이었나요.',
+          '지금 누워 있는 이 자리를 생각해 보세요. 비바람을 막아 주는 지붕과, 몸을 받쳐 주는 이부자리가 있어요.',
+          '오늘도 나를 여기저기 데리고 다닌 두 다리에게, 고맙다고 말해 보세요.',
+          '누군가 나에게 건넨 작은 친절이 있었나요. 짧은 인사 한마디도 좋아요.',
+          '오늘도 큰 탈 없이 여기까지 왔다는 것. 그것만으로도 고마운 일이에요.',
+          '따뜻한 물로 씻고, 깨끗한 물을 마실 수 있었던 순간을 떠올려 보세요.',
+          '오늘 새로 알게 된 것이 있다면, 그것도 하루가 준 선물이에요.',
+          '나를 걱정해 주는 사람이 있다는 것. 그 사람의 이름을 마음속으로 불러 보세요.',
+          '힘든 일이 있었다면, 그 일을 견뎌 낸 나 자신에게도 고마운 마음을 보내 주세요.',
+          '오늘 올려다본 하늘을 떠올려 보세요. 맑았든 흐렸든, 그 하늘 아래서 하루를 살았어요.',
+          '부모님, 혹은 나를 길러 준 분들을 떠올려 보세요. 그분들이 건네준 것들이 지금의 나를 이루고 있어요.',
+          '사랑하는 사람들이 지금 각자의 자리에서 잘 지내고 있다는 것을 떠올려 보세요.',
+          '숨을 쉬고 있다는 것. 이 숨은 오늘 하루 한 번도 나를 떠나지 않았어요.',
+          '내일이 또 온다는 것. 아직 펼쳐 보지 않은 하루가 기다리고 있어요.',
+          '오늘 일을 해낸 내 손과 머리에게도 고맙다고 말해 주세요.',
+          '오늘 마신 차 한 잔, 커피 한 잔의 따뜻함을 떠올려 보세요.'
+        ], n: [3, 8], p: 24
+      },
+      ['떠오른 얼굴들과 장면들을, 가슴 가까이에 가만히 모아 둡니다.', 14],
+      ['생각보다 고마운 것이 많았지요.', 14],
+      { ph: '쉬어 가기' },
+      ['감사한 마음이 따뜻하게 퍼져 나가는 걸 느껴 보세요. 가슴에서 어깨로, 팔을 타고 손끝까지.', 16],
+      ['배와 허리, 다리를 지나 발끝까지.', 16],
+      ['얼굴의 힘도 풀어요. 이마, 눈가, 그리고 턱.', 18],
+      ['몸이 이불 속으로 조금씩 더 가라앉아요.', 20],
+      ['생각이 떠오르면, 떠오르게 두세요. 붙잡지 않아도 돼요.', 22],
+      ['그러다 다시, 고마웠던 것 하나로 돌아오면 됩니다.', 26],
+      {
+        pool: [
+          '오늘 나를 웃게 한 순간을, 한 번 더 떠올려 보세요.',
+          '지금 이 자리의 따뜻함을, 한 번 더 느껴 보세요.',
+          '가장 먼저 떠올랐던 그 얼굴을, 한 번 더 바라보세요.'
+        ], n: [1, 2], p: 30
+      },
+      ['오늘은 이 정도면 충분해요.', 30],
+      ['더 생각하지 않아도 괜찮아요.', 34],
+      ['음악에 몸을 맡기고,', 34],
+      ['천천히, 잠 속으로 내려가세요.', 40],
+      ['편안히 주무세요.', 0]
+    ]
+  },
+  {
+    id: 'prayer', title: '감사 기도로 잠들기',
+    desc: '하루를 처음부터 되짚으며 감사하고, 무거웠던 것은 주님께 맡기고, 시편 말씀을 들으며 잠들어요.',
+    ref: '참고: 할로우 저녁 성찰(Examen) · 어바이드',
+    durs: [20, 30, 45], def: 30, sound: 'pad', end: 'fade', narr: 0.62, grow: 2.4,
+    script: [
+      { ph: '머무르기' },
+      ['편안히 누워 볼게요.', 6],
+      ['오늘 하루를 마무리하며, 하나님 앞에 잠시 머물러 봅니다.', 8],
+      ['좋은 말을 고르지 않아도 괜찮아요. 있는 그대로 나아가면 됩니다.', 10],
+      ['숨을 천천히 들이마시고, 길게 내쉬어요.', 10],
+      ['숨에 짧은 기도를 실어 볼게요.', 5],
+      ['들이쉬며, 주님.', 4, F],
+      ['내쉬며, 평안.', 7, F],
+      ['들이쉬며, 주님.', 4, F],
+      ['내쉬며, 평안.', 7, F],
+      ['이제 혼자서 몇 번 더 이어 가 보세요.', 30],
+      { ph: '감사' },
+      ['오늘 하루를 처음부터 천천히 되짚어 볼게요.', 8],
+      ['아침에 눈을 떴던 순간을 떠올려 보세요. 새 하루가 거저 주어졌어요.', 18],
+      ['오늘 만난 사람들을 한 명씩 떠올려 봅니다. 그들을 통해 받은 것이 있었나요.', 22],
+      ['오늘 먹은 음식, 머문 자리, 아프지 않고 움직여 준 몸. 모두 받은 것들이에요.', 20],
+      ['가장 감사했던 순간 하나를 골라, 그 순간에 잠시 머물러 보세요.', 24],
+      ['하나님, 오늘 주신 은혜에 감사드립니다.', 16],
+      { ph: '내려놓기' },
+      ['이번엔 아쉬웠던 순간도 떠올려 볼게요.', 8],
+      ['날이 섰던 말, 미뤄 둔 일, 마음이 무거웠던 일.', 14],
+      ['붙잡고 자책하지 않아도 돼요. 그대로 주님 손에 올려 드립니다.', 18],
+      ['수고하고 무거운 짐 진 자들아 다 내게로 오라. 내가 너희를 쉬게 하리라.', 20],
+      ['무거운 것은 내려놓고, 주시는 쉼을 받아들입니다.', 20],
+      ['사랑하는 사람들의 이름을 하나씩 떠올리며, 그들도 주님께 맡겨 드립니다.', 30],
+      ['내일 일은 내일 염려해도 돼요. 지금은 그저 쉬면 됩니다.', 22],
+      { ph: '말씀' },
+      ['시편 말씀을 천천히 들어 봅니다.', 6],
+      ['여호와는 나의 목자시니 내게 부족함이 없으리로다.', 12],
+      ['그가 나를 푸른 풀밭에 누이시며 쉴 만한 물 가로 인도하시는도다.', 18],
+      ['푸른 풀밭에 누워 있는 나를 그려 보세요. 서두를 일이 하나도 없는 곳이에요.', 26],
+      ['내가 평안히 눕고 자기도 하리니, 나를 안전히 살게 하시는 이는 오직 여호와이시니이다.', 30],
+      ['주님이 지켜 주시는 잠이에요.', 30],
+      ['이제 마음을 놓고,', 32],
+      ['평안히 잠드세요.', 34],
+      ['아멘.', 0]
+    ]
+  },
+  {
+    id: 'body', title: '몸 풀며 잠들기',
+    desc: '발끝에서 머리끝까지 차례로 힘을 풀어요. 생각보다 몸이 먼저 잠들게 하는 방식이에요.',
+    ref: '참고: 마보 · 캄 바디스캔',
+    durs: [20, 30, 45], def: 30, sound: 'padwaves', end: 'fade', narr: 0.6, grow: 2.2,
+    script: [
+      { ph: '자리 잡기' },
+      ['편안히 누워 볼게요. 팔은 몸 옆에 내려놓고, 손바닥은 편한 쪽으로 두세요.', 8],
+      ['이번에는 발끝에서 머리끝까지, 몸 구석구석에 숨을 보내며 힘을 풀어 볼 거예요.', 8],
+      ['숨을 깊게 들이쉬고, 길게 내쉬어요.', 10],
+      ['한 번 더. 내쉬면서 몸 전체를 침대에 조금 더 기대 놓습니다.', 12],
+      { ph: '다리' },
+      ['먼저 발가락에 마음을 가져가 볼게요.', 6],
+      ['발가락을 꼭 오므렸다가, 셋, 둘, 하나. 툭 풀어 줍니다.', 12],
+      ['풀린 발가락이 따뜻해지는 걸 느껴 보세요.', 12],
+      ['발바닥과 발뒤꿈치. 하루 종일 나를 받쳐 준 곳이에요. 고생했다고 말해 주세요.', 14],
+      ['발목이 풀려요.', 10],
+      ['종아리가 말랑하게 풀리고, 무릎 뒤쪽까지 힘이 빠져요.', 14],
+      ['허벅지가 묵직해져요. 다리 전체가 이불 속으로 가라앉아요.', 16],
+      { ph: '몸통' },
+      ['엉덩이와 골반의 힘을 내려놓아요.', 14],
+      ['아랫배가 숨에 따라 부풀었다가, 가라앉아요.', 16],
+      ['허리와 등. 침대에 닿아 있는 등 전체를 느껴 보세요.', 16],
+      ['가슴이 편안하게 열려요. 숨이 저절로 드나들어요.', 18],
+      { ph: '팔과 어깨' },
+      ['이제 두 손으로 가 볼게요. 주먹을 살짝 쥐었다가, 셋, 둘, 하나. 풀어요.', 14],
+      ['손가락 끝이 따뜻하고 묵직해요.', 14],
+      ['손목, 아래팔, 팔꿈치, 위팔까지 힘이 빠져요.', 16],
+      ['어깨를 귀 쪽으로 한 번 올렸다가, 툭 떨어뜨려요.', 14],
+      ['어깨가 아래로, 아래로 내려가요.', 18],
+      { ph: '얼굴' },
+      ['목 뒤가 길어지고, 머리의 무게를 베개에 다 맡겨요.', 18],
+      ['턱을 풀어요. 윗니와 아랫니 사이에 작은 틈을 둡니다.', 18],
+      ['혀가 입안에 편하게 놓여요.', 18],
+      ['볼과 입가가 풀려요.', 18],
+      ['눈꺼풀이 무거워지고, 눈 주위의 작은 근육들까지 쉬어요.', 20],
+      ['이마가 넓고 매끈하게 펴져요.', 20],
+      ['정수리까지, 머리 전체가 고요해져요.', 24],
+      { ph: '가라앉기' },
+      ['이제 몸 전체를 한꺼번에 느껴 보세요. 발끝부터 머리끝까지.', 20],
+      ['들이쉴 때 따뜻함이 퍼지고, 내쉴 때 남은 힘이 빠져나가요.', 26],
+      ['몸이 아주 무거워요. 움직이지 않아도 되는 무게예요.', 30],
+      ['다시 힘이 들어간 곳이 있다면, 그곳에 숨을 보내 주세요.', 36],
+      ['이제 아무것도 하지 않아도 돼요.', 40],
+      ['그대로 잠드세요.', 0]
+    ]
+  },
+  {
+    id: 'breath', title: '숨 세며 잠들기',
+    desc: '넷에 들이쉬고, 일곱 동안 멈추고, 여덟에 내쉬는 호흡을 한 뒤 열부터 하나까지 숨을 세요. 생각이 많은 날에 좋아요.',
+    ref: '참고: 헤드스페이스 와인드다운 · 4-7-8 호흡',
+    durs: [15, 20, 30], def: 20, sound: 'padrain', end: 'fade', narr: 0.65, grow: 1.8,
+    script: [
+      { ph: '자리 잡기' },
+      ['편하게 누워서 눈을 감아 볼게요.', 6],
+      ['오늘은 잠들려고 애쓰지 않을 거예요. 숨만 세어 볼 거예요.', 8],
+      ['숨이 길어지면, 몸은 알아서 쉴 준비를 해요.', 8],
+      { ph: '4-7-8 호흡' },
+      ['먼저, 넷에 들이쉬고 일곱 동안 멈추고 여덟에 내쉬는 호흡을 네 번 해 볼게요.', 4],
+      ['입으로 숨을 다 내쉬고 시작합니다.', 5],
+      ['코로 들이쉬고,', 3.2, F], ['멈추고,', 6.3, F], ['입으로 길게, 후우.', 7, F],
+      ['들이쉬고,', 3.4, F], ['멈추고,', 6.3, F], ['후우.', 7.5, F],
+      ['들이쉬고,', 3.4, F], ['멈추고,', 6.3, F], ['후우.', 7.5, F],
+      ['마지막으로 들이쉬고,', 3.2, F], ['멈추고,', 6.3, F], ['후우.', 8, F],
+      ['좋아요. 이제 숨은 편하게 쉬세요.', 8],
+      { ph: '숨 세기' },
+      ['이번엔 내쉬는 숨마다 숫자를 붙여 볼게요. 열부터 하나까지, 거꾸로 셉니다.', 6],
+      ['처음엔 제가 같이 세어 드릴게요.', 4],
+      ['열.', 7, F], ['아홉.', 7, F], ['여덟.', 7.5, F], ['일곱.', 7.5, F], ['여섯.', 8, F],
+      ['다섯.', 8, F], ['넷.', 8.5, F], ['셋.', 8.5, F], ['둘.', 9, F], ['하나.', 10, F],
+      ['이번엔 다시 열부터, 마음속으로 혼자 세어 보세요.', 60],
+      ['중간에 숫자를 놓쳐도 괜찮아요. 그냥 다시 열부터 시작하면 돼요.', 70],
+      ['숫자가 흐려지고 졸음이 오면, 세는 걸 그만둬도 좋아요.', 80],
+      ['이제 숨도, 숫자도 내려놓고 쉬세요.', 50],
+      ['편안히 주무세요.', 0]
+    ]
+  },
+  {
+    id: 'story', title: '밤 기차를 타고 바다 마을로',
+    desc: '빗속을 달리는 밤 기차를 타고 작은 바다 마을의 여관까지 가요. 사건도 긴장도 없는, 끝까지 안 들어도 되는 이야기예요.',
+    ref: '참고: 캄 슬립 스토리 · 헤드스페이스 슬립캐스트',
+    durs: [30, 45, 60], def: 45, sound: 'padrain', end: 'fade', narr: 0.5, grow: 2.4,
+    script: [
+      { ph: '준비' },
+      ['오늘은 이야기를 들으며 잠들어 볼게요.', 6],
+      ['끝까지 듣지 않아도 괜찮아요. 중간에 잠드는 게 이 이야기의 목적이에요.', 8],
+      ['숨을 크게 들이쉬고, 길게 내쉬어요.', 8],
+      ['한 번 더. 몸이 이불 속으로 조금 더 가라앉아요.', 10],
+      ['눈을 감고, 귀를 이야기에 맡겨 볼게요.', 10],
+      { ph: '이야기' },
+      ['밤 기차를 타고, 바다 마을로.', 8],
+      ['저녁 여덟 시가 조금 넘은 시간. 오래된 역 대합실에는 사람이 몇 남지 않았어요.', 5],
+      ['나무 의자는 수많은 사람이 앉았다 간 자리라, 모서리가 둥글고 매끄러워요.', 5],
+      ['밖에는 가는 비가 내려요. 플랫폼 지붕 끝에서 빗방울이 하나씩, 천천히 떨어져요.', 8],
+      ['기차가 들어와요. 바퀴가 레일 위를 길게 미끄러지고, 문이 스르르 열려요.', 6],
+      ['객실은 따뜻해요. 노란 불빛 아래 빈 좌석들이 가지런히 줄지어 있어요.', 6],
+      ['창가 자리에 앉아 가방을 발치에 내려놓아요. 오늘 할 일은 이제 다 끝났어요.', 8],
+      ['기차가 아주 천천히 움직이기 시작해요. 처음엔 움직이는지도 모를 만큼 조용하게.', 8],
+      ['창밖으로 도시의 불빛이 하나둘 멀어져요. 가로등, 간판, 아파트 창문들.', 8],
+      ['불빛이 드문드문해지더니, 어느새 창밖은 깊은 남색이 되었어요.', 10],
+      ['빗방울이 유리창에 맺혀 비스듬히 미끄러져 내려가요. 하나가 다른 하나를 만나 조금 더 큰 물방울이 되고, 또 천천히 흘러내려요.', 12],
+      ['덜컹, 덜컹. 기차는 일정한 박자로 흔들려요. 요람처럼 느리고 부드러운 박자예요.', 12],
+      ['승무원이 조용히 지나가며 따뜻한 보리차 한 잔을 건네요. 종이컵을 두 손으로 감싸면, 손바닥으로 온기가 번져요.', 12],
+      ['구수한 냄새가 올라와요. 한 모금 마시면, 따뜻함이 목을 타고 가슴까지 내려가요.', 14],
+      ['기차가 작은 역에 잠깐 멈춰요. 플랫폼에는 불 켜진 매표소 하나와, 빗물에 젖은 벤치 하나.', 12],
+      ['아무도 타지 않고, 아무도 내리지 않아요. 역무원이 손전등을 한 번 흔들자, 기차는 다시 천천히 출발해요.', 14],
+      ['창밖으로 논과 밭이 지나가요. 어둠 속에서도 젖은 흙냄새가 나는 것 같아요.', 14],
+      ['멀리 시골집 한 채에 불이 켜져 있어요. 그 집 사람들도 저녁을 먹고, 이불을 펴고 있겠지요.', 16],
+      ['좌석 등받이를 조금 뒤로 젖혀요. 담요를 무릎까지 끌어올려요.', 16],
+      ['덜컹, 덜컹. 빗소리와 바퀴 소리가 섞여서, 하나의 낮은 노래가 돼요.', 18],
+      ['터널을 하나 지나요. 창밖이 잠시 까맣게 비었다가, 다시 밤 풍경이 돌아와요.', 18],
+      ['이제 창밖으로 바다가 보이기 시작해요. 아주 넓고, 아주 어두운 바다.', 18],
+      ['수평선 근처에 고깃배 불빛 몇 개가, 별처럼 떠 있어요.', 20],
+      ['기차가 속도를 줄여요. 작은 바다 마을의 역이에요.', 18],
+      ['역 앞에는 낮은 지붕의 여관이 하나 있어요. 미닫이문을 열면 나무 냄새와 따뜻한 공기가 맞아 줘요.', 20],
+      ['방에는 두툼한 요가 깔려 있어요. 바닥이 따끈하게 데워져 있어요.', 20],
+      ['요 위에 누워, 이불을 턱 밑까지 덮어요.', 22],
+      ['창밖에서 파도 소리가 들려요. 밀려왔다가, 천천히 물러가요.', 24],
+      ['지붕 위로는 빗방울이 톡, 톡. 바다 위로는 쏴아.', 26],
+      ['내일 아침엔 바다를 보러 나가도 되고, 안 나가도 돼요. 아무 약속도 없는 아침이에요.', 28],
+      ['지금은 그저 이 따뜻한 방에서,', 28],
+      ['파도 소리를 들으며,', 32],
+      ['천천히 잠들면 돼요.', 40],
+      ['잘 자요.', 0]
+    ]
+  },
+  {
+    id: 'nap', title: '낮잠',
+    desc: '짧게 자리를 잡고 음악 속에서 쉬다가, 정한 시간이 되면 종소리와 목소리로 부드럽게 깨워 줘요.',
+    ref: '참고: 파워냅 세션 · 깨워 주는 종소리',
+    durs: [15, 20, 25, 30], def: 20, sound: 'pad', end: 'wake', narr: 0.22, grow: 1.6,
+    script: [
+      { ph: '자리 잡기' },
+      ['낮잠 시간이에요. {min}분 뒤에 부드럽게 깨워 드릴게요.', 5],
+      ['그러니 시간 걱정은 내려놓아도 돼요.', 6],
+      ['눈을 감고, 숨을 크게 들이쉬었다가, 길게 내쉬어요.', 9],
+      ['한 번 더 들이쉬고, 내쉬면서 어깨를 툭 떨어뜨려요.', 10],
+      ['꼭 깊이 잠들지 않아도 괜찮아요. 눈을 감고 쉬기만 해도 머리는 맑아져요.', 10],
+      ['이마와 눈 주위의 힘을 빼요.', 10],
+      ['턱을 풀고, 혀를 입천장에서 살짝 떼어 놓아요.', 12],
+      ['손과 팔이 무거워져요.', 12],
+      ['오전에 있었던 일들은 잠시 문밖에 두고 올게요.', 14],
+      ['지금은 오로지 쉬기 위한 시간이에요.', 18],
+      ['음악에 몸을 맡기세요.', 0]
+    ],
+    wake: [
+      { chime: 7 },
+      { chime: 6 },
+      ['이제 천천히 깨어날 시간이에요.', 5, F],
+      ['손가락과 발가락을 살짝 움직여 보세요.', 5, F],
+      ['숨을 크게 들이쉬고, 기지개를 쭉 켜 볼게요.', 6, F],
+      ['쉬고 일어난 만큼, 남은 하루가 조금 더 가벼워질 거예요.', 4, F],
+      ['준비가 되면 눈을 뜨세요.', 2, F]
+    ]
+  },
+  {
+    id: 'sos', title: '다시 잠들기',
+    desc: '한밤중에 깼을 때 듣는 짧은 안내예요. 시계는 보지 말고, 몸이 다시 잠을 기억해 내게 해요.',
+    ref: '참고: 헤드스페이스 나이트타임 SOS',
+    durs: [15, 30], def: 30, sound: 'brown', end: 'fade', narr: 0.35, grow: 2.2,
+    script: [
+      { ph: '다시 눕기' },
+      ['잠에서 깼군요. 괜찮아요.', 6],
+      ['눈을 뜨지 않아도 돼요. 시계도 보지 않을게요. 지금 몇 시인지는 중요하지 않아요.', 8],
+      ['자다가 잠깐 깨는 건 누구에게나 있는 일이에요.', 8],
+      ['몸이 다시 잠을 기억해 내도록, 조금만 도와줄게요.', 8],
+      ['숨을 길게 내쉬어 보세요. 들이쉬는 것보다 내쉬는 숨을 더 길게.', 10],
+      ['한 번 더. 후우.', 10],
+      ['혹시 꿈이나 걱정 때문에 깼다면, 그 생각을 종이에 적어 침대 옆에 내려놓는다고 상상해 보세요.', 12],
+      ['내일 아침에 다시 꺼내 보면 돼요. 지금은 내 몫이 아니에요.', 14],
+      { ph: '가라앉기' },
+      ['이제 몸의 무게를 느껴 볼게요. 머리가 베개에, 등이 이불에 닿아 있는 곳.', 14],
+      ['발이 무거워지고, 다리가 무거워지고,', 10],
+      ['팔과 손이 침대 위에 툭, 내려앉아요.', 14],
+      ['얼굴의 힘이 풀려요. 턱이 살짝 벌어져도 괜찮아요.', 16],
+      ['잠은 붙잡으려 하면 멀어지고, 내버려 두면 다가와요.', 18],
+      ['그냥 쉬기만 해도 몸은 회복하고 있어요.', 22],
+      ['소리를 따라 천천히 가라앉으세요.', 30],
+      ['편안히 주무세요.', 0]
+    ]
+  },
+  {
+    id: 'sound', title: '소리만',
+    desc: '목소리 없이 음악이나 빗소리, 파도 소리만 틀어 둬요. 시간을 정하거나 계속 켜 둘 수 있어요.',
+    ref: '참고: 헤드스페이스 사운드스케이프 · 슬립 라디오',
+    durs: [30, 60, 120, 0], def: 60, sound: 'rain', end: 'fade', narr: 0, grow: 1,
+    script: [{ ph: '소리만' }]
+  }
+];
+
+</script>
+<script>
+(function () {
+'use strict';
+const $ = (s) => document.querySelector(s);
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const prefs = Object.assign({ gvoice: 'Sulafat', gkey: '', voice: '', rate: 0.85, pitch: 0.95, voiceVol: 1, musicVol: 0.55, subs: false, keep: false, durs: {}, snd: {} }, store.get('swim.prefs', {}));
+const savePrefs = () => store.set('swim.prefs', prefs);
+
+const SOUNDS = { pad: '잔잔한 음악', padrain: '음악 + 빗소리', padwaves: '음악 + 파도 소리', rain: '빗소리', waves: '파도 소리', brown: '포근한 소음' };
+const TTS = ('speechSynthesis' in window) && typeof window.SpeechSynthesisUtterance === 'function';
+let VOICES = [];
+
+/* ---------- 홈 화면 ---------- */
+function recommendId() {
+  const h = new Date().getHours();
+  if (h >= 11 && h < 18) return 'nap';
+  if (h >= 0 && h < 5) return 'sos';
+  return 'gratitude';
+}
+function renderWhen() {
+  const d = new Date();
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  const h = d.getHours(), m = String(d.getMinutes()).padStart(2, '0');
+  const ap = h < 12 ? '오전' : '오후';
+  const hh = h % 12 === 0 ? 12 : h % 12;
+  const mood = (h >= 11 && h < 18) ? '눈 붙이기 좋은 오후' : (h >= 0 && h < 5) ? '아직 깊은 밤' : (h >= 5 && h < 11) ? '조용한 아침' : '하루를 내려놓는 밤';
+  $('#when').textContent = `${days[d.getDay()]}요일 ${ap} ${hh}:${m} · ${mood}`;
+}
+function durLabel(m) { return m === 0 ? '계속' : m + '분'; }
+function renderList() {
+  const list = $('#list');
+  const rec = recommendId();
+  list.innerHTML = '';
+  SESSIONS.forEach((s) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.id = 'row-' + s.id;
+    const mins = s.durs.filter(x => x > 0);
+    const range = mins.length > 1 ? `${mins[0]}–${mins[mins.length - 1]}분` : `${mins[0]}분`;
+    row.innerHTML = `
+      <button class="head" type="button" aria-expanded="false" aria-controls="panel-${s.id}">
+        <span class="t">${s.title}${s.id === rec ? '<span class="pick">지금 추천</span>' : ''}</span>
+        <span class="mins">${range}</span>
+        <span class="d">${s.desc}</span>
+        <span class="ref">${s.ref}</span>
+      </button>
+      <div class="panel" id="panel-${s.id}" hidden>
+        <div>
+          <div class="fieldlabel" id="dl-${s.id}">길이</div>
+          <div class="chips" role="group" aria-labelledby="dl-${s.id}"></div>
+        </div>
+        <div>
+          <label class="fieldlabel" for="snd-${s.id}">배경 소리</label>
+          <select id="snd-${s.id}"></select>
+        </div>
+        <button class="go" type="button" id="go-${s.id}">시작하기</button>
+      </div>`;
+    const chips = row.querySelector('.chips');
+    const cur = prefs.durs[s.id] != null && s.durs.includes(prefs.durs[s.id]) ? prefs.durs[s.id] : s.def;
+    s.durs.forEach((m) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.textContent = durLabel(m);
+      b.setAttribute('aria-pressed', String(m === cur));
+      b.addEventListener('click', () => {
+        prefs.durs[s.id] = m; savePrefs();
+        chips.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c === b)));
+      });
+      chips.appendChild(b);
+    });
+    const sel = row.querySelector('select');
+    Object.entries(SOUNDS).forEach(([k, v]) => {
+      const o = document.createElement('option'); o.value = k; o.textContent = v; sel.appendChild(o);
+    });
+    sel.value = prefs.snd[s.id] || s.sound;
+    sel.addEventListener('change', () => { prefs.snd[s.id] = sel.value; savePrefs(); });
+    const head = row.querySelector('.head');
+    const panel = row.querySelector('.panel');
+    head.addEventListener('click', () => {
+      const open = panel.hidden;
+      document.querySelectorAll('.row').forEach(r => { r.classList.remove('open'); r.querySelector('.panel').hidden = true; r.querySelector('.head').setAttribute('aria-expanded', 'false'); });
+      if (open) { panel.hidden = false; row.classList.add('open'); head.setAttribute('aria-expanded', 'true'); }
+    });
+    row.querySelector('.go').addEventListener('click', () => {
+      const T = prefs.durs[s.id] != null && s.durs.includes(prefs.durs[s.id]) ? prefs.durs[s.id] : s.def;
+      startSession(s, T, sel.value);
+    });
+    list.appendChild(row);
+  });
+}
+
+/* ---------- 설정 ---------- */
+function pct(v) { return Math.round(v * 100) + '%'; }
+function bindRange(id, key, fmt, onInput) {
+  const el = $('#' + id), out = $('#' + id + 'Out');
+  el.value = prefs[key]; out.textContent = fmt(prefs[key]);
+  el.addEventListener('input', () => {
+    prefs[key] = parseFloat(el.value); out.textContent = fmt(prefs[key]); savePrefs();
+    if (onInput) onInput();
+  });
+}
+function syncRanges() {
+  [['vvol', 'voiceVol'], ['mvol', 'musicVol'], ['pvvol', 'voiceVol'], ['pmvol', 'musicVol']].forEach(([id, key]) => {
+    const el = $('#' + id); if (el) { el.value = prefs[key]; $('#' + id + 'Out').textContent = pct(prefs[key]); }
+  });
+}
+function loadVoices() {
+  if (!TTS) return;
+  VOICES = speechSynthesis.getVoices().filter(v => /^ko/i.test(v.lang));
+  const sel = $('#voice');
+  sel.innerHTML = '';
+  if (!VOICES.length) {
+    const o = document.createElement('option'); o.value = ''; o.textContent = '휴대폰 기본 한국어 목소리'; sel.appendChild(o);
+  } else {
+    VOICES.forEach((v) => {
+      const o = document.createElement('option'); o.value = v.voiceURI;
+      o.textContent = v.name.replace(/Microsoft |Google |Samsung /, '') + (v.localService ? '' : ' (온라인)');
+      sel.appendChild(o);
+    });
+    const v = pickVoice(); if (v) sel.value = v.voiceURI;
+  }
+}
+function pickVoice() {
+  if (!VOICES.length) return null;
+  return VOICES.find(v => v.voiceURI === prefs.voice) || VOICES.find(v => v.localService) || VOICES[0];
+}
+
+/* ---------- 목소리: 제미나이 성우 목소리로 한 번 녹음해 휴대폰에 저장 ---------- */
+const GVOICES = [
+  ['Sulafat', '따뜻한 목소리', 'Sulafat'],
+  ['Achernar', '부드러운 목소리', 'Achernar'],
+  ['Vindemiatrix', '다정한 목소리', 'Vindemiatrix'],
+  ['Gacrux', '차분한 어른 목소리', 'Gacrux'],
+  ['Despina', '매끄러운 목소리', 'Despina']
+];
+const SAMPLE_TEXT = '편안히 누워 볼게요. 오늘 하루를 지나온 몸에게, 수고했다고 말해 주세요.';
+const STYLES = {
+  calm: 'Voice direction: a Korean woman guiding a sleep meditation, speaking Korean. Very slow, soft and low, warm, close to the microphone, almost a whisper but every word clear. Gentle, unhurried breaths between phrases. Soothing and intimate, like a trusted narrator at bedtime. Never bright, cheerful or announcer-like.',
+  prayer: 'Voice direction: a Korean woman leading a quiet bedtime prayer and Scripture reading, speaking Korean. Very slow, soft, low and tender, reverent and peaceful, close to the microphone, almost a whisper but clear. Unhurried breaths between phrases. Never bright or preachy.',
+  story: 'Voice direction: a Korean woman telling a gentle bedtime story, speaking Korean. Slow, soft and warm, softly descriptive, close to the microphone, calm and intimate, like reading to someone drifting off to sleep. Never dramatic or cheerful.',
+  wake: 'Voice direction: a Korean woman gently waking someone from a short nap, speaking Korean. Soft and warm, a little brighter than a whisper, still slow and kind.'
+};
+const STYLE_LATE = ' Now even slower and quieter, drowsy, letting the ends of phrases fade softly.';
+const TTS_MODELS = ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts', 'gemini-2.5-flash-preview-tts'];
+let ttsModelIdx = 0, ttsExhaustedAt = 0;
+const sleepMs = (ms) => new Promise(r => setTimeout(r, ms));
+const clipKey = (voice, tier, text) => voice + '|' + tier + '|' + text;
+function kindOf(s) { return s.id === 'prayer' ? 'prayer' : s.id === 'story' ? 'story' : 'calm'; }
+function fillText(t, T) { return t.replace('{min}', String(T)); }
+function styleFor(tier) { const [kind, late] = tier.split('-'); return (STYLES[kind] || STYLES.calm) + (late ? STYLE_LATE : ''); }
+function dojoKey() { try { const d = JSON.parse(localStorage.getItem('dojo-live') || '{}'); return String(d.key_gemini || '').trim(); } catch (e) { return ''; } }
+const gKey = () => (prefs.gkey || dojoKey() || '').trim();
+
+const IDB = (() => {
+  const mem = new Map(); let dbp = null;
+  function db() {
+    if (!dbp) dbp = new Promise((res) => {
+      try {
+        const r = indexedDB.open('bam-swimpyo', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('clips');
+        r.onsuccess = () => res(r.result); r.onerror = () => res(null);
+      } catch (e) { res(null); }
+    });
+    return dbp;
+  }
+  async function op(mode, fn, fallback) {
+    const d = await db(); if (!d) return fallback();
+    return new Promise((res) => {
+      try { const tx = d.transaction('clips', mode); const q = fn(tx.objectStore('clips')); tx.oncomplete = () => res(q && 'result' in q ? q.result : true); tx.onerror = () => res(fallback()); }
+      catch (e) { res(fallback()); }
+    });
+  }
+  return {
+    get: (k) => op('readonly', s => s.get(k), () => mem.get(k) || null).then(v => v || mem.get(k) || null),
+    put: (k, v) => { mem.set(k, v); return op('readwrite', s => s.put(v, k), () => true); },
+    keys: () => op('readonly', s => s.getAllKeys(), () => [...mem.keys()]).then(v => (v || []).concat([...mem.keys()]))
+  };
+})();
+
+function b64ToU8(b64) { const bin = atob(b64); const u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return u8; }
+function pcmToWav(u8, rate) {
+  const n = u8.length, out = new Uint8Array(44 + n), d = new DataView(out.buffer);
+  const str = (o, t) => { for (let i = 0; i < t.length; i++) d.setUint8(o + i, t.charCodeAt(i)); };
+  str(0, 'RIFF'); d.setUint32(4, 36 + n, true); str(8, 'WAVE'); str(12, 'fmt '); d.setUint32(16, 16, true);
+  d.setUint16(20, 1, true); d.setUint16(22, 1, true); d.setUint32(24, rate, true); d.setUint32(28, rate * 2, true);
+  d.setUint16(32, 2, true); d.setUint16(34, 16, true); str(36, 'data'); d.setUint32(40, n, true);
+  out.set(u8, 44); return out.buffer;
+}
+function mimeOf(buf) { const h = new Uint8Array(buf, 0, 4); return (h[0] === 0x52 && h[1] === 0x49 && h[2] === 0x46) ? 'audio/wav' : 'audio/mpeg'; }
+
+async function synth(text, tier, voice) {
+  const key = gKey(); if (!key) throw { code: 'no_key', fatal: true };
+  if (ttsModelIdx >= TTS_MODELS.length && Date.now() - ttsExhaustedAt > 10 * 60000) ttsModelIdx = 0;
+  let last = null;
+  for (let mi = ttsModelIdx; mi < TTS_MODELS.length; mi++) {
+    const model = TTS_MODELS[mi], preview = /preview/.test(model);
+    let moveOn = true;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      let r;
+      try {
+        r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+          method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
+          body: JSON.stringify(preview ? {
+            contents: [{ role: 'user', parts: [{ text }] }],
+            generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } }
+          } : {
+            contents: [{ role: 'user', parts: [{ text, speech_metadata: { style: styleFor(tier) } }] }],
+            generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { voice } } }
+          })
+        });
+      } catch (e) { throw { code: 'network', message: '인터넷 연결을 확인해 주세요.' }; }
+      if (r.ok) {
+        const j = await r.json().catch(() => ({}));
+        const part = ((((j.candidates || [])[0] || {}).content || {}).parts || []).find(p => p.inlineData);
+        if (part) {
+          ttsModelIdx = mi;
+          const mime = part.inlineData.mimeType || '';
+          const u8 = b64ToU8(part.inlineData.data);
+          if (/wav/i.test(mime)) return u8.buffer;
+          return pcmToWav(u8, Number((mime.match(/rate=(\d+)/) || [])[1]) || 24000);
+        }
+        last = { code: 'tts_failed', message: model + ' 빈 응답' }; moveOn = false; break;
+      }
+      const j = await r.json().catch(() => ({}));
+      const msg = ((j.error && j.error.message) || '').slice(0, 160);
+      if (/API key not valid|API_KEY_INVALID/i.test(msg)) throw { code: 'bad_key', fatal: true, message: msg };
+      last = { code: r.status === 429 ? 'rate_limited' : 'tts_failed', message: model.replace('gemini-', '') + ' ' + r.status + ' ' + msg };
+      if ((r.status === 429 || r.status >= 500) && attempt === 0) { await sleepMs(3000); continue; }
+      break;
+    }
+    if (moveOn) { ttsModelIdx = mi + 1; if (ttsModelIdx >= TTS_MODELS.length) ttsExhaustedAt = Date.now(); }
+  }
+  try { return await cloudSynth(text, voice, key); } catch (e) {}
+  if (ttsModelIdx >= TTS_MODELS.length) ttsExhaustedAt = Date.now();
+  const err = last || { code: 'tts_failed', message: '' };
+  err.fatal = err.code === 'rate_limited';
+  throw err;
+}
+// 제미나이 쪽 한도가 다 차면 같은 키로 구글 클라우드 목소리(Chirp 3 HD, 같은 이름)를 써 봐요
+async function cloudSynth(text, voice, key) {
+  const r = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {
+    method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
+    body: JSON.stringify({ input: { text }, voice: { languageCode: 'ko-KR', name: 'ko-KR-Chirp3-HD-' + voice }, audioConfig: { audioEncoding: 'MP3', speakingRate: 0.85 } })
+  });
+  if (!r.ok) throw { code: 'cloud' };
+  const j = await r.json(); if (!j.audioContent) throw { code: 'cloud' };
+  return b64ToU8(j.audioContent).buffer;
+}
+function errCopy(e) {
+  if (!e) return '';
+  if (e.code === 'no_key') return '제미나이 키가 없어요. 위 칸에 붙여 넣어 주세요.';
+  if (e.code === 'bad_key') return '제미나이 키가 맞지 않아요. 키를 다시 확인해 주세요.';
+  if (e.code === 'rate_limited') return '제미나이 목소리 사용 한도에 잠시 걸렸어요. 조금 뒤에 다시 하면 이어서 녹음돼요. (' + (e.message || '') + ')';
+  if (e.code === 'network') return e.message;
+  return '목소리 녹음이 안 됐어요. (' + (e.message || e.code) + ')';
+}
+
+/* ---------- 설정 화면 ---------- */
+const hint = (t) => { $('#voiceHint').textContent = t; };
+function initSettings() {
+  bindRange('rate', 'rate', v => v.toFixed(2) + '배');
+  bindRange('pitch', 'pitch', v => v.toFixed(2));
+  bindRange('vvol', 'voiceVol', pct, syncRanges);
+  bindRange('mvol', 'musicVol', pct, () => { syncRanges(); applyMusicVol(); });
+  bindRange('pvvol', 'voiceVol', pct, syncRanges);
+  bindRange('pmvol', 'musicVol', pct, () => { syncRanges(); applyMusicVol(); });
+  $('#voice').addEventListener('change', (e) => { prefs.voice = e.target.value; savePrefs(); });
+  if (TTS) {
+    loadVoices();
+    speechSynthesis.addEventListener ? speechSynthesis.addEventListener('voiceschanged', loadVoices) : (speechSynthesis.onvoiceschanged = loadVoices);
+  } else { const sel = $('#voice'); sel.innerHTML = '<option value="">사용할 수 없음</option>'; sel.disabled = true; }
+  renderVoices();
+  renderKey();
+  $('#gkey').addEventListener('input', (e) => { prefs.gkey = e.target.value.trim(); savePrefs(); renderKey(true); });
+  $('#bankBtn').addEventListener('click', toggleBank);
+  refreshBankState();
+}
+function renderVoices() {
+  const box = $('#voices'); box.innerHTML = '';
+  GVOICES.concat([['phone', '휴대폰 기본 목소리', '기계음 · 인터넷 없이']]).forEach(([id, name, sub]) => {
+    const row = document.createElement('div'); row.className = 'vrow';
+    const lab = document.createElement('label'); lab.className = 'vpick';
+    const r = document.createElement('input'); r.type = 'radio'; r.name = 'gv'; r.value = id; r.id = 'gv-' + id; r.checked = prefs.gvoice === id;
+    r.addEventListener('change', () => { prefs.gvoice = id; savePrefs(); $('#phoneOpts').hidden = id !== 'phone'; refreshBankState(); });
+    const t = document.createElement('span'); t.className = 'vname'; t.textContent = name;
+    const s2 = document.createElement('span'); s2.className = 'vsub'; s2.textContent = sub;
+    lab.append(r, t, s2);
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'ghost small'; b.textContent = '들어 보기';
+    b.addEventListener('click', () => playSample(id, b));
+    row.append(lab, b); box.appendChild(row);
+  });
+  $('#phoneOpts').hidden = prefs.gvoice !== 'phone';
+}
+function renderKey(typed) {
+  const st = $('#keyState'), f = $('#keyField');
+  if (dojoKey()) { st.textContent = '영어 앱(Miss Lily)에 저장된 제미나이 키로 녹음해요. 따로 넣을 건 없어요.'; f.hidden = true; }
+  else if (prefs.gkey) { st.textContent = '붙여 넣은 제미나이 키로 녹음해요.'; f.hidden = false; }
+  else { st.textContent = '제미나이 키를 찾지 못했어요. 영어 앱을 쓰던 휴대폰 크롬에서 열었는지 확인하거나, 아래 칸에 키를 붙여 넣어 주세요.'; f.hidden = false; }
+  if (!typed) $('#gkey').value = prefs.gkey || '';
+}
+let sampleAudio = null;
+async function playSample(id, btn) {
+  hint('');
+  if (sampleAudio) { try { sampleAudio.pause(); } catch (e) {} }
+  if (TTS) { try { speechSynthesis.cancel(); } catch (e) {} }
+  if (id === 'phone') {
+    if (!TTS) { hint('이 브라우저에서는 휴대폰 기본 목소리를 쓸 수 없어요.'); return; }
+    speechSynthesis.speak(makeUtter(SAMPLE_TEXT, 0)); return;
+  }
+  const k = clipKey(id, 'sample', SAMPLE_TEXT);
+  let buf = await IDB.get(k);
+  if (!buf) {
+    const old = btn.textContent; btn.textContent = '만드는 중…'; btn.disabled = true;
+    try { buf = await synth(SAMPLE_TEXT, 'calm', id); await IDB.put(k, buf); } catch (e) { hint(errCopy(e)); }
+    btn.textContent = old; btn.disabled = false;
+    if (!buf) return;
+  }
+  sampleAudio = new Audio(URL.createObjectURL(new Blob([buf], { type: mimeOf(buf) })));
+  sampleAudio.play().catch(() => hint('소리를 틀지 못했어요. 한 번 더 눌러 주세요.'));
+}
+function allLines() {
+  const out = new Map();
+  SESSIONS.forEach((s) => {
+    const kind = kindOf(s), L = s.script.length;
+    s.durs.forEach((T) => {
+      s.script.forEach((st, j) => {
+        const tier = kind + (j / L > 0.62 ? '-late' : '');
+        if (Array.isArray(st)) { const t = fillText(st[0], T); out.set(tier + '|' + t, { say: t, tier }); }
+        else if (st.pool) st.pool.forEach(t => out.set(tier + '|' + t, { say: t, tier }));
+      });
+    });
+    (s.wake || []).forEach(st => { if (Array.isArray(st)) out.set('wake|' + st[0], { say: st[0], tier: 'wake' }); });
+  });
+  return [...out.values()];
+}
+let bankRun = null;
+async function refreshBankState() {
+  const v = prefs.gvoice, el = $('#bankState'), btn = $('#bankBtn');
+  if (v === 'phone') { el.textContent = ''; btn.hidden = true; return; }
+  btn.hidden = false;
+  const keys = new Set(await IDB.keys());
+  const lines = allLines();
+  const have = lines.filter(l => keys.has(clipKey(v, l.tier, l.say))).length;
+  if (bankRun) return;
+  el.textContent = `이 목소리로 녹음된 문장 ${have} / ${lines.length}` + (have === lines.length ? ' · 전부 준비됐어요. 인터넷 없이도 들을 수 있어요.' : ' · 처음 듣는 세션은 시작할 때 저절로 녹음돼요.');
+}
+async function toggleBank() {
+  if (bankRun) { bankRun.stop = true; return; }
+  const v = prefs.gvoice; if (v === 'phone') return;
+  const me = bankRun = { stop: false };
+  const btn = $('#bankBtn'); btn.textContent = '녹음 멈추기'; hint('');
+  const keys = new Set(await IDB.keys());
+  const todo = allLines().filter(l => !keys.has(clipKey(v, l.tier, l.say)));
+  let n = 0;
+  for (const l of todo) {
+    if (me.stop) break;
+    $('#bankState').textContent = `녹음하는 중 ${++n} / ${todo.length} · 화면을 켜 두세요`;
+    try { const buf = await synth(l.say, l.tier, v); await IDB.put(clipKey(v, l.tier, l.say), buf); }
+    catch (e) { hint(errCopy(e)); if (e.fatal) break; await sleepMs(3000); }
+  }
+  bankRun = null; btn.textContent = '모든 세션 미리 녹음해 두기';
+  refreshBankState();
+}
+
+/* ---------- 세션 재생 중 녹음 준비 ---------- */
+function setNote(t) { const el = $('#pNote'); if (el) el.textContent = t; }
+function startPrefetch(run, items) {
+  run.clips = new Map();
+  const v = prefs.gvoice; if (v === 'phone') return;
+  const order = [];
+  items.forEach((it) => {
+    const k = clipKey(v, it.tier, it.say);
+    if (!run.clips.has(k)) { let resolve; const p = new Promise(r => { resolve = r; }); run.clips.set(k, { p, resolve }); order.push([k, it]); }
+  });
+  (async () => {
+    const cached = new Set(await IDB.keys());
+    const need = order.filter(([k]) => !cached.has(k)).length;
+    let made = 0;
+    for (const [k, it] of order) {
+      const ent = run.clips.get(k);
+      if (run.stopped) { ent.resolve(null); continue; }
+      let buf = cached.has(k) ? await IDB.get(k) : null;
+      if (!buf && !run.noGen) {
+        setNote(`목소리 녹음 중 ${++made} / ${need} · 이 세션은 처음 한 번만 해요`);
+        try { buf = await synth(it.say, it.tier, v); IDB.put(k, buf); }
+        catch (e) { run.genErr = e; if (e.fatal || e.code === 'network') run.noGen = true; setNote(errCopy(e) + ' 남은 부분은 휴대폰 기본 목소리로 읽어요.'); buf = null; }
+      }
+      ent.resolve(buf);
+    }
+    if (!run.genErr && made && !run.stopped) setNote('목소리 녹음을 마쳤어요. 다음부터는 바로 나와요.');
+  })();
+}
+async function playClip(run, buf, prog) {
+  const E = run.engine; if (!E || !E.ctx) return run.wait(2);
+  let ab;
+  try { ab = await E.ctx.decodeAudioData(buf.slice(0)); } catch (e) { return; }
+  if (run.stopped) return;
+  const src = E.ctx.createBufferSource(); src.buffer = ab;
+  const g = E.ctx.createGain(); g.gain.value = clamp(prefs.voiceVol * (1 - 0.3 * prog), 0.05, 1) * 1.15;
+  src.connect(g); g.connect(E.voice);
+  const ended = new Promise(r => { src.onended = r; });
+  src.start();
+  await Promise.race([ended, run.wait(ab.duration + 1.5)]);
+}
+async function say(run, item, prog) {
+  const v = prefs.gvoice;
+  if (v !== 'phone' && run.clips) {
+    const ent = run.clips.get(clipKey(v, item.tier, item.say));
+    const buf = ent ? await ent.p : null;
+    if (run.stopped) return;
+    if (buf) {
+      await run.waitFor(() => !run.paused);
+      if (run.stopped) return;
+      showSub(item.say);
+      await playClip(run, buf, prog);
+      fadeSub();
+      return;
+    }
+  }
+  return sayPhone(run, item.say, prog);
+}
+
+/* ---------- 소리 엔진 (Web Audio로 즉석 합성) ---------- */
+const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+const PROG = [
+  [38, 57, 61, 64, 66], // Dmaj9
+  [47, 54, 57, 61, 62], // Bm9
+  [43, 54, 57, 59, 62], // Gmaj9
+  [45, 52, 57, 59, 64], // Asus2
+  [38, 57, 61, 64, 69], // D
+  [40, 54, 55, 59, 62], // Em9
+  [43, 50, 54, 59, 66], // Gmaj7
+  [45, 52, 57, 59, 61]  // A6sus
+];
+const BELLS = [62, 64, 66, 69, 71, 74, 76, 78, 81];
+
+class Engine {
+  constructor() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    this.ctx = new AC();
+    const ctx = this.ctx;
+    this.out = ctx.createDynamicsCompressor();
+    this.out.threshold.value = -18; this.out.ratio.value = 3; this.out.attack.value = 0.05; this.out.release.value = 0.5;
+    this.out.connect(ctx.destination);
+    this.master = ctx.createGain(); this.master.gain.value = 0; this.master.connect(this.out);
+    this.voice = ctx.createGain(); this.voice.gain.value = 1; this.voice.connect(this.master);
+    this.music = ctx.createGain(); this.music.gain.value = prefs.musicVol * prefs.musicVol * 1.6; this.music.connect(this.master);
+    this.reverb = ctx.createConvolver(); this.reverb.buffer = this.impulse(5, 2.4);
+    const wet = ctx.createGain(); wet.gain.value = 0.85; this.reverb.connect(wet); wet.connect(this.music);
+    this.fx = ctx.createGain(); this.fx.gain.value = 1; this.fx.connect(this.master);
+    this.bufs = {}; this.layers = []; this.timers = new Set();
+  }
+  later(fn, ms) { const id = setTimeout(() => { this.timers.delete(id); if (this.ctx.state === 'suspended') { this.later(fn, 500); return; } fn(); }, ms); this.timers.add(id); return id; }
+  impulse(dur, decay) {
+    const ctx = this.ctx, rate = ctx.sampleRate, len = Math.floor(rate * dur), b = ctx.createBuffer(2, len, rate);
+    for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay); }
+    return b;
+  }
+  noise(type) {
+    if (this.bufs[type]) return this.bufs[type];
+    const ctx = this.ctx, rate = ctx.sampleRate, len = rate * 12, b = ctx.createBuffer(2, len, rate);
+    for (let c = 0; c < 2; c++) {
+      const d = b.getChannelData(c);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, last = 0;
+      for (let i = 0; i < len; i++) {
+        const w = Math.random() * 2 - 1;
+        if (type === 'white') d[i] = w * 0.5;
+        else if (type === 'pink') {
+          b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.969 * b2 + w * 0.153852;
+          b3 = 0.8665 * b3 + w * 0.3104856; b4 = 0.55 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.016898;
+          d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926;
+        } else { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; }
+      }
+      const drift = d[len - 1] - d[0];
+      for (let i = 0; i < len; i++) d[i] -= drift * (i / len);
+    }
+    this.bufs[type] = b; return b;
+  }
+  src(type) { const s = this.ctx.createBufferSource(); s.buffer = this.noise(type); s.loop = true; s.start(0, Math.random() * 11); return s; }
+  gain(v, dest) { const g = this.ctx.createGain(); g.gain.value = v; if (dest) g.connect(dest); return g; }
+  filt(type, f, q, dest) { const n = this.ctx.createBiquadFilter(); n.type = type; n.frequency.value = f; if (q != null) n.Q.value = q; if (dest) n.connect(dest); return n; }
+  pan(v, dest) { if (!this.ctx.createStereoPanner) return dest; const p = this.ctx.createStereoPanner(); p.pan.value = v; p.connect(dest); return p; }
+
+  layerPad(level) {
+    const ctx = this.ctx, E = this;
+    const out = this.gain(0, this.music); out.gain.setTargetAtTime(level, ctx.currentTime, 2);
+    const send = this.gain(0.55, this.reverb); out.connect(send);
+    const lp = this.filt('lowpass', 1300, 0.4, out);
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.025; const lg = this.gain(420); lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
+    let idx = Math.floor(Math.random() * 2) * 4, alive = true;
+    const voice = (m, t, dur, amp) => {
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(amp, t + 7); g.gain.setValueAtTime(amp, t + dur - 9); g.gain.linearRampToValueAtTime(0, t + dur);
+      g.connect(E.pan((Math.random() - 0.5) * 0.6, lp));
+      const f = mtof(m);
+      [['sine', f, 1], ['triangle', f * 1.0035, 0.45], ['sine', f * 2.002, 0.1]].forEach(([type, fr, a]) => {
+        const o = ctx.createOscillator(); o.type = type; o.frequency.value = fr;
+        const og = ctx.createGain(); og.gain.value = a; o.connect(og); og.connect(g); o.start(t); o.stop(t + dur + 0.2);
+      });
+    };
+    const chord = () => {
+      if (!alive) return;
+      const c = PROG[idx % PROG.length]; idx++;
+      const t = ctx.currentTime + 0.05, dur = 22;
+      c.forEach((m, k) => voice(m, t + k * 0.35, dur, k === 0 ? 0.04 : 0.048));
+      E.later(chord, (dur - 8.5) * 1000);
+    };
+    const bell = () => {
+      if (!alive) return;
+      const t = ctx.currentTime + 0.05;
+      const m = BELLS[Math.floor(Math.random() * BELLS.length)];
+      E.pluck(mtof(m), t, 0.03 + Math.random() * 0.02, out);
+      if (Math.random() < 0.35) E.pluck(mtof(BELLS[Math.floor(Math.random() * BELLS.length)]), t + 0.9 + Math.random(), 0.022, out);
+      E.later(bell, 6000 + Math.random() * 10000);
+    };
+    chord(); E.later(bell, 4000);
+    return { stop(fade) { alive = false; out.gain.setTargetAtTime(0, ctx.currentTime, fade / 4); setTimeout(() => { try { lfo.stop(); out.disconnect(); } catch (e) {} }, fade * 1000 + 600); } };
+  }
+  pluck(f, t, amp, dest) {
+    const ctx = this.ctx;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(amp, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 5.5);
+    const p = this.pan((Math.random() - 0.5) * 0.8, dest);
+    g.connect(p); const s = this.gain(1.4, this.reverb); g.connect(s);
+    [[1, 1], [2.0, 0.18], [3.01, 0.05]].forEach(([r, a]) => {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f * r;
+      const og = ctx.createGain(); og.gain.value = a; o.connect(og); og.connect(g); o.start(t); o.stop(t + 6);
+    });
+  }
+  layerRain(level) {
+    const ctx = this.ctx, E = this;
+    const out = this.gain(0, this.music); out.gain.setTargetAtTime(level, ctx.currentTime, 2);
+    const hiss = this.src('pink'); const hp = this.filt('highpass', 450, 0.5); const lp = this.filt('lowpass', 5200, 0.5);
+    const hg = this.gain(0.38, out); hiss.connect(hp); hp.connect(lp); lp.connect(hg);
+    const low = this.src('brown'); const llp = this.filt('lowpass', 380, 0.6); const lg = this.gain(0.26, out); low.connect(llp); llp.connect(lg);
+    let alive = true;
+    const swell = () => { if (!alive) return; hg.gain.setTargetAtTime(0.3 + Math.random() * 0.14, ctx.currentTime, 2.5); E.later(swell, 3500 + Math.random() * 3000); };
+    const drop = () => {
+      if (!alive) return;
+      const t = ctx.currentTime + 0.02;
+      const s = ctx.createBufferSource(); s.buffer = E.noise('white');
+      const bp = E.filt('bandpass', 1800 + Math.random() * 4200, 9);
+      const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.07 + Math.random() * 0.08, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+      s.connect(bp); bp.connect(g); g.connect(E.pan((Math.random() - 0.5) * 1.4, out));
+      s.start(t, Math.random() * 10, 0.09);
+      E.later(drop, 90 + Math.random() * 520);
+    };
+    swell(); drop();
+    return { stop(fade) { alive = false; out.gain.setTargetAtTime(0, ctx.currentTime, fade / 4); setTimeout(() => { try { hiss.stop(); low.stop(); out.disconnect(); } catch (e) {} }, fade * 1000 + 600); } };
+  }
+  layerWaves(level) {
+    const ctx = this.ctx, E = this;
+    const out = this.gain(0, this.music); out.gain.setTargetAtTime(level, ctx.currentTime, 2);
+    const body = this.src('brown'); const lp = this.filt('lowpass', 400, 0.7); const g = this.gain(0.08, out); body.connect(lp); lp.connect(g);
+    const foam = this.src('pink'); const fhp = this.filt('highpass', 1400, 0.5); const fg = this.gain(0, out); foam.connect(fhp); fhp.connect(fg);
+    let alive = true;
+    const wave = () => {
+      if (!alive) return;
+      const t = ctx.currentTime + 0.05, up = 3 + Math.random() * 2.5, down = 4.5 + Math.random() * 4, peak = 0.45 + Math.random() * 0.35;
+      g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(peak, t + up); g.gain.linearRampToValueAtTime(0.07, t + up + down);
+      lp.frequency.cancelScheduledValues(t); lp.frequency.setValueAtTime(lp.frequency.value, t); lp.frequency.linearRampToValueAtTime(900 + Math.random() * 700, t + up); lp.frequency.linearRampToValueAtTime(320, t + up + down);
+      fg.gain.cancelScheduledValues(t); fg.gain.setValueAtTime(0, t); fg.gain.linearRampToValueAtTime(0.06 * peak, t + up * 0.9); fg.gain.linearRampToValueAtTime(0, t + up + down * 0.7);
+      E.later(wave, (up + down - 0.8) * 1000);
+    };
+    wave();
+    return { stop(fade) { alive = false; out.gain.setTargetAtTime(0, ctx.currentTime, fade / 4); setTimeout(() => { try { body.stop(); foam.stop(); out.disconnect(); } catch (e) {} }, fade * 1000 + 600); } };
+  }
+  layerBrown(level) {
+    const ctx = this.ctx;
+    const out = this.gain(0, this.music); out.gain.setTargetAtTime(level, ctx.currentTime, 2);
+    const s = this.src('brown'); const lp = this.filt('lowpass', 520, 0.5); const g = this.gain(0.55, out); s.connect(lp); lp.connect(g);
+    return { stop(fade) { out.gain.setTargetAtTime(0, ctx.currentTime, fade / 4); setTimeout(() => { try { s.stop(); out.disconnect(); } catch (e) {} }, fade * 1000 + 600); } };
+  }
+  setSound(kind) {
+    this.layers.forEach(l => l.stop(4)); this.layers = [];
+    const L = this.layers;
+    if (kind === 'pad') L.push(this.layerPad(1));
+    if (kind === 'padrain') { L.push(this.layerPad(0.85)); L.push(this.layerRain(0.45)); }
+    if (kind === 'padwaves') { L.push(this.layerPad(0.85)); L.push(this.layerWaves(0.5)); }
+    if (kind === 'rain') L.push(this.layerRain(1));
+    if (kind === 'waves') L.push(this.layerWaves(1));
+    if (kind === 'brown') L.push(this.layerBrown(1));
+  }
+  bowl(gain) {
+    const ctx = this.ctx, t = ctx.currentTime + 0.05, f = 293.66;
+    const g = this.gain(0); g.connect(this.fx); const s = this.gain(0.8, this.reverb); g.connect(s);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + 11);
+    [[1, 1], [2.76, 0.32], [5.4, 0.1]].forEach(([r, a]) => {
+      [-0.35, 0.35].forEach((dt) => {
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f * r + dt;
+        const og = ctx.createGain(); og.gain.value = a * 0.5; o.connect(og); og.connect(g); o.start(t); o.stop(t + 11.5);
+      });
+    });
+  }
+  setMusicVol(v) { this.music.gain.setTargetAtTime(v * v * 1.6, this.ctx.currentTime, 0.3); }
+  fadeIn(sec) { const t = this.ctx.currentTime; this.master.gain.cancelScheduledValues(t); this.master.gain.setValueAtTime(this.master.gain.value, t); this.master.gain.linearRampToValueAtTime(1, t + sec); }
+  fadeOut(sec) { const t = this.ctx.currentTime; this.master.gain.cancelScheduledValues(t); this.master.gain.setValueAtTime(this.master.gain.value, t); this.master.gain.linearRampToValueAtTime(0, t + sec); }
+  close() {
+    this.timers.forEach(id => clearTimeout(id)); this.timers.clear();
+    const ctx = this.ctx;
+    try { this.fadeOut(1.2); } catch (e) {}
+    setTimeout(() => { try { ctx.close(); } catch (e) {} }, 1500);
+  }
+}
+
+/* ---------- 낭독 ---------- */
+function makeUtter(text, prog) {
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ko-KR';
+  const v = pickVoice(); if (v) u.voice = v;
+  u.rate = clamp(prefs.rate * (1 - 0.12 * prog), 0.5, 1.5);
+  u.pitch = clamp(prefs.pitch * (1 - 0.05 * prog), 0.5, 1.5);
+  u.volume = clamp(prefs.voiceVol * (1 - 0.35 * prog), 0.05, 1);
+  return u;
+}
+
+/* ---------- 세션 실행 ---------- */
+const LEAD = 12;
+let R = null;          // 지금 재생 중인 세션
+let wakeLock = null;
+
+class Run {
+  constructor(s, T, sound) {
+    this.s = s; this.T = T; this.sound = sound;
+    this.stopped = false; this.paused = false; this.pauseGen = 0;
+    this.active = 0; this.last = performance.now();
+    this.phase = ''; this.ended = false;
+  }
+  elapsed() { return this.active + (this.paused ? 0 : (performance.now() - this.last) / 1000); }
+  wait(sec) {
+    return new Promise((res) => {
+      const end = this.elapsed() + sec;
+      const tick = () => {
+        if (this.stopped) return res();
+        const left = end - this.elapsed();
+        if (left <= 0) return res();
+        setTimeout(tick, Math.min(400, Math.max(30, left * 1000)));
+      };
+      tick();
+    });
+  }
+  async waitFor(fn) { while (!this.stopped && !fn()) await this.wait(0.4); }
+  grow(prog) { return 1 + (this.s.grow - 1) * Math.pow(prog, 1.5); }
+}
+
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function buildPlan(s, T) {
+  const ti = s.durs.length > 1 ? clamp(s.durs.indexOf(T) / (s.durs.length - 1), 0, 1) : 1;
+  const out = [], kind = kindOf(s), L = s.script.length;
+  s.script.forEach((st, j) => {
+    const tier = kind + (j / L > 0.62 ? '-late' : '');
+    if (Array.isArray(st)) out.push({ say: fillText(st[0], T), p: st[1] || 0, fix: st[2] === 'f', tier });
+    else if (st.ph) out.push({ ph: st.ph });
+    else if (st.pool) {
+      const n = Math.round(st.n[0] + (st.n[1] - st.n[0]) * ti);
+      shuffle(st.pool.slice()).slice(0, n).forEach(t => out.push({ say: t, p: st.p, tier }));
+    }
+  });
+  return out;
+}
+function splitChunks(text) { return text.split(/(?<=[.?!])\s+/).map(x => x.trim()).filter(Boolean); }
+function planScale(run, plan) {
+  const s = run.s, T = run.T;
+  if (!T || !s.narr) return 1;
+  const cps = prefs.gvoice !== 'phone' ? 4.8 : 7.5 * prefs.rate;
+  let speech = 0, fixed = 0, flex = 0;
+  const N = Math.max(1, plan.length - 1);
+  plan.forEach((x, i) => {
+    if (!x.say) return;
+    speech += x.say.length / cps + 0.9 * (splitChunks(x.say).length - 1) + 0.4;
+    if (x.fix) fixed += x.p; else flex += x.p * run.grow(i / N);
+  });
+  const target = T * 60 * s.narr - LEAD - speech - fixed;
+  return flex > 0 ? clamp(target / flex, 0.45, 2.4) : 1;
+}
+
+function speakChunk(run, text, prog) {
+  if (!TTS) return run.wait(Math.max(2.2, text.length / 6.5));
+  return new Promise((res) => {
+    let u;
+    try { u = makeUtter(text, prog); } catch (e) { res(); return; }
+    let done = false;
+    const fin = () => { if (done) return; done = true; clearTimeout(to); res(); };
+    u.onend = fin; u.onerror = fin;
+    const to = setTimeout(fin, (text.length / (2.6 * u.rate) + 8) * 1000);
+    try { speechSynthesis.resume(); speechSynthesis.speak(u); } catch (e) { fin(); }
+  });
+}
+async function sayPhone(run, text, prog) {
+  const chunks = splitChunks(text);
+  for (let i = 0; i < chunks.length; i++) {
+    for (;;) {
+      await run.waitFor(() => !run.paused);
+      if (run.stopped) return;
+      const gen = run.pauseGen;
+      showSub(chunks[i]);
+      await speakChunk(run, chunks[i], prog);
+      if (run.stopped) return;
+      if (run.pauseGen === gen) break;
+    }
+    if (i < chunks.length - 1) await run.wait(0.7 + 0.9 * prog);
+  }
+  fadeSub();
+}
+
+async function runSession(run) {
+  const s = run.s, T = run.T, Tsec = T * 60;
+  const plan = buildPlan(s, T);
+  run.scale = planScale(run, plan);
+  setNote('');
+  startPrefetch(run, plan.filter(x => x.say).concat((s.wake || []).filter(Array.isArray).map(st => ({ say: st[0], tier: 'wake' }))));
+  const N = Math.max(1, plan.length - 1);
+  const deadline = s.end === 'wake' ? Tsec - 60 : (T ? Tsec - 45 : Infinity);
+  setPhase(run, plan.length && plan[0].ph ? plan[0].ph : '');
+  await run.wait(s.narr ? LEAD : 2);
+  for (let i = 0; i < plan.length; i++) {
+    if (run.stopped) return;
+    if (run.elapsed() >= deadline) break;
+    const it = plan[i], prog = i / N;
+    if (it.ph) { setPhase(run, it.ph); continue; }
+    await say(run, it, prog);
+    if (run.stopped) return;
+    let p = it.fix ? it.p : it.p * run.scale * run.grow(prog);
+    if (!it.fix) p = Math.min(p, 45 + 50 * prog);
+    p = Math.min(p, Math.max(0, deadline - run.elapsed()));
+    if (p > 0) await run.wait(p);
+  }
+  if (run.stopped) return;
+  setPhase(run, s.end === 'wake' ? '쉬는 중' : (s.narr ? '음악만' : SOUNDS[run.sound]));
+  fadeSub(true);
+
+  if (s.end === 'wake') {
+    await run.waitFor(() => run.elapsed() >= Tsec - 55);
+    if (run.stopped) return;
+    setPhase(run, '깨어나기');
+    for (const st of s.wake) {
+      if (run.stopped) return;
+      if (!Array.isArray(st)) { run.engine.bowl(0.32); await run.wait(st.chime); continue; }
+      await say(run, { say: st[0], tier: 'wake' }, 0);
+      await run.wait(st[1]);
+    }
+    fadeSub(true);
+    run.engine.fadeOut(25);
+    await run.wait(26);
+    finish(run, '개운한 오후 보내세요.');
+    return;
+  }
+
+  const fadeLen = () => clamp(Tsec - run.elapsed(), 20, 150);
+  let fl = 150;
+  await run.waitFor(() => {
+    if (!T || prefs.keep) return false;
+    fl = fadeLen();
+    return run.elapsed() >= Tsec - fl;
+  });
+  if (run.stopped) return;
+  run.engine.fadeOut(fl);
+  setPhase(run, '천천히 꺼지는 중');
+  await run.waitFor(() => run.elapsed() >= Tsec || prefs.keep);
+  if (run.stopped) return;
+  if (prefs.keep) { run.engine.fadeIn(6); setPhase(run, '음악만'); return runTailKeep(run); }
+  finish(run, '푹 쉬셨어요.');
+}
+async function runTailKeep(run) {
+  await run.waitFor(() => !prefs.keep);
+  if (run.stopped) return;
+  run.engine.fadeOut(60);
+  setPhase(run, '천천히 꺼지는 중');
+  await run.wait(61);
+  if (!run.stopped) finish(run, '푹 쉬셨어요.');
+}
+
+/* ---------- 플레이어 화면 ---------- */
+let idleTimer = null, uiTimer = null, subTimer = null;
+function setPhase(run, ph) { run.phase = ph; $('#pPhase').textContent = ph; }
+function showSub(t) { clearTimeout(subTimer); $('#sub').textContent = prefs.subs || !TTS ? t : ''; }
+function fadeSub(now) { clearTimeout(subTimer); subTimer = setTimeout(() => { $('#sub').textContent = ''; }, now ? 0 : 2500); }
+function fmt(sec) { sec = Math.max(0, Math.round(sec)); const m = Math.floor(sec / 60), s = sec % 60; return m + ':' + String(s).padStart(2, '0'); }
+function updateClock() {
+  if (!R) return;
+  const e = R.elapsed();
+  const el = $('#pClock');
+  if (R.ended) return;
+  if (!R.T || prefs.keep && R.s.end !== 'wake' && e > R.T * 60 - 150) {
+    el.innerHTML = fmt(e) + '<small>지난 시간 · 끝내기를 누를 때까지 계속</small>';
+  } else {
+    el.innerHTML = fmt(R.T * 60 - e) + '<small>' + (R.s.end === 'wake' ? '깨워 드릴 때까지' : '남은 시간') + '</small>';
+  }
+  const prog = R.T ? clamp(e / (R.T * 60), 0, 1) : clamp(e / 3600, 0, 1);
+  $('#orb').style.setProperty('--glow', String(0.85 - 0.62 * prog));
+}
+function wake() {
+  const p = $('#player');
+  p.classList.remove('dim');
+  clearTimeout(idleTimer);
+  if (R && !R.paused && !R.ended) idleTimer = setTimeout(() => p.classList.add('dim'), 12000);
+}
+async function lockScreen() {
+  const wl = $('#pWl');
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wl.textContent = '화면이 켜진 채로 유지돼요. 화면은 곧 까맣게 바뀌어요.';
+      return;
+    }
+  } catch (e) {}
+  wl.textContent = '이 화면은 꺼짐 방지를 지원하지 않아요. 휴대폰 화면 자동 꺼짐 시간을 길게 해 두면 끊기지 않아요.';
+}
+function unlockScreen() { try { wakeLock && wakeLock.release(); } catch (e) {} wakeLock = null; }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && R && !R.ended && !R.stopped) lockScreen();
+});
+
+function startSession(s, T, sound) {
+  if (R) stopRun(R);
+  const run = new Run(s, T, sound);
+  R = run;
+  // 소리와 목소리는 버튼을 누른 이 순간에 열어야 휴대폰이 허락해 줘요
+  try { run.engine = new Engine(); run.engine.ctx.resume(); } catch (e) { run.engine = null; }
+  if (TTS) { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = 'ko-KR'; speechSynthesis.speak(u); } catch (e) {} }
+  if (run.engine) { run.engine.setSound(sound); run.engine.fadeIn(8); }
+  else run.engine = { setSound() {}, fadeIn() {}, fadeOut() {}, bowl() {}, setMusicVol() {}, close() {}, ctx: null };
+
+  $('#pTitle').textContent = s.title;
+  $('#pPause').textContent = '일시정지';
+  $('#pDone').hidden = true; $('#pCtl').hidden = false; $('#pClock').hidden = false;
+  $('#pSubs').checked = prefs.subs;
+  $('#pKeep').checked = prefs.keep;
+  $('#keepRow').hidden = s.end === 'wake' || !T;
+  $('#sub').textContent = '';
+  syncRanges();
+  const p = $('#player'); p.hidden = false; p.classList.remove('paused');
+  document.body.style.overflow = 'hidden';
+  lockScreen();
+  wake();
+  clearInterval(uiTimer); uiTimer = setInterval(updateClock, 1000); updateClock();
+  runSession(run);
+}
+function stopRun(run) {
+  run.stopped = true;
+  if (TTS) { try { speechSynthesis.cancel(); } catch (e) {} }
+  if (run.engine) run.engine.close();
+}
+function finish(run, msg) {
+  if (run !== R) return;
+  run.ended = true;
+  if (TTS) { try { speechSynthesis.cancel(); } catch (e) {} }
+  run.engine.close();
+  run.stopped = true;
+  unlockScreen();
+  clearInterval(uiTimer); clearTimeout(idleTimer);
+  $('#pDoneMsg').textContent = msg;
+  $('#pDone').hidden = false; $('#pCtl').hidden = true; $('#pClock').hidden = true;
+  setPhase(run, '');
+  $('#sub').textContent = '';
+  const p = $('#player'); p.classList.add('dim');
+}
+function closePlayer() {
+  if (R) stopRun(R);
+  R = null;
+  unlockScreen();
+  clearInterval(uiTimer); clearTimeout(idleTimer);
+  $('#player').hidden = true; $('#player').classList.remove('dim', 'paused');
+  document.body.style.overflow = '';
+  refreshBankState();
+}
+function togglePause() {
+  if (!R || R.ended) return;
+  const p = $('#player');
+  if (!R.paused) {
+    R.active += (performance.now() - R.last) / 1000; R.paused = true; R.pauseGen++;
+    if (TTS) { try { speechSynthesis.cancel(); } catch (e) {} }
+    if (R.engine.ctx) R.engine.ctx.suspend();
+    $('#pPause').textContent = '이어 듣기'; p.classList.add('paused');
+  } else {
+    R.last = performance.now(); R.paused = false;
+    if (R.engine.ctx) R.engine.ctx.resume();
+    $('#pPause').textContent = '일시정지'; p.classList.remove('paused');
+  }
+  wake();
+}
+function applyMusicVol() { if (R && R.engine) R.engine.setMusicVol(prefs.musicVol); }
+
+function initPlayer() {
+  const p = $('#player');
+  p.addEventListener('pointerdown', (e) => {
+    if (p.classList.contains('dim') && !(R && R.ended)) { e.preventDefault(); e.stopPropagation(); wake(); return; }
+    if (R && R.ended && p.classList.contains('dim')) { p.classList.remove('dim'); }
+    wake();
+  }, true);
+  p.addEventListener('keydown', wake);
+  $('#pPause').addEventListener('click', togglePause);
+  $('#pStop').addEventListener('click', closePlayer);
+  $('#pBack').addEventListener('click', closePlayer);
+  $('#pSubs').addEventListener('change', (e) => { prefs.subs = e.target.checked; savePrefs(); if (!prefs.subs && TTS) $('#sub').textContent = ''; });
+  $('#pKeep').addEventListener('change', (e) => { prefs.keep = e.target.checked; savePrefs(); updateClock(); });
+}
+
+renderWhen(); setInterval(renderWhen, 30000);
+renderList();
+initSettings();
+initPlayer();
+const rec = document.getElementById('row-' + recommendId());
+if (rec) rec.querySelector('.head').click();
+})();
+</script>
+</body>
+</html>
