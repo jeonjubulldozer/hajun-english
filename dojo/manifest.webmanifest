@@ -1,0 +1,18 @@
+{
+  "id": "/hajun-english/dojo/",
+  "name": "곤충 무술 도장",
+  "short_name": "곤충 도장",
+  "description": "곤충들이 유도·레슬링·주짓수·태권도를 보여 주는 하준이 애니메이션",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#12241a",
+  "theme_color": "#12241a",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#12241a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="곤충 도장">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>곤충 무술 도장</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -114,6 +120,10 @@ section h2{font-family:var(--display);font-weight:400;font-size:28px;line-height
     <span class="vstat" id="vstat" aria-live="polite"></span>
     <a class="btn" id="siteLink" href="https://jeonjubulldozer.github.io/hajun-english/dojo/" target="_blank" rel="noopener" hidden>목소리 나오는 버전 열기 ↗</a>
     <input id="gkey" type="password" autocomplete="off" placeholder="제미나이 키 붙여 넣기 (AIza…)" hidden>
+  </div>
+  <div class="voicebar" id="installRow" hidden>
+    <button class="btn" id="installBtn" type="button">앱으로 설치하기</button>
+    <span class="vstat" id="installHint">홈 화면에 곤충 도장 아이콘이 생겨요.</span>
   </div>
   <nav class="chap" id="chap" aria-label="장면"></nav>
 
@@ -963,6 +973,19 @@ function drawMinis(){
 }
 try{new ResizeObserver(drawMinis).observe(grid)}catch(e){drawMinis()}
 if(document.fonts&&document.fonts.load){Promise.all([document.fonts.load('40px "Black Han Sans"'),document.fonts.load('27px "Jua"')]).then(()=>{DIRTY=true}).catch(()=>{})}
+/* 앱으로 설치 (하준이 사이트에서만) */
+let installEvt=null;
+const instRow=document.getElementById('installRow'),instBtn=document.getElementById('installBtn'),instHint=document.getElementById('installHint');
+const STANDALONE=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+if(ONSITE&&!STANDALONE)instRow.hidden=false;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e});
+window.addEventListener('appinstalled',()=>{installEvt=null;instRow.hidden=true});
+instBtn.onclick=async()=>{
+  if(installEvt){const ev=installEvt;installEvt=null;try{ev.prompt();const r=await ev.userChoice;if(r&&r.outcome==='accepted')return}catch(e){}}
+  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  instHint.textContent=ios?'주소창 옆 공유 버튼(네모에 위 화살표)을 누르고 "홈 화면에 추가"를 누르세요.':'크롬 오른쪽 위 점 세 개(⋮)를 누르고 "앱 설치" 또는 "홈 화면에 추가"를 누르세요.';
+};
+if(ONSITE&&'serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})})}
 gT=.9;requestAnimationFrame(loop);prefetch();
 })();
 </script>
