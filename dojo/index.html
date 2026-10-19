@@ -810,11 +810,52 @@ beat({id:'shine',dur:12,nosign:1,cam:camOf(480,.8),cap:'운동도, 공부도, �
 beat({id:'end4',dur:6,nosign:1,cam:camOf(480,1),cap:'다음 화: 맴맴이의 첫 대회',say:'다음 화는 맴맴이의 첫 대회! 하준아, 성장 계단 중에 어떤 계단을 제일 먼저 올라가 볼까?',
  actors:[ON('cicada',[[0,'cheer',{x:480,f:1}],[1,'guard'],[1.6,'cheer'],[6,'cheer']])],over:lt=>endCard(lt)});
 const EP5=SC;
+SC=[];
+/* ===== 5화 · 맴맴이의 첫 대회 ===== */
+beat({id:'t5',dur:5,nosign:1,cam:camOf(480,1),cap:'곤충 무술 도장 · 5화',say:'곤충 무술 도장, 5화예요. 맴맴이의 첫 대회가 시작돼요!',
+ actors:[ON('cicada',[[0,'cheer',{x:430,f:1}],[1.2,'guard'],[2.2,'cheer'],[5,'cheer']]),ON('stag',[[0,'stand',{x:650,f:-1}],[2.6,'stand'],[3.2,'cheer'],[5,'cheer']])],over:lt=>titleCard(lt)});
+beat({id:'breath5',dur:12,nosign:1,cam:camOf(480,1),who:['cicada','stag'],cap:'코로 천천히, 네 번 숨 쉬어요',say:'대회 날 아침, 배 속에 나비가 팔랑이는 것처럼 떨려요. 집게 사범님이 말해요, 코로 천천히 네 번 숨 쉬자. 들이쉬고 내쉬고, 하나, 둘, 셋, 넷.',
+ actors:[ON('cicada',[[0,'stand',{x:380,f:1,ex:2}],[3.4,'stand',{ex:0}],[4,'stand'],[12,'stand']]),ON('stag',[[0,'stand',{x:650,f:-1,ex:3}],[12,'stand']])],
+ fx:()=>{bubble(.3,3.2,370,G-230,'배 속이 팔랑팔랑…');chip(3.4,12,null,'코로 천천히 들이쉬고, 내쉬고');counter(4,12,`숨 쉬기 ${Math.min(4,Math.floor((LT-4)/2)+1)} / 4`);sweat(.3,3.2,410,G-170)}});
+beat({id:'medal5',dur:8,nosign:1,cam:camOf(480,1),who:['cicada','stag'],cap:'같은 몸무게 상대가 없었어요',say:'맴맴이와 같은 몸무게 모둠에는 상대가 없었어요. 그래서 혼자 금메달을 받았어요. 그래도 맴맴이는 한 번 겨뤄 보고 싶었어요.',
+ actors:[ON('cicada',[[0,'stand',{x:400,f:1}],[2.4,'stand'],[3,'cheer'],[8,'cheer']]),ON('stag',[[0,'stand',{x:650,f:-1}],[8,'stand']])],
+ fx:()=>{chip(.3,4,null,'같은 체급에 상대가 없어요');chip(4.2,8,null,'혼자 받은 금메달');bubble(4.2,8,410,G-235,'한 번 겨뤄 보고 싶어요!')}});
+beat({id:'challenge5',dur:9,nosign:1,cam:camOf(480,.95),who:['cicada','bang'],cap:'한 체급 위 콩콩이 형에게 도전!',say:'한 체급 위에는 방아깨비 콩콩이 형이 있어요. 몸도 더 크고, 띠도 더 높아요. 사범님이 지켜보는 가운데, 맴맴이가 용기를 내어 도전해요.',
+ actors:[ON('cicada',[[0,'stand',{x:270,f:1}],[1.8,'stand',{x:390}],[2.6,'bow'],[3.6,'stand'],[4.4,'guard'],[9,'guard']],{walk:[0,1.8]}),ON('bang',[[0,'stand',{x:700,f:-1}],[1.8,'stand',{x:590}],[2.6,'bow'],[3.6,'stand'],[4.4,'grip'],[9,'grip']],{walk:[0,1.8]}),ON('mantis',[[0,'stand',{x:820,f:-1}],[9,'stand']])],
+ fx:()=>{chip(.3,4.2,null,'한 체급 위 · 더 높은 띠의 콩콩이');bubble(4.5,9,350,G-240,'형, 저도 해 볼래요!')}});
+beat({id:'standing5',dur:8,nosign:1,cam:camOf(480,1),who:['cicada','bang'],cap:'레슬링 덕분에, 서서는 안 밀려요',say:'콩콩이 형이 잡아도 맴맴이는 버텨요. 레슬링에서 배운 힘이 도움이 됐어요. 서서는 큰 형에게 밀리지 않았어요!',
+ actors:[ON('cicada',[[0,'grip',{x:410,f:1}],[1.5,'grip',{x:420}],[2.2,'grip',{x:422,fah:1.8,fae:.2}],[2.6,'grip',{fah:1.4,fae:.4}],[3,'grip',{fah:1.9,fae:.1}],[3.4,'grip',{fah:1.45,fae:.35}],[6.4,'grip',{x:425}],[8,'grip']]),ON('bang',[[0,'grip',{x:570,f:-1}],[1.4,'grip',{x:552}],[2,'grip',{x:566,tl:-.15}],[8,'grip']])],
+ fx:()=>{chip(.3,8,'wr','서서 버티는 힘!')}});
+beat({id:'guard5',dur:9,nosign:1,cam:camOf(480,1),who:['cicada','bang'],cap:'니컷으로 가드를 넘어 보지만…',say:'이번에는 콩콩이 형이 먼저 누워 다리로 막아요. 맴맴이는 무릎을 가로질러 보내는 니컷으로 넘어가려 해요. 그런데 형의 가드를 넘기가 쉽지 않아요.',
+ actors:[ON('bang',[[0,'stand',{x:590,f:-1}],[1,'squat'],[2,'back',{rot:-1.5}],[2.8,'back',{flh:1.9,blh:1.5}],[3.6,'back',{flh:1.6,blh:1.3}],[4.4,'back',{flh:1.9,blh:1.5}],[9,'back']]),ON('cicada',[[0,'guard',{x:400,f:1}],[2,'top',{x:440}],[2.8,'top',{x:444,tl:.95}],[3.6,'top',{x:440,tl:.85}],[4.4,'top',{x:444}],[5,'top',{x:450,tl:1.1}],[9,'top']])],
+ fx:()=>{chip(.3,2.5,'bjj','가드: 다리로 막기');chip(2.7,9,'bjj','니컷으로 넘어가기');bubble(5,9,350,G-190,'잘 안 넘어가네…')}});
+beat({id:'focus5',dur:9,nosign:1,cam:camOf(480,1),who:['cicada','bang'],cap:'이름이 들려도, 눈은 상대 배꼽!',say:'밖에서 맴맴아, 하고 부르는 소리가 들려요. 고개를 돌릴 뻔했지만, 2화에서 배운 말이 떠올라요. 눈은 상대 배꼽, 맴맴이는 끝까지 형을 봐요.',
+ actors:[ON('bang',[[0,'back',{x:590,f:-1,rot:-1.5}],[.8,'back',{flh:1.9,blh:1.5}],[1.6,'back',{flh:1.6,blh:1.3}],[2.4,'back',{flh:1.9,blh:1.5}],[9,'back']]),ON('cicada',[[0,'top',{x:450,f:1}],[.8,'top',{x:444,tl:.95}],[1.6,'top',{x:450,tl:.85}],[2.4,'top',{x:444}],[9,'top']])],
+ fx:()=>{bubble(.3,2.5,180,G-200,'맴맴아!');chip(2.7,9,null,'눈은 상대 배꼽!');bubble(4,9,350,G-190,'계속 형을 보자!')}});
+beat({id:'tap5',dur:11,nosign:1,cam:camOf(480,1),who:['cicada','bang'],cap:'톡톡 탭! 바로 놓아줘요',say:'마지막에 콩콩이 형에게 팔을 잡혀 암바가 걸렸어요. 맴맴이가 톡톡 탭을 치자, 형이 바로 놓아줘요. 이번 판은 졌지만, 서로 안전하게 끝냈어요.',
+ actors:[ON('cicada',[[0,'top',{x:435,f:1}],[.8,'top',{x:439,tl:.95}],[1.6,'top',{x:435,tl:.85}],[2.4,'top',{x:439}],[3,'top',{x:445,tl:1.1}],...taps(4.2,3,'bah',.2,1.1),[5.2,'squat',{x:390,rot:0}],[6,'stand',{x:370,f:1}],[7,'bow'],[8,'stand'],[11,'stand']]),ON('bang',[[0,'back',{x:555,f:-1,rot:-1.5}],[.8,'back',{flh:1.9,blh:1.5}],[1.6,'back',{flh:1.6,blh:1.3}],[2.4,'back',{flh:1.9,blh:1.5}],[3,'back',{flh:2.2,blh:1.9,x:550}],[4.2,'back',{flh:2.2,blh:1.9}],[4.37,'back',{x:610,flh:1.6,blh:1.3}],[5.2,'squat',{x:620,rot:0}],[6,'stand',{x:620,ex:3}],[7,'bow'],[8,'stand'],[11,'stand']])],
+ fx:()=>{chip(.3,4.1,'bjj','암바에 잡혔어요');burst(4.2,430,G-75,'톡톡',null,'pop',.7);chip(4.21,6.8,null,'탭하면 바로 놓아요');chip(7,11,null,'서로 인사하고 안전하게 끝!')}});
+beat({id:'sad5',dur:7,nosign:1,cam:camOf(480,1),who:['cicada','fire','grass'],cap:'속상한 마음도 괜찮아요',say:'맴맴이는 속상해서 말했어요, 다시는 대회 안 나갈래. 반짝이와 띵가가 곁에 와서 조용히 들어 줬어요.',
+ actors:[ON('cicada',[[0,'squat',{x:480,f:1,ex:2}],[7,'squat']]),ON('fire',[[0,'stand',{x:180,f:1}],[1.8,'stand',{x:290}],[7,'stand']],{walk:[0,1.8]}),ON('grass',[[0,'stand',{x:800,f:-1}],[1.8,'stand',{x:680}],[7,'stand']],{walk:[0,1.8]})],
+ fx:()=>{bubble(.3,4,480,G-190,'다시는 대회 안 나갈래…');chip(4.2,7,null,'친구들이 곁에 있어요')}});
+beat({id:'learn5',dur:12,nosign:1,cam:camOf(480,.9),who:['fire','grass','stag','rhino'],cap:'대회는 배우러 가는 곳이에요',say:'집게 사범님이 말해요, 대회는 이기러 가는 게 아니라 배우러 가는 거야. 반짝이와 띵가도 말해요, 나간 것만으로도 용기야. 번쩍이 사범님은 큰 형에게 서서 안 밀린 건 진짜 잘했다고 말해 줘요.',
+ actors:[ON('stag',[[0,'stand',{x:160,f:1}],[12,'stand']]),ON('fire',[[0,'stand',{x:320,f:1}],[12,'stand']]),ON('cicada',[[0,'squat',{x:480,f:1,ex:2}],[5.4,'squat',{ex:3}],[6.4,'stand',{x:480,ex:3}],[12,'stand']]),ON('grass',[[0,'stand',{x:640,f:-1}],[12,'stand']]),ON('rhino',[[0,'stand',{x:800,f:-1}],[12,'stand']])],
+ fx:()=>{chip(.3,4.1,null,'대회는 배우러 가는 곳');chip(4.3,7.6,null,'나간 것 자체가 용기!');chip(7.8,12,'wr','큰 형에게 서서 안 밀렸어!')}});
+beat({id:'practice5',dur:13,nosign:1,cam:camOf(480,.95),who:['cicada','mantis','stag'],cap:'니컷과 팔 붙이기, 단체반에서 연습!',say:'사범님들과 다음에 연습할 두 가지를 정했어요. 하나는 가드 넘어가기, 니컷이고, 둘은 암바를 막도록 팔 붙이기예요. 개인 레슨에서 배우고, 둘 다 단체반에서 같은 크기 친구들과 많이 해 봐야 내 것이 돼요.',
+ actors:[ON('stag',[[0,'stand',{x:250,f:1}],[13,'stand']]),ON('cicada',[[0,'guard',{x:480,f:1}],[13,'guard']]),ON('mantis',[[0,'stand',{x:710,f:-1}],[13,'stand']])],
+ fx:()=>{chip(.3,4.2,'bjj','① 가드 넘어가기 · 니컷');chip(4.4,8.3,'bjj','② 암바 막기 · 팔 붙이기');chip(8.5,13,null,'같은 크기 친구들과 많이 해 봐요!')}});
+beat({id:'bow5',dur:8,nosign:1,cam:camOf(480,.88),cap:'다음 대회도 나갈래! 고맙습니다!',say:'맴맴이가 말했어요, 다음 대회도 나갈래! 이번에 배운 걸 친구들과 연습할 거예요. 다 같이 인사해요, 고맙습니다!',
+ actors:['stag','fire','cicada','grass','mantis'].map((id,i)=>ON(id,[[0,'stand',{x:130+i*175,f:i<=2?1:-1}],[2,id==='cicada'?'cheer':'stand',{ex:3}],[3.2+i*.06,'stand'],[3.8+i*.06,'bow'],[5.6,'bow'],[6.4,'stand'],[7.2,'cheer'],[8,'cheer']])),
+ fx:()=>{chip(.3,3.4,null,'다음 대회도 나갈래!');burst(4.1,480,G-290,'고맙습니다!','#c3fae8','ding',1);steps(0,8,7)}});
+beat({id:'end5',dur:9,nosign:1,cam:camOf(480,1),cap:'다음 화: 친구들과 다시 한 판',say:'다음 화는 친구들과 다시 한 판이에요. 하준아, 맴맴이가 다음 대회까지 어떤 연습을 제일 많이 하면 좋을까?',
+ actors:[ON('cicada',[[0,'cheer',{x:480,f:1}],[1,'guard'],[1.6,'cheer'],[9,'cheer']])],over:lt=>endCard(lt)});
+const EP6=SC;
 const EPS=[{name:'1화 · 네 가지를 배운 매미',next:'반딧불이의 밤 수련',beats:EP1,ch:CH1},
   {name:'2화 · 반딧불이의 밤 수련',next:'맴맴이의 첫 대회',beats:EP2,ch:[['처음','t2'],['베짱이','grass'],['밤 수련','night'],['한 달 뒤','month'],['깃 싸움','grip'],['선택','choice'],['인사','bow2']]},
   {name:'특집 · 하나만 하면 생기는 구멍',tab:'특집',next:'맴맴이의 첫 대회',beats:EP3,ch:[['처음','sp0'],['거리 지도','map'],['태권도만','tkdonly'],['주짓수만','bjjonly'],['유도 없이','nojudo'],['레슬링 없이','nowr'],['레슬링+주짓수','combo'],['정리','sum']]},
   {name:'3화 · 성장 계단 ① 운동만 잘하면 될까?',tab:'3화',next:'성장 계단 ② 진짜 멋진 매미',beats:EP4,ch:[['처음','t3'],['자신만만','proud'],['바닥의 짱','gulli'],['개미의 비밀','ant1'],['불가리안 백','antnight'],['단체반 스파링','bjjgroup'],['두 달 친구','cricket'],['정리','step3']]},
-  {name:'4화 · 성장 계단 ② 진짜 멋진 매미',tab:'4화',next:'맴맴이의 첫 대회',beats:EP5,ch:[['처음','t4'],['꼬마뿔','kidrhino'],['아빠랑 스파링','dadspar'],['맴맴이와 아빠','mmdad'],['공부하는 꿀벌','beestudy'],['바뀐 하루','montage'],['친절','kind'],['완성','shine']]}];
+  {name:'4화 · 성장 계단 ② 진짜 멋진 매미',tab:'4화',next:'맴맴이의 첫 대회',beats:EP5,ch:[['처음','t4'],['꼬마뿔','kidrhino'],['아빠랑 스파링','dadspar'],['맴맴이와 아빠','mmdad'],['공부하는 꿀벌','beestudy'],['바뀐 하루','montage'],['친절','kind'],['완성','shine']]},
+  {name:'5화 · 맴맴이의 첫 대회',tab:'5화',next:'친구들과 다시 한 판',beats:EP6,ch:[['처음','t5'],['천천히 숨','breath5'],['금메달','medal5'],['형에게 도전','challenge5'],['서서 버티기','standing5'],['니컷 도전','guard5'],['눈은 배꼽','focus5'],['안전한 탭','tap5'],['속상한 마음','sad5'],['배우는 대회','learn5'],['다음 연습','practice5'],['인사','bow5'],['다음 예고','end5']]}];
 EPS.forEach(e=>{let a=0;e.beats.forEach(b=>{b.start=a;a+=b.dur});e.total=a});
 let EPI=0,TOTAL=0,CH=[];
 function useEp(k){EPI=k;SC=EPS[k].beats;TOTAL=EPS[k].total;CH=EPS[k].ch}
