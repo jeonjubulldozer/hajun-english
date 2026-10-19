@@ -115,8 +115,27 @@ def main():
         page.locator('#pp').click()
         page.wait_for_function('__test.state().cur!==7')
         assert all('/gemini-3.8-flash-tts:' in u for u,b in requests)
-        assert all(b['generationConfig']['speechConfig']['voiceConfig']['voice']=='Leda' for u,b in requests)
+        assert all(b['generationConfig']['speechConfig']['voiceConfig']['voice']=='Sulafat' for u,b in requests)
         print('PASS: playback pauses/resumes and waits for complete audio, even after 100s extra hold')
+        assert page.locator('#gv').input_value()=='Sulafat'
+        page.locator('#voicePreview').click()
+        page.wait_for_function('__test.state().narr==="play"')
+        paused = page.evaluate('__test.state().time')
+        assert not page.evaluate('__test.state().playing')
+        page.wait_for_function('__test.state().narr==="done"')
+        assert page.evaluate('__test.state().time')==paused
+        assert any('처음이라 떨렸지?' in b['contents'][0]['parts'][0]['text'] for u,b in requests)
+        page.locator('#pp').click()
+        page.wait_for_function('__test.state().narr==="play" && __test.state().playing')
+        page.locator('#gv').select_option('Zephyr')
+        saved = page.evaluate('JSON.parse(localStorage.getItem("insect-dojo.prefs"))')
+        assert saved['gv']=='Zephyr' and saved['narratorRevision']=='ko-warm-story-v3'
+        # A real reload must keep a choice made after migration.
+        page.add_init_script('localStorage.setItem("insect-dojo.prefs",'+json.dumps(json.dumps(saved))+');')
+        page.reload(wait_until='networkidle')
+        assert page.locator('#gv').input_value()=='Zephyr'
+        print('PASS: old narrator migrates to Sulafat; preview holds the story; later voice choices survive reload')
+
         context.close()
 
         context, page = page_for({'on':True,'gv':'Leda','source':'gemini','gkey':'test-only-not-a-real-key'}, True)

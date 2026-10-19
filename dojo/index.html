@@ -119,6 +119,7 @@ section h2{font-family:var(--display);font-weight:400;font-size:28px;line-height
     <select id="voiceSource"><option value="gemini">이야기 목소리 · 제미나이</option><option value="cloud">클라우드 목소리</option></select>
     <label for="gv">목소리</label>
     <select id="gv"></select>
+    <button class="btn" id="voicePreview" type="button">목소리 미리 듣기</button>
     <button class="btn" id="voiceRetry" type="button" hidden>같은 목소리로 다시 시도</button>
     <span class="vstat" id="vstat" aria-live="polite"></span>
     <a class="btn" id="siteLink" href="https://jeonjubulldozer.github.io/hajun-english/dojo/" target="_blank" rel="noopener" hidden>목소리 나오는 버전 열기 ↗</a>
@@ -139,7 +140,7 @@ section h2{font-family:var(--display);font-weight:400;font-size:28px;line-height
   </section>
 </div>
 
-<script src="./voice.js"></script>
+<script src="./voice.js?v=warm3"></script>
 <script>
 (()=>{
 'use strict';
@@ -940,11 +941,12 @@ function sfx(k){
   }catch(e){}
 }
 /* 한 번 고른 음성은 끝까지 유지. 모델·서비스·문장 호흡 버전별로 저장. */
-const GVOICES=[['Leda','밝은 누나 목소리'],['Zephyr','또랑또랑한 목소리'],['Sulafat','따뜻한 목소리'],['Puck','신나는 형 목소리']];
+const GVOICES=[['Sulafat','다정한 이야기 목소리 · 기본'],['Leda','밝은 누나 목소리'],['Zephyr','또랑또랑한 목소리'],['Puck','신나는 형 목소리']];
 const ONSITE=/github\.io$/i.test(location.hostname);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const prefs=Object.assign({gv:'Leda',on:true,gkey:'',ckey:''},store.get('insect-dojo.prefs',{}));
+const prefs=DojoSpeech.migratePrefs(Object.assign({gv:DojoSpeech.DEFAULT_VOICE,on:true,gkey:'',ckey:''},store.get('insect-dojo.prefs',{})));
 const savePrefs=()=>store.set('insect-dojo.prefs',prefs);
+savePrefs();
 READ=prefs.on!==false;
 function dojoKey(){
   try{const d=JSON.parse(localStorage.getItem('dojo-live')||'{}');if(d.key_gemini)return String(d.key_gemini).trim()}catch(e){}
@@ -952,7 +954,7 @@ function dojoKey(){
   return'';
 }
 const gKey=()=>(prefs.gkey||dojoKey()||'').trim();
-if(!DojoSpeech.VOICES.includes(prefs.gv))prefs.gv='Leda';
+if(!DojoSpeech.VOICES.includes(prefs.gv))prefs.gv=DojoSpeech.DEFAULT_VOICE;
 if(!['gemini','cloud'].includes(prefs.source))prefs.source=prefs.ckey&&!gKey()?'cloud':'gemini';
 const voiceProfile=()=>DojoSpeech.profile(prefs.source,prefs.gv);
 const voiceKey=p=>p.source==='cloud'?String(prefs.ckey||'').trim():gKey();
@@ -983,14 +985,17 @@ function resumeNarr(){
 function startNarr(i){
   stopNarr();voiceRetry.hidden=true;
   if(!READ){NARR={beat:i,state:'done'};return}
-  const text=sayOf(SC[i]),profile=voiceProfile(),me={beat:i,state:'wait',profile};NARR=me;
+  speakText(sayOf(SC[i]),i);
+}
+function speakText(text,i,preview=false){
+  const profile=voiceProfile(),me={beat:i,state:'wait',profile};NARR=me;
   setV('고른 목소리를 준비하고 있어요…');
   ensure(text,profile).then(clip=>{
     if(NARR!==me)return;
     AUurl=URL.createObjectURL(new Blob([clip.buffer],{type:clip.mime}));
     AU.onended=()=>{if(NARR===me){me.state='done';showReady()}};
     AU.onerror=()=>narrationFailed(me,{code:'playback'});
-    AU.src=AUurl;me.state='play';showReady();if(PLAY)resumeNarr();
+    AU.src=AUurl;me.state='play';showReady();if(PLAY||preview)resumeNarr();
   }).catch(err=>narrationFailed(me,err));
 }
 const vstat=document.getElementById('vstat'),gvSel=document.getElementById('gv'),sourceSel=document.getElementById('voiceSource'),keyIn=document.getElementById('gkey'),ckeyRow=document.getElementById('ckey'),siteLink=document.getElementById('siteLink'),voiceRetry=document.getElementById('voiceRetry');
@@ -1041,6 +1046,10 @@ function takeKey(input,name){
 keyIn.oninput=keyIn.onchange=()=>takeKey(keyIn,'gkey');
 ckeyRow.oninput=ckeyRow.onchange=()=>takeKey(ckeyRow,'ckey');
 voiceRetry.onclick=()=>{const i=beatAt(gT);jump(SC[i].start);voiceRetry.hidden=true;play();render();prefetch()};
+document.getElementById('voicePreview').onclick=()=>{
+  ++PF;stop();stopNarr();voiceRetry.hidden=true;
+  speakText(DojoSpeech.PREVIEW,-2,true);
+};
 
 /* ---------- 자막 ---------- */
 const whoEl=document.getElementById('who'),lineEl=document.getElementById('line');

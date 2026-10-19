@@ -4,10 +4,19 @@
  */
 (function(root){
   'use strict';
-  const VERSION='ko-story-v2';
+  const VERSION='ko-warm-story-v3';
+  const DEFAULT_VOICE='Sulafat';
+  const PREVIEW='맴맴이가 조심조심 팔을 톡톡 두드렸어요.\n콩콩이 형이 바로 놓아 주었지요.\n\n“괜찮아, 맴맴아. 처음이라 떨렸지? 우리 같이 조금씩 배워 보자.”';
   const MODEL='gemini-3.8-flash-tts';
   const VOICES=['Leda','Zephyr','Sulafat','Puck'];
-  const STYLE='한국어 원어민 이야기 해설자가 일곱 살 아이에게 들려주는 따뜻한 동화입니다. 선택된 한 사람의 목소리와 음색을 처음부터 끝까지 유지하세요. 대화도 같은 해설자가 자연스럽게 읽고, 인물마다 다른 목소리를 흉내 내지 마세요. 문장 끝에서는 충분히 숨을 쉬고, 쉼표에서는 뜻 단위로 가볍게 쉬세요. 조사와 앞말, 주어와 서술어를 어색하게 끊지 마세요. 물음표는 자연스럽게 묻고, 느낌표도 소리 지르지 마세요. 낮고 편안한 에너지로 또박또박 읽되, 단어마다 끊거나 기계처럼 일정하게 읽지 마세요. 정해진 시간에 맞추려고 서두르지 마세요.';
+  const STYLE='당신은 일곱 살 아이 곁에 앉아 그림책을 함께 보는 다정한 한국인 어른입니다. 편안한 여성 목소리로, 아이와 눈을 맞추고 살짝 미소 지으며 이야기를 건네세요. 설명을 발표하기보다 사랑하는 아이에게 오늘 있었던 일을 들려주듯 자연스럽게 읽으세요. 중간 음역에서 부드럽고 따뜻하게, 일상 대화의 속도로 말하세요. 문장마다 똑같이 올리고 내리지 말고, 뜻을 따라 자연스럽게 이어 주세요. 문장 안에서는 말의 흐름을 살리고, 끝에서는 아이가 이해할 만큼 한 박자 쉬세요. 격려하는 대사는 아이의 마음을 알아주는 진심을 담아 조금 더 포근하게 말하세요. 인물의 대사도 같은 해설자의 음색으로 읽으세요. 과장된 애교, 만화 성우 연기, 속삭임, 방송 안내 같은 또박또박한 낭독은 피하세요. “괜찮아, 맴맴아.”는 옆에 있는 아이를 안심시키듯, “우리 같이 해 보자.”는 함께하고 싶은 마음으로 읽으세요. 예시 문장은 추가로 읽지 말고 주어진 대본만 읽으세요.';
+  // Apply the requested narrator change once on existing devices; later choices persist.
+  function migratePrefs(saved={}){
+    const next={...saved};
+    if(next.narratorRevision!==VERSION){next.gv=DEFAULT_VOICE;next.narratorRevision=VERSION}
+    if(!VOICES.includes(next.gv))next.gv=DEFAULT_VOICE;
+    return next;
+  }
   function profile(source,voice){
     if(!['gemini','cloud'].includes(source)||!VOICES.includes(voice))throw new Error('Unknown voice profile');
     return Object.freeze({version:VERSION,source,model:source==='gemini'?MODEL:'chirp3-hd',voice,style:STYLE,rate:source==='cloud'?.94:1});
@@ -78,6 +87,6 @@
     }
     return{ensure,ready:(p,text)=>entries.get(cacheKey(p,text))?.state==='ready'};
   }
-  const api={VERSION,MODEL,STYLE,VOICES,profile,profileKey,cacheKey,ssml,transcript,requestSpec,decode,pcmToWav,synth,createClient};
+  const api={VERSION,MODEL,STYLE,VOICES,DEFAULT_VOICE,PREVIEW,migratePrefs,profile,profileKey,cacheKey,ssml,transcript,requestSpec,decode,pcmToWav,synth,createClient};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.DojoSpeech=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

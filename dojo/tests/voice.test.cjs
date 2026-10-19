@@ -65,3 +65,15 @@ test('a profile change during a pending request cannot relabel its cached audio'
   assert.deepEqual(calls,['Leda','Puck']);assert.equal(first.profile,voice.profileKey(p));assert.equal(second.profile,voice.profileKey(other));
   assert.equal(cache.m.size,2);
 });
+
+
+test('warm narrator migration replaces old defaults once, preserving credentials and later choices',()=>{
+  const old={gv:'Leda',gkey:'private-test-value',on:false};
+  const updated=voice.migratePrefs(old);
+  assert.equal(updated.gv,'Sulafat');assert.equal(updated.gkey,old.gkey);assert.equal(updated.on,false);
+  assert.equal(old.gv,'Leda');
+  assert.equal(voice.migratePrefs({...updated,gv:'Puck'}).gv,'Puck');
+  assert.equal(voice.migratePrefs().gv,'Sulafat');
+  const p=voice.profile('gemini',updated.gv);
+  assert.notEqual(voice.cacheKey(p,'같이 해 보자.'),voice.cacheKey({...p,version:'ko-story-v2'},'같이 해 보자.'));
+});
