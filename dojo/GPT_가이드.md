@@ -204,3 +204,18 @@ beat({
 - 6화는 12장면·118초, 7화는 12장면·118초의 기본 타임라인이다. 실제 재생 길이는 내레이션이 끝날 때까지 기다리는 시간에 따라 늘어날 수 있다. 이번 작업에서 실제 생성 음성 청취는 하지 못했다.
 
 - 7화의 중심은 식사 안내가 아니라 패배 → 친구의 숨은 습관 발견 → 자발적 선택 → 몇 달의 실천 → 우승이다. 키가 작으면 반드시 진다거나, 많이 먹으면 키·힘·우승이 보장된다고 설명하지 않는다.
+
+## 8. 영어책도 같이 만들기 (하준이 영어 도장 앱)
+
+각 화는 영어 챕터북으로도 들어가 있다: `lily/books-bugdojo.js` (영어 앱 서재의 「곤충 무술 도장 영어판」).
+새 화를 넣었으면 영어책도 한 권 추가한다.
+
+1. `python3 lily/tools/dump_eps.py eps.json` — 각 장면의 자세와 내레이션을 뽑는다.
+2. `lily/tools/gen_books.py`에 새 화 `book(...)`을 기존 화와 같은 모양으로 추가한다.
+   - 한 페이지 = `P(화 번호(EPS 위치), 'beat id', [영어 문장들], ch='Chapter N · 제목')`. 그림은 그 장면의 자세가 자동으로 들어간다.
+   - 수준: 원어민 7~8세 챕터북. 과거형 서술, 문장 8~18단어, 대사 섞기. 3챕터, 9~12페이지.
+   - 이름은 영어판 이름을 쓴다: 맴맴이 Mem-Mem, 번쩍이 Coach Flash, 집게 Coach Pinch, 꽉이 Coach Grip, 팡이 Coach Pop, 동글이 Dot, 팔랑이 Flutter, 긴다리 Longlegs, 반짝이 Sparkle, 윙윙이 Buzz, 콩콩이 Bob, 띵가 Strum, 굴리 Rolly, 단단이 Rocky, 뚜리 Chirpy, 꼬마뿔 Little Horn.
+   - `quiz` 6개(choice 3, word 1, say 2 — 하나는 `free: True`), `words`(어려운 단어 → 한국어 뜻), `talk`(질문 3~4개).
+   - 맨 아래 `IDX`에 `EPS` 배열 위치를 넣는다(영어책 → 「이 화 만화로 보기」가 그 화를 연다).
+3. `python3 lily/tools/gen_books.py eps.json lily/books-bugdojo.js`
+4. `lily/index.html`의 `BUG_DOJO_WORLD`(Lily가 아는 만화 줄거리)에 새 화 한 줄을 추가한다.

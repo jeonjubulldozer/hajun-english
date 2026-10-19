@@ -227,6 +227,7 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
     <h2 style="margin-bottom:6px">더 보기</h2>
     <div class="list">
       <a href="https://learnenglishkids.britishcouncil.org/listen-watch/short-stories" target="_blank" rel="noopener"><span>📺 브리티시 카운슬 키즈 영상 이야기</span><span>밖으로 열기 ↗</span></a>
+      <a href="../dojo/"><span>🥋 곤충 무술 도장 만화</span><span>열기</span></a>
       <a href="../sleep/"><span>🌙 밤의 쉼표 (잠자리 영어)</span><span>열기</span></a>
       <a href="../"><span>🥋 예전 버전 (모험·발음 연습)</span><span>열기</span></a>
     </div>
@@ -280,6 +281,7 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
       <button class="chip" data-m="free" type="button" aria-pressed="true">💬 자유대화</button>
       <button class="chip" data-m="lesson" type="button">🗣 오늘의 수업</button>
       <button class="chip" data-m="build" type="button">🧩 이야기 이어 만들기</button>
+      <button class="chip" data-m="dojo" type="button">🥋 곤충 도장 수다</button>
     </div>
   </div>
   <div class="field" id="fFree">
@@ -343,7 +345,7 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
   <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
   <div class="banner" id="photoNote" hidden></div>
   <section id="pickSec"><h2>오늘 읽을 책</h2><div class="shelf" id="pick" style="margin-top:10px"></div></section>
-  <section><h2>🥋 곤충 무술 도장 챕터북</h2><p class="small muted" style="margin:4px 0 10px">곤충 도장 친구들이 나오는 3챕터짜리 챕터북이에요(매직 트리 하우스 정도 수준). 맴맴이=Mem-Mem, 번쩍이=Coach Flash, 집게=Coach Pinch, 꽉이=Coach Grip, 팡이=Coach Pop.</p><div class="shelf" id="bdShelf"></div></section>
+  <section><h2>🥋 곤충 무술 도장 영어판</h2><p class="small muted" style="margin:4px 0 10px">하준이가 보는 곤충 무술 도장 만화를 화마다 영어 챕터북으로 옮겼어요. 그림도 만화 장면 그대로예요. 만화를 보고 읽으면 내용을 아니까 영어가 더 쉽게 들어와요. 맴맴이=Mem-Mem, 번쩍이=Coach Flash, 집게=Coach Pinch, 꽉이=Coach Grip, 팡이=Coach Pop.</p><div class="shelf" id="bdShelf"></div></section>
   <section><h2>더 쉬운 이야기</h2><p class="small muted" style="margin:4px 0 10px">워밍업이나 동생과 같이 읽기 좋은 Level 1~2 이야기예요. 오터 가족 시리즈는 페파피그처럼 대화가 가득해요.</p><div class="shelf" id="shelf"></div></section>
   <section id="mineSec" hidden><h2>우리가 만든 이야기</h2><div class="shelf" id="mine" style="margin-top:10px"></div></section>
   <section>
@@ -364,6 +366,11 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
       <a class="ghost" id="vOpen" href="#" target="_blank" rel="noopener" style="text-decoration:none">유튜브 앱에서 열기 ↗</a>
     </div>
   </div>
+  <section><h2>🥋 곤충 무술 도장 (우리 만화)</h2><p class="small muted" style="margin:4px 0 10px">화를 고르면 만화 보기 · 영어책으로 읽기 · 보고 나서 Lily한테 영어로 얘기하기를 할 수 있어요. Lily는 이 만화 내용을 알아서, 하준이가 막히는 영어 단어를 바로 알려 줘요.</p>
+    <div class="shelf" id="dojoList"></div>
+    <div class="endbox" id="dojoAct" hidden style="margin-top:10px"></div>
+  </section>
+  <h2>말 많은 영어 만화</h2>
   <div class="shelf" id="showList"></div>
   <div class="field">
     <label for="ytUrl">다른 영상 틀기 — 유튜브에서 공유 → 링크 복사 → 여기에 붙여넣기</label>
@@ -433,6 +440,7 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
     <button class="go" id="rQuiz" type="button">🧩 퀴즈 풀기</button>
     <button class="ghost" id="rTalk" type="button">💬 Lily랑 책 이야기하기</button>
     <button class="ghost" id="rBuild" type="button">✍️ 다음 이야기 같이 만들기 (한 문장씩)</button>
+    <button class="ghost" id="rCartoon" type="button" hidden>📺 이 화 만화로 보기</button>
     <button class="ghost" id="rAgain" type="button">🔁 처음부터 다시</button>
   </div>
 </main>
@@ -478,6 +486,7 @@ function saveSt() { try { localStorage.setItem("lily2", JSON.stringify(st)); } c
   if (st.paceFix !== 1) { if (Number(st.rate) >= 0.9) st.rate = "0.8"; if (st.silence === "900" || st.silence === "600") st.silence = "1200"; st.paceFix = 1; }   // 2026-10-19: everyone one notch slower
   saveSt(); })();
 const readRate = () => Number(st.rate) || 0.8;
+if (st.routine && /^bdc?-/.test(st.routine.book || "")) { st.routine = {}; saveSt(); }   // 2026-10-19: old invented books → the cartoon's episode books
 // the key may live in any of the family apps on this phone (영어 도장, 밤의 쉼표, 곤충 도장)
 function gkey() {
   const s = shared(); if (s.key_gemini) return String(s.key_gemini).trim();
@@ -819,7 +828,8 @@ function chaptersOf(b) { const st0 = []; b.pages.forEach((p, i) => { if (i === 0
 function bookOrder() {
   const minL = Number(st.minLevel) || 3, all = window.LILY_BOOKS || [];
   const pool = all.filter(x => (x.level || 2) >= minL);
-  return (pool.length ? pool : all).slice().sort((a, c) => ((/^bdc?-/.test(a.id) ? 0 : 10) + (a.level || 2)) - ((/^bdc?-/.test(c.id) ? 0 : 10) + (c.level || 2)));
+  const key = (b) => b.ep != null ? b.ep : 100 + (b.level || 2);   // 곤충 무술 도장 영어책을 화 순서대로 먼저
+  return (pool.length ? pool : all).slice().sort((a, c) => key(a) - key(c));
 }
 function routinePick() {
   const r = st.routine || {}, b = r.book && allBooks().find(x => x.id === r.book);
@@ -958,6 +968,12 @@ PUSH HIM TO SAY MORE: ask open questions (why, how, what if, tell me about...). 
 Be kind, polite, honest and thankful — a good role model. Everything cartoon-safe.
 Messages in [square brackets] come from the app or from Hajun's dad, not from Hajun. Follow them without mentioning them.`;
 }
+const BUG_DOJO_WORLD = `BUG DOJO — Hajun's favourite cartoon. His dad made it; Hajun watches it in Korean and reads the English versions in this app. You know it well. English names (Korean names in brackets, so you know who he means):
+Masters: Coach Flash (번쩍이, rhinoceros beetle, wrestling), Coach Pinch (집게, stag beetle, judo), Coach Grip (꽉이, praying mantis, jiu-jitsu), Coach Pop (팡이, grasshopper, taekwondo).
+Hero: Mem-Mem (맴맴이), a cicada who learns all four arts, just like Hajun; his dad spars with him.
+Friends: Dot (동글이, ladybug), Flutter (팔랑이, butterfly), Longlegs (긴다리, katydid), Sparkle (반짝이, firefly), Buzz (윙윙이, bee who also studies English and math), Bob (콩콩이, rice grasshopper, a bigger "big brother"), Strum (띵가, grasshopper with a guitar who only took private lessons and got rusty), Rolly (굴리, dung beetle, only good on the ground), Rocky (단단이, ant, 300 Bulgarian-bag swings every night), Chirpy (뚜리, cricket who got good from two months of group class), Little Horn (꼬마뿔, Coach Flash's son, calm because he spars with his dad every night).
+Episodes: 1 "The Cicada Who Learned Four Arts" (meet everyone; fall and get up; sprawl; link all four arts; the bow). 2 "Sparkle's Night Training" (wanting to skip 7 a.m. practice; Strum's rusty moves; group class with same-size bugs; the Champion's Mackerel Potion for grips; keep your eyes on your partner; "my choice, my result"). Special "The Holes You Get From Doing Just One" (three distances; what goes wrong with only one art; four weapons wrestling gives jiu-jitsu). 3 "The Growth Stairs, Part One" (being good at sports isn't everything; hidden hard work; sparring makes a move yours; Chirpy's two months). 4 "The Growth Stairs, Part Two" (Little Horn's calm; Buzz studies; keeping small promises; kindness to friends). 5 "Mem-Mem's First Tournament" (four slow breaths; gold with no opponent; challenged bigger Bob; held his ground; knee cut; focus; tapped to an armbar; tournaments are for learning). 6 "Same Attendance, Different Secret" (reviewing after class: lesson video, one thing at a time, practice dummy, checking with the coach). 7 "Hajun's Champion Table" (eating well, water and sleep help you grow and recover; Mem-Mem wins the next tournament). Coming next: "Rest Well and Come Back Strong".
+Use it naturally and only now and then: link his real training to it ("Just like Mem-Mem in episode five!"), ask which character he is most like or what a character should do. Never invent events that are not listed here.`;
 function talkSystem(cfg) {
   const today = new Date(), dateStr = `${today.getMonth() + 1}/${today.getDate()}`;
   let mode = "";
@@ -973,7 +989,12 @@ You start with ONE story sentence (6-12 easy words) and hand it over: "Your turn
       ? `NOW: talk about the story like a fun reading buddy. One question at a time: easy ones first (who / what / where), then why, then "What would YOU do?", and connect it to Hajun's own life (judo, bugs, space, his family). Use words from the story so he can reuse them. After about 8 of his answers, ask: "Do you want to make up what happens next? Let's do it together!" and, if he wants, make the next part one sentence each (you one sentence, he one sentence).`
       : `NOW: MAKE THE NEXT PART of this story together, one sentence each. Start with ONE sentence (6-12 easy words) that continues the story, then: "Your turn! What happens next?". Each time he answers: say his idea back as a correct story sentence, add ONE new sentence building on HIS idea, and hand it back. Same characters, same funny style. If he's stuck, offer two choices. After about 8 of his sentences, wrap up with a happy ending and retell "our new chapter" in 3-4 short sentences.`);
   }
-  return lilyBase() + `\n\nTODAY: ${dateStr}\n` + mode + memBlock();
+  if (cfg.kind === "dojo") mode = `BUG DOJO CHAT: talk with Hajun about the Bug Dojo cartoon like a fellow fan. One question at a time: which episode he watched last or likes best, his favourite character and why, what he would do in a scene, and how each lesson fits his own training (7 a.m. wrestling, group class, tournaments, eating and sleeping well). Share your own favourite moment sometimes. Later, invite him to make up the next episode together, one sentence each.`;
+  if (cfg.kind === "dojoretell") {
+    const text = cfg.book.pages.map(p => (p.ch ? p.ch + "\n" : "") + p.s.join(" ")).join("\n").slice(0, 9000);
+    mode = `HAJUN JUST WATCHED Bug Dojo ${cfg.book.dojoEp === "특집" ? "Special" : "episode " + cfg.book.ep} in Korean. Here is what happens in it, in English:\n${text}\n\nNOW: ask him to tell you the story in English, one part at a time ("What happened first? Then what?"). Because you know the story, help him with exactly the English he needs: if he says a Korean word or gets stuck, give him the English words from the story ("Oh, the 고등어 물약? In English that's the Champion's Mackerel Potion!") and ask him to say the sentence. Say each of his parts back as a correct, slightly longer sentence. Ask what he thinks about the lesson and how it fits his own training. At the end, retell the whole episode in 3-4 sentences and praise him.`;
+  }
+  return lilyBase() + `\n\n${BUG_DOJO_WORLD}\n\nTODAY: ${dateStr}\n` + mode + memBlock();
 }
 function kickoffText(cfg) {
   return cfg.kind === "free" ? "[Start now: greet Hajun by name like a friend and ask one easy opening question. Short.]"
@@ -981,6 +1002,8 @@ function kickoffText(cfg) {
     : cfg.kind === "build" ? "[Start now: say hi, say we'll make a story together, then say the first sentence and hand it to Hajun.]"
     : cfg.kind === "booktalk" ? "[Start now: say one excited line about the story we just read, then ask your first easy question about it.]"
     : cfg.kind === "retell" ? "[Start now: say hi, say you heard he just watched it, and ask him what happened. Short.]"
+    : cfg.kind === "dojo" ? "[Start now: greet Hajun like a fellow Bug Dojo fan and ask which episode or character he likes most. Short.]"
+    : cfg.kind === "dojoretell" ? "[Start now: say hi, say you heard he just watched this Bug Dojo episode, and ask him what happened first. Short.]"
     : "[Start now: say we'll make the next part together, then say the first sentence and hand it to Hajun.]";
 }
 
@@ -998,6 +1021,7 @@ $("startTalk").addEventListener("click", () => {
   if (m === "free") { cfg.topic = $("freeTopic").value.trim(); cfg.label = "💬 자유대화" + (cfg.topic ? ": " + cfg.topic : ""); }
   if (m === "lesson") { cfg.theme = pickTheme(); markThemeUsed(cfg.theme.ko); cfg.label = "🗣 " + cfg.theme.ko; }
   if (m === "build") { cfg.topic = $("buildTopic").value.trim(); cfg.label = "🧩 이야기 만들기" + (cfg.topic ? ": " + cfg.topic : ""); }
+  if (m === "dojo") cfg.label = "🥋 곤충 도장 수다";
   startTalk(cfg);
 });
 
@@ -1310,8 +1334,9 @@ function endTalk() {
   L.convo = L.convo.filter(x => x.text && x.text.trim());
   const minutes = L.startAt ? Math.round((Date.now() - L.startAt) / 6000) / 10 : 0;
   recordStats(L.cfg ? L.cfg.label : "대화", L.stars, Math.round(L.speakMs / 1000), minutes);
-  if (L.convo.some(x => x.who === "Hajun")) showSummary(); else if (RT.on) routineDone(); else show(L.cfg && L.cfg.book ? "reader" : L.cfg && L.cfg.kind === "retell" ? "videos" : "home");
+  if (L.convo.some(x => x.who === "Hajun")) showSummary(); else if (RT.on) routineDone(); else show(talkBack());
 }
+function talkBack() { const c = L.cfg || {}; if (c.kind === "retell" || c.kind === "dojoretell") { setTimeout(renderVideos, 0); return "videos"; } return c.book ? "reader" : "home"; }
 function recordStats(label, sentences, speakSec, minutes) {
   if (minutes < 0.5 && !sentences) return;
   updShared(s => {
@@ -1333,7 +1358,7 @@ async function showSummary() {
   const pairs = hajunTurns.filter(x => x.fix && normT(x.fix) !== normT(x.text)).slice(-6);
   if (pairs.length) { const c = mk("div", "card"); c.append(mk("div", "lbl", "✏️ 하준이가 한 말 → 이렇게 말하면 더 좋아요")); pairs.forEach(x => { c.append(mk("div", "", "🧒 " + x.text)); c.append(sayBtn(x.fix)); }); box.append(c); }
   const phr = mk("div", "card"); phr.hidden = true; box.append(phr);
-  const done = mk("button", "go", "확인"); done.type = "button"; done.onclick = () => { stopSpeech(); $("summary").hidden = true; if (RT.on) { routineDone(); return; } show(L.cfg && L.cfg.book ? "reader" : L.cfg && L.cfg.kind === "retell" ? "videos" : "home"); if (L.cfg && L.cfg.kind === "retell") renderVideos(); }; box.append(done);
+  const done = mk("button", "go", "확인"); done.type = "button"; done.onclick = () => { stopSpeech(); $("summary").hidden = true; if (RT.on) { routineDone(); return; } show(talkBack()); if (L.cfg && L.cfg.kind === "retell") renderVideos(); }; box.append(done);
   const lines = L.convo.slice(-50).map(x => (x.who === "Lily" ? "Lily: " : "Hajun: ") + x.text + (x.fix && normT(x.fix) !== normT(x.text) ? ` (better: ${x.fix})` : "")).join("\n");
   const known = (shared().memory || []).join("; ").slice(0, 1500);
   try {
@@ -1360,7 +1385,7 @@ function bookCard(b) {
   const btn = mk("button", "book"); btn.type = "button";
   const cv = mk("div", "cv", b.cover && !(b.cover.art && window.BugArt) ? b.cover.e : (b.cover ? "" : "📖")); cv.style.background = (b.cover && b.cover.bg) || "var(--accent-soft)";
   if (b.cover && b.cover.art && window.BugArt) { const c = document.createElement("canvas"); try { BugArt.scene(c, b.cover.art); } catch {} cv.append(c); }
-  cv.append(mk("span", "lv", "Level " + (b.level || 2)));
+  cv.append(mk("span", "lv", b.dojoEp ? "🥋 " + b.dojoEp : "Level " + (b.level || 2)));
   if (st.progress[b.id] && st.progress[b.id].done) cv.append(mk("span", "ok", "✓ 읽음"));
   btn.append(cv, mk("div", "bt", b.title), mk("div", "bs", b.style || ""));
   btn.onclick = () => openBook(b);
@@ -1370,7 +1395,7 @@ function renderLibrary() {
   const pick = $("pick"); pick.innerHTML = ""; const nb = nextBook(); const last = st.lastBook && allBooks().find(b => b.id === st.lastBook.id && !(st.progress[b.id] && st.progress[b.id].done));
   [last, nb].filter((b, k, a) => b && a.indexOf(b) === k).forEach(b => pick.append(bookCard(b)));
   $("pickSec").hidden = !pick.childElementCount;
-  const isBD = (b) => /^bdc?-/.test(b.id);
+  const isBD = (b) => b.ep != null;
   const bd = $("bdShelf"); bd.innerHTML = ""; (window.LILY_BOOKS || []).filter(isBD).forEach(b => bd.append(bookCard(b)));
   const sh = $("shelf"); sh.innerHTML = ""; (window.LILY_BOOKS || []).filter(b => !isBD(b)).sort((a, b) => (a.level || 2) - (b.level || 2)).forEach(b => sh.append(bookCard(b)));
   const mine = st.myBooks || []; $("mineSec").hidden = !mine.length; $("mine").innerHTML = ""; mine.slice().reverse().forEach(b => $("mine").append(bookCard(b)));
@@ -1555,12 +1580,14 @@ function goalCheck() { const n = readToday(), g = Number(st.goal) || 30; if (n =
 function bookFinished() {
   if (RT.on && (RT.step === 1 || RT.step === 2)) { const b0 = R.book; if (!b0.photo && RT.ch === RT.n - 1) { const pr = st.progress[b0.id] || { times: 0 }; pr.done = true; pr.times = (pr.times || 0) + 1; st.progress[b0.id] = pr; saveSt(); } readerFinishStats(); setTimeout(routineNext, 900); return; }
   const b = R.book; if (!b.photo) { const pr = st.progress[b.id] || { times: 0 }; pr.done = true; pr.times = (pr.times || 0) + 1; st.progress[b.id] = pr; saveSt(); }
-  $("rEnd").hidden = false; $("rQuiz").hidden = !(b.quiz && b.quiz.length);
+  $("rEnd").hidden = false; $("rQuiz").hidden = !(b.quiz && b.quiz.length); $("rCartoon").hidden = b.dojoIdx == null;
   $("rEndNote").textContent = R.read ? `하준이가 ${R.read}문장을 소리 내어 읽었어요.` : "다음엔 🤝 번갈아 읽기나 🔁 따라 읽기로 하준이도 소리 내어 읽어 봐요.";
   $("rEnd").scrollIntoView({ behavior: "smooth", block: "center" });
   readerFinishStats();
 }
 function readerFinishStats() { if (R.book && R.read) { recordStats("📚 " + R.book.title, R.read, 0, Math.round((Date.now() - R.startAt) / 6000) / 10); R.read = 0; R.startAt = Date.now(); } }
+function openCartoon(b) { try { localStorage.setItem("insect-dojo.ep", String(b.dojoIdx)); } catch {} window.open("../dojo/", "_blank", "noopener"); }
+$("rCartoon").addEventListener("click", () => { if (R.book && R.book.dojoIdx != null) openCartoon(R.book); });
 $("rAgain").addEventListener("click", () => { $("rEnd").hidden = true; R.page = 0; R.s = 0; renderPage(); readerRun(); });
 $("rQuiz").addEventListener("click", () => startQuiz(R.book));
 $("rTalk").addEventListener("click", () => startTalk({ kind: "booktalk", book: R.book, label: "💬 책 이야기: " + R.book.title, minutes: 10 }));
@@ -1617,7 +1644,22 @@ const SHOWS = [
   { name: "Octonauts", ch: "UCXLLQkbYE-G9jYrra7R4Qsw", e: "🐙", bg: "#8FD0D6", d: "바다 생물 탐험 · 과학 단어" }
 ];
 let curVideo = null;
+function renderDojoList() {
+  const box = $("dojoList"); box.innerHTML = ""; $("dojoAct").hidden = true;
+  (window.LILY_BOOKS || []).filter(b => b.dojoIdx != null).sort((a, c) => a.ep - c.ep).forEach(b => {
+    const card = bookCard(b); card.onclick = () => {
+      const act = $("dojoAct"); act.innerHTML = ""; act.hidden = false;
+      act.append(mk("h2", "", b.dojoEp + " · " + b.title.replace(/^Bug Dojo[^:]*:\s*/, "")), mk("div", "small muted", b.blurb || ""));
+      const w = mk("button", "go", "📺 만화 보기 (새 창)"); w.type = "button"; w.onclick = () => openCartoon(b);
+      const t = mk("button", "go", "💬 다 봤어! Lily한테 영어로 얘기하기"); t.type = "button"; t.style.background = "var(--good)"; t.onclick = () => startTalk({ kind: "dojoretell", book: b, label: "📺 곤충 도장 " + b.dojoEp + " 이야기", minutes: 7 });
+      const r = mk("button", "ghost", "📖 영어책으로 읽기"); r.type = "button"; r.onclick = () => openBook(b, 0);
+      act.append(w, t, r); act.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    };
+    box.append(card);
+  });
+}
 function renderVideos() {
+  renderDojoList();
   const box = $("showList"); if (box.childElementCount) return;
   SHOWS.forEach(sh => { const b = mk("button", "book"); b.type = "button"; const cv = mk("div", "cv", sh.e); cv.style.background = sh.bg; b.append(cv, mk("div", "bt", sh.name), mk("div", "bs", sh.d)); b.onclick = () => playVideo({ name: sh.name, list: "UU" + sh.ch.slice(2), open: "https://www.youtube.com/channel/" + sh.ch }); box.append(b); });
 }

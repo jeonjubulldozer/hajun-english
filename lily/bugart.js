@@ -37,7 +37,17 @@ const SP={
 Object.keys(SP).forEach((k,i)=>{SP[k].id=k;SP[k].ph=i*1.37});
 SP.grass={n:'띵가',k:'베짱이',tag:'개인 레슨만',arts:['judo','wr'],s:1.0,L:LL({th:38,sn:38}),rx:22,ry:38,hr:19,col:'#a6c75c',lc:'#86a641',hc:'#b4d46a',lw:7,tw:1.8,ant:'long',
   moves:'기술 이름 외우기 · 기타 치며 노래',fact:'날개를 비벼서 베짱베짱 하고 울어요.',id:'grass',ph:17.3,ep:1,scene:'grass'};
-const ORDER=['rhino','stag','mantis','hop','lady','butter','katy','fire','bee','bang','cicada','grass'];
+SP.dung={n:'굴리',k:'쇠똥구리',tag:'주짓수만',arts:['bjj'],s:1.0,L:LL(),rx:28,ry:36,hr:18,col:'#2f2f3a',lc:'#1b1b22',hc:'#383844',lw:9,ant:'short',dark:1,look:'stag',
+  moves:'바닥에서 데굴데굴 굴리기',fact:'똥 경단을 자기 몸보다 크게 굴려서 옮겨요.',id:'dung',ph:19.1,ep:3,scene:'gulli'};
+SP.ant={n:'단단이',k:'개미',tag:'숨은 특훈',arts:['wr','judo'],s:.9,L:LL({th:30,sn:30}),rx:20,ry:30,hr:21,col:'#5a3322',lc:'#2c1810',hc:'#6a3d28',lw:7,ant:'elbow',dark:1,
+  moves:'매일 밤 불가리안 백 300번',fact:'자기 몸무게보다 열 배 넘게 무거운 것도 들어요.',id:'ant',ph:21.7,ep:3,scene:'antnight'};
+SP.cricket={n:'뚜리',k:'귀뚜라미',tag:'단체반 두 달',arts:['judo'],s:.95,L:LL({th:36,sn:36}),rx:21,ry:36,hr:19,col:'#5a4026',lc:'#3e2c1a',hc:'#6b4c2e',lw:7,tw:1.8,ant:'long',dark:1,
+  moves:'매일 밤 단체반 스파링',fact:'귀가 앞다리에 있어요.',id:'cricket',ph:23.3,ep:3,scene:'cricket'};
+SP.kidrhino=Object.assign({},SP.rhino,{n:'꼬마뿔',k:'장수풍뎅이',tag:'아빠랑 특훈',arts:['wr','bjj'],s:.82,col:'#a0522d',look:'rhino',
+  moves:'매일 밤 아빠랑 스파링',fact:'수컷만 큰 뿔이 있어요.',id:'kidrhino',ph:25.9,ep:4,scene:'kidrhino'});
+SP.dadcicada=Object.assign({},SP.cicada,{n:'아빠',k:'매미',tag:'맴맴이 아빠',arts:['judo','wr','bjj'],s:1.22,col:'#343d24',hc:'#3f4a2c',hero:0,look:'cicada',
+  moves:'맴맴이랑 스파링',fact:'수컷 매미만 맴맴 노래해요.',id:'dadcicada',ph:27.1,ep:4,scene:'mmdad'});
+const ORDER=['rhino','stag','mantis','hop','lady','butter','katy','fire','bee','bang','cicada','grass','dung','ant','cricket','kidrhino','dadcicada'];
 const UNLOCK={lady:5,butter:10,katy:15,fire:25,bee:35,bang:50};
 
 /* ---------- 자세 ---------- */
@@ -68,7 +78,7 @@ const easeBack=u=>1+2.70158*Math.pow(u-1,3)+1.70158*Math.pow(u-1,2);
 
 function norm(fr){
   fr=fr.slice().sort((a,b)=>a[0]-b[0]);
-  let prev=Object.assign({x:480,y:0,rot:0,f:1,gl:0,rust:0},PO.stand);
+  let prev=Object.assign({x:480,y:0,rot:0,f:1,gl:0,rust:0,curl:0},PO.stand);
   return fr.map(([t,name,o])=>{const p=Object.assign({},prev,name?PO[name]:{},o||{});prev=p;return{t,p,e:(o&&o.e)||'io'}});
 }
 function samp(F,t){
@@ -91,7 +101,7 @@ function geo(sp,P){
   const leg=(h,k,ox)=>{const d1=DR(h),kn=[ox+d1[0]*l.th,d1[1]*l.th],d2=DR(h-k),ft=[kn[0]+d2[0]*l.sn,kn[1]+d2[1]*l.sn],d3=DR(h-k+PI/2);return{hip:[ox,0],kn,ft,toe:[ft[0]+d3[0]*l.ft,ft[1]+d3[1]*l.ft]}};
   const SO=A(l.so);
   const arm=(h,e,ox)=>{const sh=[SO[0]+ox,SO[1]],d1=DR(h-t),el=[sh[0]+d1[0]*l.ua,sh[1]+d1[1]*l.ua],d2=DR(h-t+e),hd=[el[0]+d2[0]*l.fa,el[1]+d2[1]*l.fa];return{sh,el,hd}};
-  return{t,SO,BC:A(l.bc),HD:A(l.hd),fl:leg(P.flh,P.flk,3),bl:leg(P.blh,P.blk,-3),fa:arm(P.fah,P.fae,2),ba:arm(P.bah,P.bae,-3)};
+  return{t,SO,BC:A(l.bc),HD:A(l.hd*(1-.45*(P.curl||0))),fl:leg(P.flh,P.flk,3),bl:leg(P.blh,P.blk,-3),fa:arm(P.fah,P.fae,2),ba:arm(P.bah,P.bae,-3)};
 }
 function place(sp,P,ground){
   const g=geo(sp,P),pts=[g.fl.toe,g.fl.ft,g.fl.kn,g.bl.toe,g.bl.ft,g.bl.kn],ct=Math.cos(g.t),st=Math.sin(g.t);
@@ -101,6 +111,25 @@ function place(sp,P,ground){
   for(const p of pts){const y=p[0]*sr+p[1]*cr;if(y>my)my=y}
   const k=sp.s*(P.sc||1);P.wx=P.x;P.wy=(ground==null?G:ground)+P.y-my*k;P.g=g;return P;
 }
+
+/* 두 곤충의 손·발 접촉. 뼈 길이를 유지하는 두 관절 IK; 팔을 꺾거나 늘리지 않는다. */
+function jointWorld(a,path){
+  const p=path.split('.').reduce((v,k)=>v[k],a.P.g),P=a.P,k=a.sp.s*(P.sc||1),c=Math.cos(P.rot),s=Math.sin(P.rot);
+  return[P.wx+P.f*k*(p[0]*c-p[1]*s),P.wy+k*(p[0]*s+p[1]*c)];
+}
+function reach(a,limb,target,bend=1,weight=1){
+  if(weight<=0)return;
+  const P=a.P,k=a.sp.s*(P.sc||1),c=Math.cos(P.rot),s=Math.sin(P.rot),dx=(target[0]-P.wx)/(P.f*k),dy=(target[1]-P.wy)/k;
+  const goal=[dx*c+dy*s,-dx*s+dy*c],arm=limb==='fa'||limb==='ba',bone=P.g[limb],root=arm?bone.sh:bone.hip,l1=arm?a.sp.L.ua:a.sp.L.th,l2=arm?a.sp.L.fa:a.sp.L.sn;
+  let x=goal[0]-root[0],y=goal[1]-root[1],d=Math.hypot(x,y);if(d<.001){x=0;y=1;d=1}
+  const ux=x/d,uy=y/d,dist=Math.max(Math.abs(l1-l2)+.01,Math.min(l1+l2-.01,d)),along=(l1*l1-l2*l2+dist*dist)/(2*dist),h=Math.sqrt(Math.max(0,l1*l1-along*along));
+  const mid=[root[0]+ux*along-uy*h*bend,root[1]+uy*along+ux*h*bend],end=[root[0]+ux*dist,root[1]+uy*dist],mk=arm?'el':'kn',ek=arm?'hd':'ft',old=bone[ek];
+  const mix=(a,b)=>a.map((v,i)=>v+(b[i]-v)*weight);
+  bone[mk]=mix(bone[mk],mid);bone[ek]=mix(old,end);
+  if(!arm)bone.toe=bone.toe.map((v,i)=>v+bone[ek][i]-old[i]);
+}
+function gripWeight(t,start,release){return Math.max(0,Math.min(1,(t-start)/.35,(release-t)/.18))}
+function contact(a,limb,b,joint,offset,bend,weight){const p=jointWorld(b,joint);reach(a,limb,[p[0]+offset[0],p[1]+offset[1]],bend,weight)}
 
 /* ---------- 그리기 도구 ---------- */
 let SIL=false;
@@ -127,7 +156,7 @@ function midLegs(c,sp,g,time,col){
   for(const s of [1,-1]){const a1=s>0?.9+w:-.6-w,p0=[b[0]+s*4,b[1]-4],d1=DR(a1),p1=[p0[0]+d1[0]*16,p0[1]+d1[1]*16],d2=DR(a1*.3),p2=[p1[0]+d2[0]*14,p1[1]+d2[1]*14];limb(c,[p0,p1,p2],sp.lw*.55,col)}
 }
 function wings(c,sp,g,time){
-  const w=sp.wing||(['hop','katy','bang','mantis'].includes(sp.id)||sp.id==='grass'?'fold':null);if(!w)return;
+  const w=sp.wing||(['hop','katy','bang','mantis','grass','cricket'].includes(sp.id)?'fold':null);if(!w)return;
   const rx=sp.rx,ry=sp.ry,off=sp.L.so-sp.L.bc;
   c.save();c.translate(g.SO[0],g.SO[1]);c.rotate(g.t);
   if(w==='butter'){
@@ -149,7 +178,7 @@ function wings(c,sp,g,time){
 }
 function rings(c,rx,ry,n,a){c.strokeStyle=`rgba(0,0,0,${a||.18})`;c.lineWidth=2;for(let i=1;i<=n;i++){const y=ry*(.05+i*.2);c.beginPath();c.moveTo(-rx,y-4);c.quadraticCurveTo(0,y+6,rx,y-4);c.stroke()}}
 function pattern(c,sp,rx,ry){
-  switch(sp.id){
+  switch(sp.look||sp.id){
     case 'rhino':case 'stag':c.fillStyle='rgba(255,255,255,.22)';c.beginPath();c.ellipse(rx*.25,-ry*.35,rx*.28,ry*.3,-.3,0,TAU);c.fill();c.strokeStyle='rgba(0,0,0,.28)';c.lineWidth=2;c.beginPath();c.moveTo(-rx*.15,-ry);c.quadraticCurveTo(-rx*.35,0,-rx*.1,ry);c.stroke();break;
     case 'mantis':case 'hop':case 'katy':case 'bang':case 'grass':case 'butter':rings(c,rx,ry,4);if(sp.id!=='butter'){c.fillStyle='rgba(0,0,0,.12)';c.fillRect(-rx,-ry,rx*.55,ry*2);c.fillStyle='rgba(255,255,255,.2)';c.fillRect(rx*.45,-ry,rx,ry*2)}break;
     case 'lady':c.fillStyle='#1c1c1c';for(const [a,b,r] of [[-.45,-.45,.26],[.25,-.15,.22],[-.15,.3,.26],[.5,.42,.18],[-.65,.05,.16]]){c.beginPath();c.arc(rx*a,ry*b,rx*r,0,TAU);c.fill()}c.fillStyle='rgba(255,255,255,.3)';c.beginPath();c.ellipse(rx*.3,-ry*.55,rx*.22,ry*.12,-.4,0,TAU);c.fill();break;
@@ -219,7 +248,7 @@ function head(c,sp,g,time,P){
   const hr=sp.hr,id=sp.id;
   c.save();c.translate(g.HD[0],g.HD[1]);c.rotate(g.t*.8);
   antennae(c,sp,time);
-  if(id==='rhino'){
+  if((sp.look||id)==='rhino'){
     c.beginPath();c.moveTo(hr*.5,-hr*.55);c.quadraticCurveTo(hr*2.0,-hr*.55,hr*2.05,-hr*2.5);c.quadraticCurveTo(hr*1.55,-hr*1.0,hr*.75,hr*.3);c.closePath();fs(c,'#3a1a0b',2.5);
     c.beginPath();c.moveTo(hr*1.92,-hr*2.15);c.lineTo(hr*2.5,-hr*2.55);c.lineTo(hr*2.12,-hr*1.95);c.closePath();fs(c,'#3a1a0b',2);
     c.beginPath();c.moveTo(-hr*.6,-hr*.7);c.quadraticCurveTo(-hr*.1,-hr*1.9,hr*.5,-hr*1.75);c.quadraticCurveTo(0,-hr*1.2,hr*.1,-hr*.7);c.closePath();fs(c,'#5a2a12',2);
@@ -254,10 +283,13 @@ function drawBug(c,sp,P,time,sil){
   drawArm(c,sp,g.ba,dk);drawLeg(c,sp,g.bl,dk);midLegs(c,sp,g,time,dk);
   body(c,sp,g,time,P);
   head(c,sp,g,time,P);
-  drawLeg(c,sp,g.fl,sp.lc);drawArm(c,sp,g.fa,sp.lc);
+  if(!P.deferFrontLeg)drawLeg(c,sp,g.fl,sp.lc);if(!P.deferFrontArm)drawArm(c,sp,g.fa,sp.lc);
   c.restore();SIL=false;
 }
-
+function drawContactLimbs(c,a){
+  const {sp,P}=a,k=sp.s*(P.sc||1);c.save();c.translate(P.wx,P.wy);c.scale(P.f*k,k);c.rotate(P.rot);
+  if(P.deferFrontLeg)drawLeg(c,sp,P.g.fl,sp.lc);if(P.deferFrontArm)drawArm(c,sp,P.g.fa,sp.lc);c.restore();
+}
 
 /* ---------- 책 삽화용 배경과 장면 ---------- */
 function bg(c, night, sign) {
@@ -294,6 +326,7 @@ function scene(canvas, o) {
     const vy = G - G / z + 34 / z; t.y = Math.max(t.y, vy);
     c.save(); c.font = `bold ${t.size || 44}px "Andika","Fredoka",sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
     const tw = c.measureText(t.s).width / 2 + 12; t.x = Math.max(cx - half + tw, Math.min(cx + half - tw, t.x));
+    if (t.emoji) { c.font = `${t.size || 54}px "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif`; c.fillText(t.s, t.x, t.y); c.restore(); continue; }
     c.lineWidth = 8; c.strokeStyle = '#fff'; c.strokeText(t.s, t.x, t.y); c.fillStyle = t.col || '#e8590c'; c.fillText(t.s, t.x, t.y); c.restore();
   }
 }

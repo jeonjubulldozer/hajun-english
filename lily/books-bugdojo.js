@@ -1,166 +1,6116 @@
-// 곤충 무술 도장(BUG DOJO) 챕터북 시리즈 — 하준이가 좋아하는 애니메이션의 곤충 식구들이 그대로 나와요.
-// 하준이는 원어민 유치원을 다녔고 영어를 잘 알아들어서, 매직 트리 하우스 정도의 챕터북 수준으로 썼어요 (한 권 = 3챕터).
-// 이름은 한국 이름의 뜻을 영어로 옮겼어요: 맴맴이=Mem-Mem, 번쩍이=Coach Flash, 집게=Coach Pinch, 꽉이=Coach Grip, 팡이=Coach Pop,
-// 동글이=Dot, 반짝이=Sparkle, 윙윙이=Buzz, 콩콩이=Bob, 띵가=Strum.
-// art = 그림(곤충 도장 그림 엔진): actors = [{id, pose, x(0~960), f(1 오른쪽/-1 왼쪽), ex(표정 0웃음 1집중 2놀람 3눈웃음 5졸림), rot, y, rust, gl}]
+// 곤충 무술 도장 영어책 — 애니메이션(dojo/) 각 화의 이야기를 영어 챕터북으로 옮긴 것. 그림은 애니메이션 장면의 자세를 그대로 가져왔어요.
+// 새 화가 생기면 scratchpad의 gen_books.py 방식대로 같은 형식으로 추가하면 돼요.
 (() => {
-const NAMES = { "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)", flash: "번쩍이 (장수풍뎅이 · 레슬링 사범님)", pinch: "집게 (사슴벌레 · 유도 사범님)", grip: "꽉이 (사마귀 · 주짓수 사범님) / 꽉 잡다", pop: "팡이 (메뚜기 · 태권도 사범님)", dot: "동글이 (무당벌레)", sparkle: "반짝이 (반딧불이)", buzz: "윙윙이 (꿀벌)", bob: "콩콩이 (방아깨비)", strum: "띵가 (베짱이)" };
-const W = (o) => Object.assign({}, NAMES, o);
-const A = (...actors) => ({ actors });
-const N = (...actors) => ({ night: true, actors });
 const BUGDOJO = [
-  {
-    id: "bdc-masters", level: 3, style: "곤충 무술 도장 · 챕터북", title: "Mem-Mem and the Four Masters",
-    cover: { e: "🥋", bg: "#BFE2C6", art: { zoom: 1.05, sign: true, actors: [{ id: "rhino", pose: "low", x: 170, sc: .85 }, { id: "stag", pose: "guard", x: 340, sc: .85 }, { id: "cicada", pose: "cheer", x: 490, ex: 3 }, { id: "mantis", pose: "guard", x: 640, f: -1, sc: .85 }, { id: "hop", pose: "guard", x: 800, f: -1, sc: .85 }] } },
-    blurb: "땅속에서 몇 년을 기다린 맴맴이가 곤충 도장에서 네 사범님을 만나요. 왜 네 가지를 다 배워야 할까?",
-    pages: [
-      { ch: "Chapter 1 · Years in the Dark", e: "🌳", art: A({ id: "cicada", pose: "stand", x: 480, ex: 4 }), s: ["For years and years, Mem-Mem lived deep under the ground, sipping sap from the roots of an old oak tree.", "It was dark, it was quiet, and it was very, very boring.", "Every night, he dreamed about the same thing.", "\"One day,\" he whispered to the worms, \"I'm going to be a real warrior.\""] },
-      { e: "🌙", art: { zoom: 1.1, sign: true, actors: [{ id: "cicada", pose: "cheer", x: 480, ex: 3 }] }, s: ["Then, one warm summer night, Mem-Mem dug his way up into the moonlight.", "He climbed a tree, cracked out of his old skin, and stretched his brand-new wings.", "From the top of the branch, he saw something amazing.", "Under the oak tree stood a wooden sign that said BUG DOJO."] },
-      { ch: "Chapter 2 · Four Masters", e: "🪲", art: A({ id: "rhino", pose: "lift", x: 430, f: 1 }, { id: "dummy", pose: "tuck", rot: 3.1, y: -150, x: 450, f: 1, sc: .8 }), s: ["The first master Mem-Mem met was Coach Flash, a rhinoceros beetle with a horn like a crowbar.", "\"Wrestling is about pressure,\" Coach Flash rumbled. \"Get low, drive forward, and never let go.\"", "He dropped his hips, shot in, and lifted the straw dummy high over his head.", "Mem-Mem's mouth fell open."] },
-      { e: "🪲", art: A({ id: "stag", pose: "grip", x: 410, f: 1 }, { id: "cicada", pose: "grip", x: 580, f: -1, ex: 2 }), s: ["Next came Coach Pinch, a stag beetle with jaws like a pair of garden scissors.", "\"In judo, you don't fight power with power,\" he said calmly.", "\"You grip, you pull your partner off balance, and then you throw.\"", "He tugged Mem-Mem gently forward, and suddenly Mem-Mem was looking at the sky."] },
-      { e: "🌿", art: A({ id: "mantis", pose: "back", rot: -1.5, x: 430, f: 1 }, { id: "cicada", pose: "top", x: 610, f: -1, ex: 2 }), s: ["Coach Grip, the praying mantis, was waiting on the mat, lying flat on her back.", "\"Most bugs think being on your back means you're losing,\" she said with a sly smile.", "\"In jiu-jitsu, that's where the fun begins.\"", "Before Mem-Mem could even blink, she had swept him over and was sitting on top of him."] },
-      { e: "🦗", art: { actors: [{ id: "hop", pose: "spin", x: 470, f: 1 }], text: [{ x: 700, y: 170, s: "WHOOSH!" }] }, s: ["Last of all was Coach Pop, a grasshopper who could jump about twenty times the length of his own body.", "\"Taekwondo is all about distance and speed,\" he said, bouncing on his toes.", "He spun around, and his back leg whipped through the air.", "A leaf hanging above them split neatly in two."] },
-      { ch: "Chapter 3 · Why Learn Four?", e: "🤔", art: A({ id: "stag", pose: "stand", x: 400, f: 1, ex: 3 }, { id: "cicada", pose: "sit", x: 580, f: -1, ex: 1 }), s: ["That evening, Mem-Mem sat at the edge of the mat, thinking hard.", "\"Coach Pinch,\" he asked, \"why can't I just learn one thing and be really, really good at it?\"", "Coach Pinch smiled. \"Let me show you.\""] },
-      { e: "💥", art: { actors: [{ id: "hop", pose: "kick", x: 420, f: 1, ex: 2 }, { id: "rhino", pose: "low", x: 600, f: -1 }], text: [{ x: 520, y: 140, s: "CAUGHT!", col: "#20c997" }] }, s: ["Coach Pop threw his fastest kick at Coach Flash.", "But Coach Flash caught the leg, lifted, and set Coach Pop gently down on the mat.", "\"Kicks are great when you're far away,\" said Coach Flash. \"But up close, you need wrestling and judo.\"", "\"And if you end up on the ground,\" added Coach Grip, \"you need jiu-jitsu.\""] },
-      { e: "🙇", art: { zoom: 1, actors: [{ id: "rhino", pose: "bow", x: 150, sc: .85 }, { id: "stag", pose: "bow", x: 320, sc: .85 }, { id: "cicada", pose: "cheer", x: 480, f: -1, ex: 3 }, { id: "mantis", pose: "bow", x: 650, f: -1, sc: .85 }, { id: "hop", pose: "bow", x: 820, f: -1, sc: .85 }] }, s: ["Mem-Mem jumped to his feet. \"Then I'll learn all four!\"", "The four masters looked at each other and laughed.", "\"It's a lot of hard work,\" warned Coach Flash.", "\"I waited years under the ground for this,\" said Mem-Mem. \"I'm ready.\"", "Everybody bowed, and the whole dojo shouted, \"Thank you!\""] }
-    ],
-    words: W({ sap: "수액", roots: "뿌리", warrior: "전사", dug: "팠다", "cracked out of": "깨고 나왔다", stretched: "쭉 폈다", "rhinoceros beetle": "장수풍뎅이", crowbar: "쇠지렛대", pressure: "누르는 힘", rumbled: "낮게 울리는 목소리로 말했다", drive: "밀고 나가다", "stag beetle": "사슴벌레", jaws: "턱", "off balance": "균형이 무너진", tugged: "잡아당겼다", sly: "능청스러운", swept: "쓸어 넘겼다", distance: "거리", whipped: "휙 휘둘렀다", neatly: "깔끔하게", edge: "가장자리", warned: "경고했다" }),
-    talk: ["Why did Mem-Mem want to become a warrior?", "Which master did you like best, and why?", "Why does Coach Flash say you need wrestling up close?", "If you could learn only one, which would you choose? Would that be a good idea?"],
-    quiz: [
-      { t: "choice", q: "Where did Mem-Mem live before he came to the dojo?", a: ["Deep under the ground", "In a pond", "In a bird's nest"], e: ["🌳", "🐸", "🪺"] },
-      { t: "choice", q: "What does Coach Pinch say about judo?", a: ["Don't fight power with power", "Always kick high", "Never hold on"], e: ["🥋", "🦵", "🙅"] },
-      { t: "choice", q: "Why does Mem-Mem decide to learn all four?", a: ["Each one helps in a different place", "Because it's easy", "Because the others are boring"], e: ["🧩", "😴", "🙄"] },
-      { t: "word", q: "'균형'은 영어로?", a: ["balance", "ballet", "bounce"] },
-      { t: "say", q: "Say it! Kicks are great when you're far away. But up close, you need ...", say: "But up close, you need wrestling and judo.", key: ["wrestling", "judo"] },
-      { t: "say", q: "Tell me! Which would you learn first, and why? Start with: I would learn ... because ...", say: "I would learn wrestling first because it makes me strong.", key: ["because"], free: true }
+ {
+  "id": "ep1",
+  "ep": 1,
+  "dojoEp": "1화",
+  "level": 3,
+  "style": "곤충 무술 도장 · 1화",
+  "title": "Bug Dojo 1: The Cicada Who Learned Four Arts",
+  "cover": {
+   "e": "🥋",
+   "bg": "#BFE2C6",
+   "art": {
+    "actors": [
+     {
+      "id": "rhino",
+      "x": 170,
+      "f": 1,
+      "ex": 3,
+      "tl": -0.04,
+      "flh": 0.09,
+      "flk": 0.09,
+      "blh": -0.09,
+      "blk": 0.09,
+      "fah": 1.99,
+      "fae": 0.46,
+      "bah": 1.73,
+      "bae": 0.46
+     },
+     {
+      "id": "stag",
+      "x": 320,
+      "f": 1,
+      "ex": 0,
+      "tl": -0.0,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.4,
+      "fae": 0.36,
+      "bah": 0.02,
+      "bae": 0.36
+     },
+     {
+      "id": "cicada",
+      "x": 480,
+      "f": 1,
+      "ex": 3,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     },
+     {
+      "id": "mantis",
+      "x": 640,
+      "f": -1,
+      "ex": 0,
+      "tl": -0.01,
+      "flh": 0.07,
+      "flk": 0.07,
+      "blh": -0.07,
+      "blk": 0.07,
+      "fah": 0.96,
+      "fae": 0.39,
+      "bah": 0.62,
+      "bae": 0.39
+     },
+     {
+      "id": "hop",
+      "x": 790,
+      "f": -1,
+      "ex": 0,
+      "tl": -0.0,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.26,
+      "fae": 0.35,
+      "bah": -0.14,
+      "bae": 0.35
+     }
     ]
+   }
   },
-  {
-    id: "bdc-fall", level: 3, style: "곤충 무술 도장 · 챕터북", title: "Fall Seven Times, Stand Up Eight",
-    cover: { e: "🐞", bg: "#F6C9C3", art: { actors: [{ id: "lady", pose: "turn", x: 440, f: 1 }, { id: "cicada", pose: "tuck", rot: 2.2, y: -90, x: 560, f: 1, ex: 2 }] } },
-    blurb: "첫 스파링에서 종이비행기처럼 날아간 맴맴이. 잘 넘어지는 법을 배우고 다시 도전해요.",
-    pages: [
-      { ch: "Chapter 1 · The First Spar", e: "🐞", art: A({ id: "lady", pose: "guard", x: 400, f: 1, ex: 3 }, { id: "cicada", pose: "guard", x: 580, f: -1 }), s: ["On Mem-Mem's tenth day at the dojo, Coach Pinch called out, \"Time to spar!\"", "Mem-Mem's partner was Dot, a ladybug who was small, round, and surprisingly strong.", "\"Don't worry,\" Dot said with a grin. \"I'll go easy on you.\"", "\"You don't have to,\" said Mem-Mem, puffing out his chest."] },
-      { e: "💨", art: { actors: [{ id: "lady", pose: "turn", x: 440, f: 1 }, { id: "cicada", pose: "tuck", rot: 2.2, y: -90, x: 560, f: 1, ex: 2 }], text: [{ x: 700, y: 120, s: "WHOOSH!" }] }, s: ["That was a mistake.", "Dot grabbed his sleeve, spun underneath him, and launched him into the air.", "WHOOSH! Mem-Mem flew over her shoulder like a paper airplane.", "He landed flat on his back with a loud THUD, and all the air rushed out of him."] },
-      { e: "😳", art: A({ id: "lady", pose: "stand", x: 380, f: 1, ex: 2 }, { id: "cicada", pose: "flat", rot: -1.57, x: 600, f: 1, ex: 2 }), s: ["A few bugs giggled from the side of the mat.", "Mem-Mem's face turned hot.", "\"I'm terrible at this,\" he mumbled, staring up at the ceiling."] },
-      { ch: "Chapter 2 · The Art of Falling", e: "🪲", art: A({ id: "stag", pose: "stand", x: 400, f: 1, ex: 3 }, { id: "cicada", pose: "sit", x: 580, f: -1, ex: 1 }), s: ["After class, Coach Pinch sat down next to him.", "\"Do you know the very first thing every judo student learns?\" he asked.", "Mem-Mem shook his head. \"How to throw?\"", "\"How to fall,\" said Coach Pinch. \"Everybody falls. Warriors learn to fall well.\""] },
-      { e: "🖐️", art: { actors: [{ id: "cicada", pose: "flat", rot: -1.57, x: 470, f: 1, ex: 1 }, { id: "stag", pose: "stand", x: 650, f: -1, ex: 3 }], text: [{ x: 480, y: 220, s: "SLAP!", col: "#1c7ed6" }] }, s: ["So they practiced falling, again and again.", "Tuck your chin, so your head doesn't hit the mat.", "Slap the mat with your arm, to spread out the force.", "Roll, slap, and pop back up.", "By the end of the week, Mem-Mem could fall a hundred times without a single bump on his head."] },
-      { e: "💡", art: A({ id: "stag", pose: "stand", x: 400, f: 1, ex: 0 }, { id: "cicada", pose: "stand", x: 580, f: -1, ex: 2 }), s: ["\"Losing a match isn't the end,\" Coach Pinch told him.", "\"Every time you fall, your body learns something new.\"", "\"So losing is... learning?\" asked Mem-Mem slowly.", "\"Exactly,\" said Coach Pinch."] },
-      { ch: "Chapter 3 · The Rematch", e: "🔁", art: { actors: [{ id: "lady", pose: "turn", x: 440, f: 1 }, { id: "cicada", pose: "tuck", rot: 4.2, y: -60, x: 560, f: 1, ex: 1 }] }, s: ["The next Saturday, Mem-Mem asked Dot for a rematch.", "Dot threw him again, just as fast as before.", "But this time, Mem-Mem tucked his chin, slapped the mat, and rolled straight back to his feet."] },
-      { e: "💥", art: { actors: [{ id: "cicada", pose: "shoot", x: 430, f: 1 }, { id: "lady", pose: "low", x: 600, f: -1, ex: 2 }], text: [{ x: 520, y: 140, s: "TACKLE!", col: "#20c997" }] }, s: ["Dot's eyes went wide.", "Before she could reset, Mem-Mem dropped his level and shot in for a double-leg tackle.", "BUMP! This time, it was Dot who landed on the mat."] },
-      { e: "😄", art: A({ id: "cicada", pose: "cheer", x: 400, f: 1, ex: 3 }, { id: "lady", pose: "cheer", x: 580, f: -1, ex: 3 }), s: ["For a moment, nobody said a word.", "Then Dot burst out laughing. \"Where did THAT come from?\"", "\"From falling,\" said Mem-Mem, grinning. \"Lots and lots of falling.\"", "They bowed to each other, and Coach Pinch nodded proudly from the corner."] }
+  "blurb": "1화 「네 가지를 배운 매미」를 영어로 — 네 사범님, 여러 가지를 같이 배우는 친구들, 맴맴이의 첫 스파링.",
+  "pages": [
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "rhino",
+       "x": 170,
+       "f": 1,
+       "ex": 3,
+       "tl": 0.74,
+       "flh": 0,
+       "flk": 0,
+       "blh": -0.0,
+       "blk": 0,
+       "fah": 0.12,
+       "fae": 0.1,
+       "bah": 0.08,
+       "bae": 0.1
+      },
+      {
+       "id": "stag",
+       "x": 350,
+       "f": 1,
+       "ex": 3,
+       "tl": 0.7,
+       "flh": 0,
+       "flk": 0,
+       "blh": -0.0,
+       "blk": 0,
+       "fah": 0.13,
+       "fae": 0.12,
+       "bah": 0.07,
+       "bae": 0.12
+      },
+      {
+       "id": "mantis",
+       "x": 610,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.05,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.33,
+       "bah": -0.14,
+       "bae": 0.33
+      },
+      {
+       "id": "hop",
+       "x": 790,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Under a big tree in the forest, there was a martial arts school for bugs.",
+     "It was called the Bug Dojo.",
+     "Four masters taught there, and each one was the best at something different."
     ],
-    words: W({ spar: "스파링하다", partner: "상대", surprisingly: "놀랍게도", "go easy": "살살 하다", "puffing out his chest": "가슴을 쭉 펴며 으스대며", mistake: "실수", sleeve: "소매", launched: "쏘아 올렸다", thud: "쿵", giggled: "킥킥 웃었다", terrible: "형편없는", mumbled: "중얼거렸다", tuck: "집어넣다", "spread out": "퍼뜨리다", force: "힘·충격", rematch: "재대결", reset: "자세를 다시 잡다", "dropped his level": "자세를 낮췄다", "burst out laughing": "웃음이 터졌다", proudly: "자랑스럽게" }),
-    talk: ["How did Mem-Mem feel after his first fall? Have you ever felt like that?", "Why is learning to fall so important?", "What does 'losing is learning' mean to you?", "How did Mem-Mem win the rematch?"],
-    quiz: [
-      { t: "choice", q: "How did Mem-Mem feel after his first fall?", a: ["Embarrassed", "Sleepy", "Hungry"], e: ["😳", "😴", "😋"] },
-      { t: "choice", q: "What is the first thing every judo student learns?", a: ["How to fall", "How to kick", "How to win"], e: ["🤸", "🦵", "🏆"] },
-      { t: "choice", q: "What did Mem-Mem do in the rematch after he was thrown?", a: ["He rolled up and tackled Dot", "He cried and went home", "He asked for a break"], e: ["💥", "😭", "🛑"] },
-      { t: "word", q: "'재대결'은 영어로?", a: ["rematch", "remember", "repeat"] },
-      { t: "say", q: "Say it! Coach Pinch said: Everybody falls. Warriors learn to ...", say: "Warriors learn to fall well.", key: ["fall", "well"] },
-      { t: "say", q: "Tell me about a time you fell or lost. What did you learn? Start with: One time, I ...", say: "One time, I lost a match, but I learned a new move.", key: ["time"], free: true }
-    ]
+    "beat": "intro",
+    "ch": "Chapter 1 · Four Masters Under the Big Tree"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dummy",
+       "x": 610,
+       "f": -1,
+       "ex": 2,
+       "rot": -1.57,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.5,
+       "fae": 0.2,
+       "bah": 0.25,
+       "bae": 0.2
+      },
+      {
+       "id": "rhino",
+       "x": 520,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.34,
+       "flh": 0.92,
+       "flk": 1.45,
+       "blh": -0.05,
+       "blk": 1.07,
+       "fah": 1.56,
+       "fae": 0.5,
+       "bah": 1.45,
+       "bae": 0.59
+      }
+     ],
+     "text": [
+      {
+       "x": 520,
+       "y": 120,
+       "s": "LIFT!",
+       "col": "#20c997"
+      }
+     ]
+    },
+    "s": [
+     "Coach Flash, the rhinoceros beetle, taught wrestling.",
+     "\"Get low, drive forward, and lift!\" he said, and he scooped the straw dummy up high.",
+     "Real rhinoceros beetles do the same thing: they slide their horn under a rival and flip it over."
+    ],
+    "beat": "rhino"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "stag",
+       "x": 500,
+       "f": 1,
+       "ex": 3,
+       "tl": 0.34,
+       "flh": 0.17,
+       "flk": 0.16,
+       "blh": -0.17,
+       "blk": 0.12,
+       "fah": 0.95,
+       "fae": 0.26,
+       "bah": 0.81,
+       "bae": 0.47
+      },
+      {
+       "id": "dummy",
+       "x": 615,
+       "f": 1,
+       "ex": 2,
+       "rot": 4.71,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.5,
+       "fae": 0.2,
+       "bah": 0.25,
+       "bae": 0.2
+      }
+     ],
+     "text": [
+      {
+       "x": 560,
+       "y": 120,
+       "s": "WHOOSH!"
+      }
+     ]
+    },
+    "s": [
+     "Coach Pinch, the stag beetle, taught judo.",
+     "\"Grip, break their balance, and throw,\" he said, and the dummy flew over his shoulder.",
+     "Real stag beetles grab their rivals with their huge jaws and toss them away."
+    ],
+    "beat": "stag"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dummy",
+       "x": 600,
+       "f": -1,
+       "ex": 2,
+       "rot": -1.57,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 2.6,
+       "fae": 0.2,
+       "bah": 0.78,
+       "bae": 0.2
+      },
+      {
+       "id": "mantis",
+       "x": 551,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.9,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.6,
+       "fae": 0.45,
+       "bah": 1.9,
+       "bae": 0.45
+      }
+     ]
+    },
+    "s": [
+     "Coach Grip, the praying mantis, taught jiu-jitsu.",
+     "\"Being on your back doesn't mean it's over,\" she said.",
+     "\"Block with your legs, flip them over, and hold on tight.\"",
+     "A real mantis waits very still, then grabs in the blink of an eye."
+    ],
+    "beat": "mantis"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "hop",
+       "x": 545,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.28,
+       "flh": 0.28,
+       "flk": 0.33,
+       "blh": -0.28,
+       "blk": 0.26,
+       "fah": 0.81,
+       "fae": 1.07,
+       "bah": 0.62,
+       "bae": 1.22
+      }
+     ],
+     "text": [
+      {
+       "x": 700,
+       "y": 150,
+       "s": "POW!"
+      }
+     ]
+    },
+    "s": [
+     "Coach Pop, the grasshopper, taught taekwondo.",
+     "He measured the distance, kept his balance, and spun into a lightning-fast spinning back kick.",
+     "Real grasshoppers can jump about twenty times the length of their own bodies!"
+    ],
+    "beat": "hop"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "lady",
+       "x": 160,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "butter",
+       "x": 290,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "katy",
+       "x": 420,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "fire",
+       "x": 550,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "bee",
+       "x": 680,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.04,
+       "flh": 0.09,
+       "flk": 0.09,
+       "blh": -0.09,
+       "blk": 0.09,
+       "fah": 2.07,
+       "fae": 0.46,
+       "bah": 1.82,
+       "bae": 0.46
+      },
+      {
+       "id": "bang",
+       "x": 810,
+       "f": -1,
+       "ex": 0,
+       "tl": -0.0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Lots of students at the dojo learned two or three arts at the same time."
+    ],
+    "beat": "friends",
+    "ch": "Chapter 2 · Friends Who Learn More Than One"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "lady",
+       "x": 520,
+       "f": 1,
+       "ex": 3,
+       "rot": 11,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": -0.7,
+       "fae": 0.2,
+       "bah": 0.25,
+       "bae": 0.2
+      }
+     ]
+    },
+    "s": [
+     "Dot the ladybug learned judo and jiu-jitsu.",
+     "She could roll across the mat like a little red ball, and when she fell, she slapped the mat and never got hurt.",
+     "Real ladybugs flip onto their backs and play dead when they are in danger."
+    ],
+    "beat": "lady"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dummy",
+       "x": 607,
+       "f": -1,
+       "ex": 2,
+       "y": -9,
+       "rot": -1.5,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.5,
+       "fae": 0.2,
+       "bah": 0.25,
+       "bae": 0.2
+      },
+      {
+       "id": "butter",
+       "x": 490,
+       "f": 1,
+       "ex": 1,
+       "rot": -0.93,
+       "tl": 0.47,
+       "flh": 1.7,
+       "flk": 1.38,
+       "blh": 1.36,
+       "blk": 1.57,
+       "fah": 1.55,
+       "fae": 0.75,
+       "bah": 1.35,
+       "bae": 0.88
+      }
+     ]
+    },
+    "s": [
+     "Flutter the butterfly learned taekwondo and jiu-jitsu.",
+     "She kicked as lightly as a butterfly, and she used the butterfly guard to flip her partners over.",
+     "Yes, there really is a jiu-jitsu move named after a butterfly!"
+    ],
+    "beat": "butter"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dummy",
+       "x": 610,
+       "f": -1,
+       "ex": 2,
+       "rot": -1.57,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.5,
+       "fae": 0.2,
+       "bah": 0.25,
+       "bae": 0.2
+      },
+      {
+       "id": "bang",
+       "x": 534,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.79,
+       "flh": 0.45,
+       "flk": 1.81,
+       "blh": 0.08,
+       "blk": 1.5,
+       "fah": 1.65,
+       "fae": 0.44,
+       "bah": 1.43,
+       "bae": 0.44
+      }
+     ]
+    },
+    "s": [
+     "Bob the rice grasshopper learned wrestling, judo, and jiu-jitsu.",
+     "When you hold a real rice grasshopper's back legs, it bobs up and down.",
+     "That's just like a wrestler changing levels, isn't it?"
+    ],
+    "beat": "bang"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "rhino",
+       "x": 135,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "stag",
+       "x": 265,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 3,
+       "tl": 0.01,
+       "flh": 0.2,
+       "flk": 0.22,
+       "blh": -0.2,
+       "blk": 0.19,
+       "fah": 2.12,
+       "fae": 0.82,
+       "bah": 1.9,
+       "bae": 0.89
+      },
+      {
+       "id": "mantis",
+       "x": 705,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "hop",
+       "x": 835,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      }
+     ]
+    },
+    "s": [
+     "And then a friend appeared who had been getting ready for a very long time.",
+     "It was Mem-Mem the cicada!",
+     "Real cicadas grow under the ground for years before they come out, and Mem-Mem had practiced for a long, long time, too."
+    ],
+    "beat": "cicada"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "rhino",
+       "x": 105,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "mantis",
+       "x": 865,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "cicada",
+       "x": 390,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.08,
+       "flh": 0.05,
+       "flk": 0.05,
+       "blh": -0.05,
+       "blk": 0.05,
+       "fah": 0.24,
+       "fae": 0.32,
+       "bah": -0.13,
+       "bae": 0.32
+      },
+      {
+       "id": "stag",
+       "x": 580,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.08,
+       "flh": 0.05,
+       "flk": 0.05,
+       "blh": -0.05,
+       "blk": 0.05,
+       "fah": 0.24,
+       "fae": 0.32,
+       "bah": -0.13,
+       "bae": 0.32
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem learned all four arts, just like Hajun: taekwondo, judo, wrestling, and jiu-jitsu.",
+     "Today was sparring day, and he would have one match with each master.",
+     "But first, they bowed to each other."
+    ],
+    "beat": "sparin",
+    "ch": "Chapter 3 · Sparring Day"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "stag",
+       "x": 495,
+       "f": 1,
+       "ex": 3,
+       "tl": 0.01,
+       "flh": 0.08,
+       "flk": 0.08,
+       "blh": -0.08,
+       "blk": 0.07,
+       "fah": 0.35,
+       "fae": 0.35,
+       "bah": -0.04,
+       "bae": 0.38
+      },
+      {
+       "id": "cicada",
+       "x": 605,
+       "f": 1,
+       "ex": 3,
+       "rot": 6.28,
+       "tl": 0.04,
+       "flh": 0.17,
+       "flk": 0.24,
+       "blh": -0.06,
+       "blk": 0.19,
+       "fah": 0.41,
+       "fae": 0.37,
+       "bah": 0.05,
+       "bae": 0.38
+      }
+     ]
+    },
+    "s": [
+     "First up was Coach Pinch. Whoosh! Over went Mem-Mem!",
+     "But he had learned how to fall, so he didn't get hurt.",
+     "\"When you fall, you just get back up,\" he said. \"One more time!\""
+    ],
+    "beat": "spar1"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "rhino",
+       "x": 516,
+       "f": -1,
+       "ex": 1,
+       "rot": 0.34,
+       "tl": 0.27,
+       "flh": 0.77,
+       "flk": 1.18,
+       "blh": -0.02,
+       "blk": 0.87,
+       "fah": 1.34,
+       "fae": 0.43,
+       "bah": 1.21,
+       "bae": 0.51
+      },
+      {
+       "id": "cicada",
+       "x": 599,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.48,
+       "flh": 0.84,
+       "flk": 1.63,
+       "blh": -0.01,
+       "blk": 1.24,
+       "fah": 1.66,
+       "fae": 0.49,
+       "bah": 1.54,
+       "bae": 0.56
+      }
+     ],
+     "text": [
+      {
+       "x": 540,
+       "y": 130,
+       "s": "SPRAWL!",
+       "col": "#20c997"
+      }
+     ]
+    },
+    "s": [
+     "Next was Coach Flash, and here came a tackle!",
+     "Mem-Mem threw his legs back in a sprawl and spun around behind him."
+    ],
+    "beat": "spar2"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "mantis",
+       "x": 435,
+       "f": -1,
+       "ex": 2,
+       "rot": 4.71,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 2.4,
+       "fae": 0.2,
+       "bah": 0.25,
+       "bae": 0.2
+      },
+      {
+       "id": "cicada",
+       "x": 477,
+       "f": -1,
+       "ex": 1,
+       "rot": -1.28,
+       "tl": 0.35,
+       "flh": 1.52,
+       "flk": 1.2,
+       "blh": 1.16,
+       "blk": 1.53,
+       "fah": 1.47,
+       "fae": 0.83,
+       "bah": 1.27,
+       "bae": 1
+      }
+     ]
+    },
+    "s": [
+     "Last of all was Coach Grip, and this time Mem-Mem linked all four arts together.",
+     "He measured the distance with taekwondo, got low with wrestling, threw with judo, and held on with jiu-jitsu.",
+     "Omoplata!"
+    ],
+    "beat": "spar3"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "stag",
+       "x": 64,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "lady",
+       "x": 168,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "butter",
+       "x": 272,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "katy",
+       "x": 376,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "fire",
+       "x": 584,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "bee",
+       "x": 688,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "bang",
+       "x": 792,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "mantis",
+       "x": 896,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      }
+     ]
+    },
+    "s": [
+     "Everything he had learned, one piece at a time, joined together into a brand-new kind of strength.",
+     "\"And the most important thing in martial arts,\" said Coach Pinch, \"is the bow.\"",
+     "Everyone bowed together. \"Thank you!\""
+    ],
+    "beat": "bow"
+   }
+  ],
+  "words": {
+   "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
+   "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
+   "pinch": "집게 (사슴벌레 · 유도 사범님)",
+   "grip": "꽉이 (사마귀 · 주짓수 사범님) / 꽉 잡다",
+   "pop": "팡이 (메뚜기 · 태권도 사범님)",
+   "dot": "동글이 (무당벌레)",
+   "flutter": "팔랑이 (나비)",
+   "longlegs": "긴다리 (여치)",
+   "sparkle": "반짝이 (반딧불이)",
+   "buzz": "윙윙이 (꿀벌)",
+   "bob": "콩콩이 (방아깨비)",
+   "strum": "띵가 (베짱이)",
+   "rolly": "굴리 (쇠똥구리)",
+   "rocky": "단단이 (개미)",
+   "chirpy": "뚜리 (귀뚜라미)",
+   "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
+   "rhinoceros beetle": "장수풍뎅이",
+   "stag beetle": "사슴벌레",
+   "praying mantis": "사마귀",
+   "grasshopper": "메뚜기",
+   "scooped": "퍼 올렸다",
+   "rival": "맞수",
+   "balance": "균형",
+   "jaws": "턱",
+   "measured": "쟀다",
+   "distance": "거리",
+   "ladybug": "무당벌레",
+   "play dead": "죽은 척하다",
+   "butterfly guard": "버터플라이 가드",
+   "rice grasshopper": "방아깨비",
+   "changing levels": "자세를 낮췄다 올렸다 하기(레벨 체인지)",
+   "sparring": "스파링",
+   "sprawl": "스프롤(다리를 뒤로 빼서 태클 막기)",
+   "linked": "이었다",
+   "bow": "인사(절)"
   },
-  {
-    id: "bdc-rust", level: 3, style: "곤충 무술 도장 · 챕터북", title: "Strum and the Rusty Moves",
-    cover: { e: "🎸", bg: "#E3D9A8", art: { actors: [{ id: "grass", pose: "guard", x: 480, ex: 2, rust: .8 }], text: [{ x: 640, y: 170, s: "CREAK!", col: "#9c5220" }] } },
-    blurb: "기술 이름은 다 외우는데 단체반은 빼먹는 띵가. 한 달 뒤 기술이 녹슬어 삐걱거려요.",
-    pages: [
-      { ch: "Chapter 1 · The Bug Who Knew Every Move", e: "🎸", art: { actors: [{ id: "grass", pose: "sit", x: 480, ex: 3 }], text: [{ x: 640, y: 170, s: "♪ ♫", col: "#7048e8" }] }, s: ["Strum was the most musical bug at the dojo.", "He could play the guitar, sing in harmony, and recite the name of every move in all four arts.", "\"Double-leg, single-leg, shoulder throw, omoplata, spinning back kick,\" he would sing. \"I know them all!\""] },
-      { e: "😴", art: A({ id: "grass", pose: "flat", rot: -1.57, x: 480, ex: 5 }), s: ["But there was one thing Strum did not like at all: group class.", "Group class was sweaty. Group class was crowded. In group class, bigger bugs squished you flat.", "\"I'll just take my private lesson,\" he said. \"That's enough for me.\"", "So on Monday, he skipped. On Wednesday, he had a tummy ache. On Friday, he simply \"forgot.\""] },
-      { e: "🤼", art: A({ id: "cicada", pose: "grip", x: 400, f: 1, ex: 1 }, { id: "bang", pose: "grip", x: 570, f: -1 }), s: ["Meanwhile, Mem-Mem went to every single class.", "He drilled with big bugs, small bugs, fast bugs, and very stubborn bugs.", "Some days he won, and most days he lost.", "But every day, his moves got a tiny bit smoother."] },
-      { ch: "Chapter 2 · Creak!", e: "🔩", art: { actors: [{ id: "grass", pose: "guard", x: 480, ex: 2, rust: .85 }], text: [{ x: 660, y: 160, s: "CREAK!", col: "#9c5220" }] }, s: ["A month later, Strum finally showed up for group sparring.", "He stepped onto the mat, set his feet, and tried his favorite throw.", "CREAK! His arms moved like an old, squeaky door.", "Little orange flakes of rust floated down onto the mat."] },
-      { e: "😱", art: A({ id: "grass", pose: "stand", x: 400, f: 1, ex: 2, rust: .85 }, { id: "cicada", pose: "stand", x: 580, f: -1, ex: 2 }), s: ["\"What's happening to me?\" Strum gasped.", "\"I know the moves! I know all the names!\"", "\"Knowing the name of a move is not the same as owning it,\" said a calm voice behind him."] },
-      { ch: "Chapter 3 · Owning the Move", e: "🪲", art: A({ id: "stag", pose: "stand", x: 380, f: 1, ex: 0 }, { id: "grass", pose: "stand", x: 580, f: -1, rust: .7, ex: 2 }), s: ["It was Coach Pinch.", "\"Private lessons teach you the move,\" he explained.", "\"Group class is where you try it on lots of different partners until it really becomes yours.\"", "\"You need both. The bugs who do both get the strongest.\""] },
-      { e: "😟", art: A({ id: "grass", pose: "grip", x: 420, f: 1, rust: .5, ex: 1 }, { id: "cicada", pose: "grip", x: 580, f: -1 }), s: ["Strum swallowed hard. \"Is it too late for me?\"", "\"Rust is never forever,\" said Coach Pinch. \"But there's only one way to get it off.\"", "\"By showing up,\" said Strum quietly."] },
-      { e: "🎉", art: A({ id: "grass", pose: "cheer", x: 400, f: 1, ex: 3 }, { id: "cicada", pose: "cheer", x: 580, f: -1, ex: 3 }), s: ["From then on, Strum came to group class every day, even when it was sweaty and crowded.", "Little by little, the rust flaked away and his moves began to shine again.", "At the end of the month, he even wrote a brand-new song.", "It was called \"My Choice, My Result,\" and the whole dojo sang along."] }
+  "talk": [
+   "Which master would you like to learn from, and why?",
+   "Why didn't Mem-Mem get hurt when he fell?",
+   "How did Mem-Mem link all four arts together?",
+   "Which of the four arts do you like the most?"
+  ],
+  "quiz": [
+   {
+    "t": "choice",
+    "q": "Who teaches wrestling at the Bug Dojo?",
+    "a": [
+     "Coach Flash",
+     "Coach Pop",
+     "Coach Grip"
     ],
-    words: W({ musical: "음악을 좋아하는", harmony: "화음", recite: "줄줄 외우다", sweaty: "땀투성이인", crowded: "붐비는", squished: "짓눌렀다", "private lesson": "개인 레슨", "tummy ache": "배탈", meanwhile: "그동안", drilled: "반복 연습했다", stubborn: "고집 센", smoother: "더 매끄러운", "showed up": "나타났다", squeaky: "삐걱거리는", flakes: "조각", rust: "녹", gasped: "헉 하고 놀랐다", owning: "내 것으로 만들기", "swallowed hard": "침을 꿀꺽 삼켰다", "flaked away": "조각조각 떨어졌다", shine: "빛나다", "sang along": "따라 불렀다" }),
-    talk: ["Why didn't Strum like group class?", "What is the difference between knowing a move and owning it?", "Do you ever want to skip a class? What happens if you do?", "What would you say to Strum if he wanted to skip again?"],
-    quiz: [
-      { t: "choice", q: "Why didn't Strum like group class?", a: ["It was sweaty and crowded", "It was too short", "There was no music"], e: ["🥵", "⏱️", "🔇"] },
-      { t: "choice", q: "What happened to Strum's moves after a month?", a: ["They got rusty", "They got faster", "They disappeared"], e: ["🔩", "⚡", "👻"] },
-      { t: "choice", q: "What does Coach Pinch say group class is for?", a: ["Making the move really yours", "Learning the names", "Playing the guitar"], e: ["💪", "📖", "🎸"] },
-      { t: "word", q: "'개인 레슨'은 영어로?", a: ["private lesson", "pirate lesson", "prize lesson"] },
-      { t: "say", q: "Say it! Rust is never forever, and there's only one way to get it off: by ...", say: "By showing up.", key: ["showing", "up"] },
-      { t: "say", q: "Tell me! Do you like private lessons or group class more? Why? Start with: I like ... because ...", say: "I like group class because I can spar with friends.", key: ["because"], free: true }
+    "e": [
+     "🪲",
+     "🦗",
+     "🌿"
     ]
+   },
+   {
+    "t": "choice",
+    "q": "What do real ladybugs do when they are in danger?",
+    "a": [
+     "They play dead",
+     "They sing a song",
+     "They dig a hole"
+    ],
+    "e": [
+     "🐞",
+     "🎵",
+     "🕳️"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What did Mem-Mem do when Coach Flash tackled him?",
+    "a": [
+     "He sprawled",
+     "He ran away",
+     "He kicked"
+    ],
+    "e": [
+     "🤼",
+     "🏃",
+     "🦵"
+    ]
+   },
+   {
+    "t": "word",
+    "q": "'균형'은 영어로?",
+    "a": [
+     "balance",
+     "ballet",
+     "bounce"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Say it! When you fall, you just ...",
+    "say": "When you fall, you just get back up.",
+    "key": [
+     "get",
+     "up"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Tell me! Which master would you like to learn from? Start with: I want to learn from ... because ...",
+    "say": "I want to learn from Coach Flash because he is strong.",
+    "key": [
+     "because"
+    ],
+    "free": true
+   }
+  ],
+  "dojoIdx": 0
+ },
+ {
+  "id": "ep2",
+  "ep": 2,
+  "dojoEp": "2화",
+  "level": 3,
+  "style": "곤충 무술 도장 · 2화",
+  "title": "Bug Dojo 2: Sparkle's Night Training",
+  "cover": {
+   "e": "🥋",
+   "bg": "#25395B",
+   "art": {
+    "actors": [
+     {
+      "id": "grass",
+      "x": 290,
+      "f": 1,
+      "ex": 0,
+      "tl": 0,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.25,
+      "fae": 0.35,
+      "bah": -0.15,
+      "bae": 0.35
+     },
+     {
+      "id": "fire",
+      "x": 480,
+      "f": 1,
+      "ex": 3,
+      "gl": 1,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     },
+     {
+      "id": "cicada",
+      "x": 670,
+      "f": -1,
+      "ex": 3,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     }
+    ],
+    "night": true
+   }
   },
-  {
-    id: "bdc-seven", level: 3, style: "곤충 무술 도장 · 챕터북", title: "The Seven O'Clock Battle",
-    cover: { e: "⏰", bg: "#F7E3B0", art: { actors: [{ id: "cicada", pose: "sit", x: 480, ex: 5 }], text: [{ x: 660, y: 150, s: "BEEP!", col: "#e03131" }] } },
-    blurb: "아침 6시 반, 따뜻한 이불과 7시 개인 레슨 사이의 대결. 맴맴이는 일어날까?",
-    pages: [
-      { ch: "Chapter 1 · The Enemy Under the Blanket", e: "⏰", art: { actors: [{ id: "cicada", pose: "flat", rot: -1.57, x: 480, ex: 5 }], text: [{ x: 700, y: 140, s: "BEEP-BEEP!", col: "#e03131" }] }, s: ["BEEP-BEEP-BEEP! The alarm went off at six thirty in the morning.", "Mem-Mem cracked open one eye and groaned.", "Outside, it was still gray and chilly. Inside, his leaf blanket was warm and cozy.", "\"Five more minutes,\" he mumbled, pulling the blanket over his head."] },
-      { e: "😪", art: A({ id: "cicada", pose: "sit", x: 480, ex: 5 }), s: ["Today was the day of his seven o'clock private lesson with Coach Flash.", "And every part of his body was trying to talk him out of it.", "\"You're too tired,\" said his legs.", "\"It's too cold,\" said his wings.", "\"Just skip it this once,\" said his brain. \"Nobody will ever know.\""] },
-      { e: "🤔", art: A({ id: "cicada", pose: "stand", x: 480, ex: 1 }), s: ["But then Mem-Mem remembered Strum and his rusty, creaky moves.", "\"If I stay in bed, my moves get rusty,\" he thought.", "\"If I go, I get a little bit stronger. It's my choice, and the result is mine.\"", "He counted to three, threw off the blanket, and jumped out of bed."] },
-      { ch: "Chapter 2 · Cold Mats and Hot Drills", e: "🪲", art: { actors: [{ id: "cicada", pose: "shoot", x: 430, f: 1 }, { id: "rhino", pose: "sprawl", x: 610, f: -1 }], text: [{ x: 520, y: 120, s: "TACKLE!", col: "#20c997" }] }, s: ["When he got to the dojo, Coach Flash was already there, warming up.", "\"Good morning, warrior!\" he boomed. \"Let's start with fifty tackles.\"", "Fifty! Mem-Mem's legs wobbled just thinking about it."] },
-      { e: "💦", art: A({ id: "cicada", pose: "top", x: 470, f: 1, ex: 1 }, { id: "dummy", pose: "flat", rot: -1.57, x: 620, f: 1 }), s: ["They drilled double-legs, single-legs, and sprawls until the sun came up.", "Then they practiced pinning: chest down, hips heavy, and never let your partner breathe easy.", "Sweat dripped off Mem-Mem's antennae, but he didn't stop."] },
-      { e: "😤", art: A({ id: "rhino", pose: "cheer", x: 400, f: 1, ex: 3 }, { id: "cicada", pose: "stand", x: 580, f: -1, ex: 3 }), s: ["\"Here's a secret,\" said Coach Flash at the end of the lesson.", "\"Everybody feels tired at six thirty. Champions just get up anyway.\"", "Mem-Mem grinned. He felt tired, but he also felt something else. He felt proud."] },
-      { ch: "Chapter 3 · The Payoff", e: "🦗", art: { actors: [{ id: "cicada", pose: "shoot", x: 430, f: 1 }, { id: "bang", pose: "low", x: 610, f: -1, ex: 2 }], text: [{ x: 540, y: 120, s: "BOOM!" }] }, s: ["That afternoon at group class, Mem-Mem sparred with Bob, the long-headed grasshopper.", "Bob was so tall that Mem-Mem had never once managed to tackle him.", "But this time, Mem-Mem dropped his level just like he had that morning, fifty times in a row.", "He shot in, wrapped up both legs, and drove straight through. BOOM!"] },
-      { e: "🌙", art: A({ id: "cicada", pose: "bow", x: 400, f: 1 }, { id: "bang", pose: "bow", x: 570, f: -1 }), s: ["Bob blinked up at him from the mat. \"Since when can you do THAT?\"", "\"Since seven o'clock this morning,\" said Mem-Mem.", "That night, he set his alarm for six thirty again, and this time he went to sleep smiling."] }
+  "blurb": "2화 「반딧불이의 밤 수련」을 영어로 — 띵가의 녹슨 기술, 반짝이의 단체반 비밀, 고등어 물약, 선택은 내가.",
+  "pages": [
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 5,
+       "tl": -0.13,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 2.37,
+       "fae": 0.39,
+       "bah": 2.23,
+       "bae": 0.39
+      }
+     ],
+     "text": [
+      {
+       "x": 690,
+       "y": 140,
+       "s": "BRRRING!",
+       "col": "#e03131"
+      }
+     ]
+    },
+    "s": [
+     "Seven o'clock in the morning. Brrring!",
+     "It was Mem-Mem's private wrestling lesson day, but his eyes just wouldn't open.",
+     "\"Yaaawn. Maybe I'll skip it, just for today.\""
     ],
-    words: W({ alarm: "알람", "went off": "울렸다", groaned: "끙 소리를 냈다", chilly: "쌀쌀한", cozy: "포근한", "talk him out of it": "하지 말라고 설득하다", skip: "빼먹다", "threw off": "걷어찼다", boomed: "쩌렁쩌렁 말했다", wobbled: "후들거렸다", drilled: "반복 연습했다", pinning: "누르기", dripped: "뚝뚝 떨어졌다", antennae: "더듬이", champions: "챔피언들", anyway: "그래도", proud: "자랑스러운", payoff: "노력의 결과", managed: "해냈다", wrapped: "감쌌다", blinked: "눈을 깜빡였다" }),
-    talk: ["What did Mem-Mem's legs, wings, and brain say to him?", "What made Mem-Mem decide to get up?", "What does 'Champions just get up anyway' mean?", "When is it hard for you to get up? What could help you?"],
-    quiz: [
-      { t: "choice", q: "What time did the alarm go off?", a: ["Six thirty", "Seven o'clock", "Nine o'clock"], e: ["⏰", "7️⃣", "9️⃣"] },
-      { t: "choice", q: "Who did Mem-Mem remember when he wanted to stay in bed?", a: ["Strum and his rusty moves", "Sparkle and her light", "Dot and her throw"], e: ["🎸", "✨", "🐞"] },
-      { t: "choice", q: "Why could Mem-Mem finally tackle Bob?", a: ["He practiced fifty tackles that morning", "Bob was sleeping", "Bob let him win"], e: ["💪", "😴", "🙂"] },
-      { t: "word", q: "'포근한'은 영어로?", a: ["cozy", "crazy", "cloudy"] },
-      { t: "say", q: "Say it! Everybody feels tired at six thirty. Champions just ...", say: "Champions just get up anyway.", key: ["get", "up"] },
-      { t: "say", q: "Tell me! What helps you get up early? Start with: When I don't want to get up, I ...", say: "When I don't want to get up, I count to three and jump out of bed.", key: ["get", "up"], free: true }
-    ]
+    "beat": "morning",
+    "ch": "Chapter 1 · Just One Day Off?"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 400,
+       "f": 1,
+       "ex": 2,
+       "tl": 0.02,
+       "flh": 0.07,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "grass",
+       "x": 650,
+       "f": -1,
+       "ex": 5,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 1.25,
+       "fae": 1.45,
+       "bah": 0.9,
+       "bae": 1.9
+      }
+     ],
+     "text": [
+      {
+       "x": 760,
+       "y": 160,
+       "s": "🎸",
+       "emoji": true
+      }
+     ]
+    },
+    "s": [
+     "Just then, Strum the grasshopper strolled by, strumming his guitar.",
+     "\"Practice? I'll do it tomorrow!\" he sang. \"I'm only taking fancy private lessons. No tough group classes for me!\"",
+     "Mem-Mem's ears perked up. That sounded pretty nice..."
+    ],
+    "beat": "grass"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "lady",
+       "x": 210,
+       "f": 1,
+       "ex": 0,
+       "rot": 6.28,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "bee",
+       "x": 300,
+       "f": 1,
+       "ex": 0,
+       "rot": 6.28,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "fire",
+       "x": 440,
+       "f": 1,
+       "ex": 1,
+       "gl": 0.3,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      }
+     ],
+     "night": true
+    },
+    "s": [
+     "Meanwhile, Sparkle the firefly went to group judo class every single night.",
+     "The class was full of bugs about her size. One match, then another, then another!",
+     "She lost sometimes, but sparring with lots of bugs her own size was Sparkle's secret."
+    ],
+    "beat": "night"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "fire",
+       "x": 290,
+       "f": 1,
+       "ex": 1,
+       "gl": 0.67,
+       "tl": 0.09,
+       "flh": 0.33,
+       "flk": 0.39,
+       "blh": -0.33,
+       "blk": 0.31,
+       "fah": 1.33,
+       "fae": 1.25,
+       "bah": 1.09,
+       "bae": 1.41
+      },
+      {
+       "id": "grass",
+       "x": 670,
+       "f": -1,
+       "ex": 2,
+       "rust": 0.75,
+       "tl": 0.3,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "A month went by.",
+     "Sparkle, who did private lessons AND group class, had grown much stronger.",
+     "But Strum, who only took private lessons and kept skipping practice, had spent lots of acorns, and his moves had gone rusty."
+    ],
+    "beat": "month",
+    "ch": "Chapter 2 · A Month Later"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "grass",
+       "x": 528,
+       "f": -1,
+       "ex": 1,
+       "y": -10,
+       "rot": 0.13,
+       "rust": 1,
+       "tl": 0.88,
+       "flh": 0.27,
+       "flk": 0.24,
+       "blh": -0.25,
+       "blk": 0.19,
+       "fah": 1.38,
+       "fae": 0.34,
+       "bah": 1.17,
+       "bae": 0.66
+      },
+      {
+       "id": "fire",
+       "x": 511,
+       "f": -1,
+       "ex": 1,
+       "gl": 0.96,
+       "tl": 0.97,
+       "flh": 0.64,
+       "flk": 1.12,
+       "blh": 0.05,
+       "blk": 1.1,
+       "fah": 1.93,
+       "fae": 1.24,
+       "bah": 1.54,
+       "bae": 1.62
+      }
+     ]
+    },
+    "s": [
+     "On tournament day, Sparkle faced Strum.",
+     "Strum knew the name of every move. \"Shoulder throw! Hip sweep!\" But his body couldn't do them.",
+     "Sparkle won the grip fight, broke his balance, and threw him.",
+     "Knowing a move isn't enough: your body has to remember it, and that takes lots and lots of practice."
+    ],
+    "beat": "match"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "lady",
+       "x": 440,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "cicada",
+       "x": 600,
+       "f": 1,
+       "ex": 4,
+       "rot": 6.28,
+       "tl": 0.78,
+       "flh": 0.95,
+       "flk": 1.5,
+       "blh": -0.05,
+       "blk": 1.1,
+       "fah": 1.6,
+       "fae": 0.5,
+       "bah": 1.5,
+       "bae": 0.6
+      }
+     ]
+    },
+    "s": [
+     "In group class, Mem-Mem sparred with Dot, but he lost the grip fight and went flying.",
+     "He felt so upset that he didn't want to go back to judo.",
+     "Then Coach Pinch said, \"You didn't lose because you're weak. You just need more grip-fighting practice.\""
+    ],
+    "beat": "grip"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "stag",
+       "x": 680,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.03,
+       "flh": 0.08,
+       "flk": 0.08,
+       "blh": -0.08,
+       "blk": 0.08,
+       "fah": 1.7,
+       "fae": 0.44,
+       "bah": 1.42,
+       "bae": 0.44
+      },
+      {
+       "id": "cicada",
+       "x": 600,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.67,
+       "bah": 1.25,
+       "bae": 0.7
+      }
+     ],
+     "text": [
+      {
+       "x": 640,
+       "y": 210,
+       "s": "🐟",
+       "emoji": true
+      }
+     ]
+    },
+    "s": [
+     "Coach Pinch pulled out a secret potion. \"Ta-da! The Champion's Mackerel Potion!\"",
+     "\"It turns your arms into steel ropes and your hands into locks,\" he said.",
+     "Mem-Mem gulped it down, and from then on, he practiced his grips every single day."
+    ],
+    "beat": "potion"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "butter",
+       "x": 450,
+       "f": 1,
+       "ex": 1,
+       "rot": -0.33,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      },
+      {
+       "id": "cicada",
+       "x": 525,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.8,
+       "flh": 0.95,
+       "flk": 1.5,
+       "blh": -0.05,
+       "blk": 1.1,
+       "fah": 1.6,
+       "fae": 0.5,
+       "bah": 1.5,
+       "bae": 0.6
+      }
+     ]
+    },
+    "s": [
+     "While Mem-Mem was practicing with Flutter, someone called from outside, and he looked away.",
+     "In that instant, Flutter flipped him over.",
+     "\"Let's try again,\" she said. \"This time, keep your eyes on your partner.\""
+    ],
+    "beat": "eyes",
+    "ch": "Chapter 3 · My Choice, My Result"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dummy",
+       "x": 455,
+       "f": -1,
+       "ex": 2,
+       "y": -200,
+       "rot": -1.57,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.5,
+       "fae": 0.2,
+       "bah": 0.25,
+       "bae": 0.2
+      },
+      {
+       "id": "cicada",
+       "x": 481,
+       "f": 1,
+       "ex": 1,
+       "tl": -0.05,
+       "flh": 0.3,
+       "flk": 0.3,
+       "blh": -0.25,
+       "blk": 0.2,
+       "fah": 2.85,
+       "fae": 0.2,
+       "bah": 2.75,
+       "bae": 0.25
+      },
+      {
+       "id": "rhino",
+       "x": 720,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.03,
+       "flh": 0.13,
+       "flk": 0.13,
+       "blh": -0.13,
+       "blk": 0.12,
+       "fah": 2.54,
+       "fae": 0.59,
+       "bah": 2.33,
+       "bae": 0.61
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem thought hard. \"Morning practice makes me sleepy. But where did my strength come from?\"",
+     "It came from those early wrestling sessions with Coach Flash, and if he quit, that strength would slowly fade away.",
+     "So Mem-Mem decided for himself: \"I'll do private lessons AND group class!\"",
+     "My choice, and my result."
+    ],
+    "beat": "choice"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 650,
+       "f": -1,
+       "ex": 0,
+       "tl": -0.01,
+       "flh": 0.07,
+       "flk": 0.07,
+       "blh": -0.07,
+       "blk": 0.07,
+       "fah": 0.87,
+       "fae": 0.39,
+       "bah": 0.52,
+       "bae": 0.39
+      },
+      {
+       "id": "lady",
+       "x": 750,
+       "f": -1,
+       "ex": 0,
+       "tl": -0.01,
+       "flh": 0.07,
+       "flk": 0.07,
+       "blh": -0.07,
+       "blk": 0.07,
+       "fah": 0.85,
+       "fae": 0.39,
+       "bah": 0.5,
+       "bae": 0.39
+      },
+      {
+       "id": "bee",
+       "x": 850,
+       "f": -1,
+       "ex": 0,
+       "tl": -0.01,
+       "flh": 0.07,
+       "flk": 0.07,
+       "blh": -0.07,
+       "blk": 0.07,
+       "fah": 0.82,
+       "fae": 0.39,
+       "bah": 0.47,
+       "bae": 0.39
+      },
+      {
+       "id": "grass",
+       "x": 502,
+       "f": 1,
+       "ex": 2,
+       "y": -9,
+       "rot": 4.47,
+       "rust": 0.9,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.5,
+       "fae": 0.2,
+       "bah": 0.25,
+       "bae": 0.2
+      },
+      {
+       "id": "fire",
+       "x": 377,
+       "f": 1,
+       "ex": 1,
+       "gl": 0.42,
+       "tl": 1.24,
+       "flh": 0.55,
+       "flk": 0.62,
+       "blh": -0.62,
+       "blk": 0.33,
+       "fah": 0.94,
+       "fae": 0.34,
+       "bah": 0.64,
+       "bae": 0.45
+      }
+     ],
+     "night": true
+    },
+    "s": [
+     "That night, Strum shuffled shyly into the judo hall. \"Um... can I try group class too?\"",
+     "His friends welcomed him with big smiles, and he got thrown again at first, but that was okay.",
+     "Rusty moves come back, shiny and new, when you start practicing again."
+    ],
+    "beat": "back"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "stag",
+       "x": 47,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "lady",
+       "x": 144,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "butter",
+       "x": 241,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "grass",
+       "x": 338,
+       "f": 1,
+       "ex": 3,
+       "rust": 0.1,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "cicada",
+       "x": 435,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "fire",
+       "x": 532,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "katy",
+       "x": 629,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "bee",
+       "x": 726,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "bang",
+       "x": 823,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "mantis",
+       "x": 920,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      }
+     ]
+    },
+    "s": [
+     "Today's dojo promise: private practice in the morning, group class at night.",
+     "The friends who spar with lots of bugs their own size get truly strong.",
+     "Everybody together: \"Thank you!\""
+    ],
+    "beat": "bow2"
+   }
+  ],
+  "words": {
+   "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
+   "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
+   "pinch": "집게 (사슴벌레 · 유도 사범님)",
+   "grip": "꽉이 (사마귀 · 주짓수 사범님) / 꽉 잡다",
+   "pop": "팡이 (메뚜기 · 태권도 사범님)",
+   "dot": "동글이 (무당벌레)",
+   "flutter": "팔랑이 (나비)",
+   "longlegs": "긴다리 (여치)",
+   "sparkle": "반짝이 (반딧불이)",
+   "buzz": "윙윙이 (꿀벌)",
+   "bob": "콩콩이 (방아깨비)",
+   "strum": "띵가 (베짱이)",
+   "rolly": "굴리 (쇠똥구리)",
+   "rocky": "단단이 (개미)",
+   "chirpy": "뚜리 (귀뚜라미)",
+   "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
+   "private lesson": "개인 레슨",
+   "group class": "단체반",
+   "skip": "빼먹다",
+   "strolled": "어슬렁어슬렁 걸어왔다",
+   "fancy": "비싼·멋진",
+   "perked up": "솔깃해졌다",
+   "firefly": "반딧불이",
+   "acorns": "도토리",
+   "rusty": "녹슨",
+   "tournament": "대회",
+   "shoulder throw": "업어치기",
+   "hip sweep": "허리후리기",
+   "grip fight": "깃 싸움",
+   "upset": "속상한",
+   "mackerel": "고등어",
+   "potion": "물약",
+   "steel ropes": "강철 밧줄",
+   "gulped": "꿀꺽 마셨다",
+   "instant": "순간",
+   "fade away": "점점 사라지다",
+   "result": "결과",
+   "shuffled": "쭈뼛쭈뼛 걸었다",
+   "shyly": "수줍게",
+   "welcomed": "반갑게 맞았다",
+   "promise": "약속"
   },
-  {
-    id: "bdc-sparkle", level: 3, style: "곤충 무술 도장 · 챕터북", title: "Sparkle's Secret",
-    cover: { e: "✨", bg: "#25395B", art: { night: true, actors: [{ id: "fire", pose: "guard", x: 480, gl: .9, ex: 1 }] } },
-    blurb: "모두 잠든 밤, 꽁무니 불을 켜고 혼자 연습하는 반짝이. 반짝이에게는 비밀이 있었어요.",
-    pages: [
-      { ch: "Chapter 1 · A Light in the Dark", e: "🌙", art: N({ id: "fire", pose: "stand", x: 480, gl: .3 }), s: ["Late one night, Mem-Mem woke up thirsty and crawled out of his leaf to find a drop of dew.", "The whole dojo was dark and silent.", "But down on the training mat, a small greenish-gold light was blinking on and off."] },
-      { e: "✨", art: N({ id: "fire", pose: "guard", x: 480, gl: .9, ex: 1 }), s: ["It was Sparkle the firefly.", "Fireflies make light in their tails, and they flash it to send signals to each other, almost like a secret code.", "But tonight, Sparkle wasn't sending signals. She was training."] },
-      { e: "🦵", art: { night: true, actors: [{ id: "fire", pose: "kick", x: 440, f: 1, gl: .7 }], text: [{ x: 680, y: 170, s: "HI-YA!", col: "#ffd43b" }] }, s: ["She threw a front kick, a round kick, and a spinning back kick, one after another.", "Each time she kicked, her light flashed a little brighter.", "Blink! Blink! BLINK!"] },
-      { ch: "Chapter 2 · The Secret", e: "🥋", art: N({ id: "fire", pose: "turn", x: 440, f: 1, gl: .6 }, { id: "dummy", pose: "tuck", rot: 2.4, y: -80, x: 560, f: 1 }), s: ["Then she grabbed the straw dummy, turned in, and hurled it over her hip.", "The dummy sailed across the mat and landed in a heap.", "\"Wow,\" whispered Mem-Mem from the shadows."] },
-      { e: "😲", art: N({ id: "cicada", pose: "stand", x: 380, f: 1, ex: 5 }, { id: "fire", pose: "stand", x: 580, f: -1, gl: 1, ex: 2 }), s: ["Sparkle spun around so fast that her light flickered.", "\"Mem-Mem! You scared me!\"", "\"Sorry,\" he said. \"But why are you training in the middle of the night?\""] },
-      { e: "😟", art: N({ id: "cicada", pose: "sit", x: 400, f: 1, ex: 0 }, { id: "fire", pose: "sit", x: 560, f: -1, gl: .4, ex: 1 }), s: ["Sparkle looked down at her feet.", "\"Tomorrow is my yellow belt test,\" she admitted. \"And I'm really, really nervous.\"", "\"What if I freeze? What if everybody laughs at me?\"", "Mem-Mem sat down next to her. \"I was nervous before my first spar, too. I got thrown like a paper airplane.\"", "Sparkle giggled, and her light grew a little warmer."] },
-      { ch: "Chapter 3 · Warriors Need Sleep", e: "🌙", art: N({ id: "cicada", pose: "grip", x: 400, f: 1 }, { id: "fire", pose: "grip", x: 570, f: -1, gl: .7 }), s: ["\"Can I train with you for a little while?\" asked Mem-Mem.", "Together they practiced her throws, slowly and carefully, until every step felt easy.", "Then Mem-Mem yawned an enormous yawn. \"You know what Coach Pinch always says?\"", "\"Warriors need sleep, too,\" they both said at the same time, and laughed."] },
-      { e: "🟡", art: A({ id: "stag", pose: "stand", x: 380, f: 1, ex: 3 }, { id: "fire", pose: "cheer", x: 570, f: -1, gl: 1, ex: 3 }), s: ["The next morning, Sparkle stepped onto the mat for her test.", "Her legs were shaking, but her moves were smooth and strong.", "When Coach Pinch tied the yellow belt around her waist, her tail glowed so brightly that the whole dojo cheered.", "\"Thanks for last night,\" she whispered to Mem-Mem. \"That's what friends are for,\" he said."] }
+  "talk": [
+   "Why did Strum's moves get rusty?",
+   "What was Sparkle's secret?",
+   "What did Coach Pinch say when Mem-Mem lost the grip fight?",
+   "Do you ever want to skip morning practice? What do you choose?"
+  ],
+  "quiz": [
+   {
+    "t": "choice",
+    "q": "What was Sparkle's secret?",
+    "a": [
+     "She sparred with bugs her size every night",
+     "She drank lots of juice",
+     "She slept all day"
     ],
-    words: W({ thirsty: "목마른", crawled: "기어 나왔다", dew: "이슬", silent: "고요한", blinking: "깜빡이는", firefly: "반딧불이", signals: "신호", code: "암호", hurled: "내던졌다", sailed: "날아갔다", heap: "더미", shadows: "그림자", flickered: "깜빡였다", admitted: "털어놓았다", nervous: "긴장한", freeze: "얼어붙다", enormous: "엄청 큰", yawned: "하품했다", waist: "허리", glowed: "빛났다" }),
-    talk: ["Why was Sparkle training in the middle of the night?", "How did Mem-Mem help Sparkle feel better?", "When do you feel nervous? What helps you?", "Why do warriors need sleep?"],
-    quiz: [
-      { t: "choice", q: "Why do fireflies flash their light?", a: ["To send signals to each other", "To cook their food", "To keep warm"], e: ["✨", "🍳", "🔥"] },
-      { t: "choice", q: "Why was Sparkle training at night?", a: ["She was nervous about her belt test", "It was too noisy in the day", "She lost her light"], e: ["😟", "📢", "🔦"] },
-      { t: "choice", q: "What did Mem-Mem tell Sparkle?", a: ["He was nervous before his first spar, too", "He never gets nervous", "She should quit"], e: ["🤝", "😎", "🚪"] },
-      { t: "word", q: "'긴장한'은 영어로?", a: ["nervous", "noisy", "narrow"] },
-      { t: "say", q: "Say it! They both said at the same time: Warriors need ...", say: "Warriors need sleep, too.", key: ["sleep"] },
-      { t: "say", q: "Tell me! When do you feel nervous? Start with: I feel nervous when ...", say: "I feel nervous when I have a tournament.", key: ["nervous"], free: true }
+    "e": [
+     "🥋",
+     "🧃",
+     "😴"
     ]
+   },
+   {
+    "t": "choice",
+    "q": "Why couldn't Strum do the moves?",
+    "a": [
+     "He knew the names but didn't practice",
+     "He forgot his guitar",
+     "He was too big"
+    ],
+    "e": [
+     "🔩",
+     "🎸",
+     "🐘"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What did Flutter tell Mem-Mem?",
+    "a": [
+     "Keep your eyes on your partner",
+     "Go home and rest",
+     "Kick higher"
+    ],
+    "e": [
+     "👀",
+     "🏠",
+     "🦵"
+    ]
+   },
+   {
+    "t": "word",
+    "q": "'고등어'는 영어로?",
+    "a": [
+     "mackerel",
+     "marble",
+     "mango"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Say it! Mem-Mem decided: My choice, and my ...",
+    "say": "My choice, and my result.",
+    "key": [
+     "result"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Tell me! Do you like private lessons or group class more? Start with: I like ... because ...",
+    "say": "I like group class because I can spar with friends.",
+    "key": [
+     "because"
+    ],
+    "free": true
+   }
+  ],
+  "dojoIdx": 1
+ },
+ {
+  "id": "epsp",
+  "ep": 2.5,
+  "dojoEp": "특집",
+  "level": 3,
+  "style": "곤충 무술 도장 · 특집",
+  "title": "Bug Dojo Special: The Holes You Get From Doing Just One",
+  "cover": {
+   "e": "🥋",
+   "bg": "#F7E3B0",
+   "art": {
+    "actors": [
+     {
+      "id": "hop",
+      "x": 150,
+      "f": 1,
+      "ex": 1,
+      "tl": 0.12,
+      "flh": 0.38,
+      "flk": 0.45,
+      "blh": -0.38,
+      "blk": 0.35,
+      "fah": 1.05,
+      "fae": 1.4,
+      "bah": 0.8,
+      "bae": 1.6
+     },
+     {
+      "id": "stag",
+      "x": 300,
+      "f": 1,
+      "ex": 1,
+      "tl": 0.1,
+      "flh": 0.28,
+      "flk": 0.25,
+      "blh": -0.28,
+      "blk": 0.2,
+      "fah": 1.45,
+      "fae": 0.35,
+      "bah": 1.25,
+      "bae": 0.7
+     },
+     {
+      "id": "cicada",
+      "x": 480,
+      "f": 1,
+      "ex": 3,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     },
+     {
+      "id": "rhino",
+      "x": 660,
+      "f": -1,
+      "ex": 1,
+      "tl": 0.55,
+      "flh": 0.75,
+      "flk": 1.15,
+      "blh": -0.3,
+      "blk": 0.95,
+      "fah": 1.25,
+      "fae": 0.6,
+      "bah": 1.05,
+      "bae": 0.85
+     },
+     {
+      "id": "mantis",
+      "x": 820,
+      "f": -1,
+      "ex": 1,
+      "rot": -1.5,
+      "tl": 0.25,
+      "flh": 1.7,
+      "flk": 1.05,
+      "blh": 1.35,
+      "blk": 1.5,
+      "fah": 1.4,
+      "fae": 0.9,
+      "bah": 1.2,
+      "bae": 1.1
+     }
+    ]
+   }
   },
-  {
-    id: "bdc-buzz", level: 3, style: "곤충 무술 도장 · 챕터북", title: "Buzz Kicks Too High",
-    cover: { e: "🐝", bg: "#FFE08A", art: { actors: [{ id: "bee", pose: "kick", x: 440, f: 1 }, { id: "bang", pose: "low", x: 600, f: -1, ex: 1 }] } },
-    blurb: "발차기만 연습하던 윙윙이가 다리를 잡혀 넘어졌어요. 레슬링을 다시 시작한 윙윙이의 반격!",
-    pages: [
-      { ch: "Chapter 1 · The Fastest Feet in the Garden", e: "🐝", art: { actors: [{ id: "bee", pose: "kick", x: 440, f: 1 }], text: [{ x: 690, y: 160, s: "POW!" }] }, s: ["Buzz the bee had the fastest feet in the whole garden.", "Her wings beat more than two hundred times a second, and her kicks felt almost that fast.", "\"Nobody can touch me,\" she bragged, kicking a dandelion puff into a hundred floating seeds."] },
-      { e: "😎", art: A({ id: "bee", pose: "guard", x: 480, f: 1, ex: 3 }), s: ["Buzz trained in three arts: taekwondo, wrestling, and judo.", "But lately, she only wanted to kick.", "\"Wrestling is sweaty, and judo messes up my wings,\" she said. \"Kicks are way cooler.\""] },
-      { ch: "Chapter 2 · Caught!", e: "✋", art: A({ id: "bee", pose: "kick", x: 440, f: 1, ex: 2 }, { id: "bang", pose: "low", x: 600, f: -1, ex: 1 }), s: ["One afternoon, Buzz sparred with Bob, the long-headed grasshopper.", "She bounced in and fired a high kick straight at his head.", "But Bob didn't jump back. He stepped in, hugged her leg, and held on tight."] },
-      { e: "💥", art: { actors: [{ id: "bee", pose: "flat", rot: -1.57, x: 470, f: 1, ex: 2 }, { id: "bang", pose: "top", x: 620, f: -1 }], text: [{ x: 480, y: 220, s: "BUMP!" }] }, s: ["Buzz hopped around on one foot, buzzing angrily.", "Bob swept her other foot, and she landed on the mat with a BUMP.", "\"Hey! That's not fair!\" Buzz shouted.", "\"It's completely fair,\" said Bob. \"It's wrestling. You just stopped practicing your defense.\""] },
-      { ch: "Chapter 3 · Kicks and Wrestling Together", e: "🪲", art: A({ id: "rhino", pose: "stand", x: 400, f: 1, ex: 0 }, { id: "bee", pose: "stand", x: 580, f: -1, ex: 2 }), s: ["Coach Flash lumbered over and helped her up.", "\"Your kicks are amazing,\" he said. \"But when someone catches your leg, kicks can't save you.\"", "\"That's when you need wrestling and judo, the very things you've been skipping.\""] },
-      { e: "🤼", art: { actors: [{ id: "bee", pose: "sprawl", x: 450, f: 1, ex: 1 }, { id: "bang", pose: "shoot", x: 620, f: -1 }], text: [{ x: 520, y: 150, s: "SPRAWL!", col: "#20c997" }] }, s: ["So Buzz went back to wrestling practice, even though it was sweaty.", "She learned to sprawl: throw your legs back, drop your hips, and crush the tackle.", "She learned to keep her balance on one leg, and to grip back when someone grabbed her."] },
-      { e: "💥", art: { actors: [{ id: "bee", pose: "shoot", x: 440, f: 1, ex: 1 }, { id: "bang", pose: "low", x: 610, f: -1, ex: 2 }], text: [{ x: 540, y: 130, s: "TACKLE!", col: "#20c997" }] }, s: ["A week later, she sparred with Bob again.", "This time, she faked a high kick, and when Bob reached for her leg, she dropped low and shot a double-leg tackle instead.", "Bob went down with a surprised \"Oof!\""] },
-      { e: "🎉", art: A({ id: "bee", pose: "cheer", x: 400, f: 1, ex: 3 }, { id: "bang", pose: "cheer", x: 580, f: -1, ex: 3 }), s: ["\"Kicks and wrestling together!\" Buzz cheered, zooming around in a happy circle.", "Bob laughed and shook her hand. \"Okay, okay. Now nobody can touch you.\"", "\"Not yet,\" said Buzz. \"But I'm going to practice everything until they really can't.\""] }
+  "blurb": "특집 「하나만 하면 생기는 구멍」을 영어로 — 세 가지 거리, 한 종목만 하면 생기는 구멍, 레슬링이 주짓수에 주는 무기 4가지.",
+  "pages": [
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "hop",
+       "x": 170,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.12,
+       "flh": 0.38,
+       "flk": 0.45,
+       "blh": -0.38,
+       "blk": 0.35,
+       "fah": 1.05,
+       "fae": 1.4,
+       "bah": 0.8,
+       "bae": 1.6
+      },
+      {
+       "id": "stag",
+       "x": 400,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      },
+      {
+       "id": "rhino",
+       "x": 520,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.55,
+       "flh": 0.75,
+       "flk": 1.15,
+       "blh": -0.3,
+       "blk": 0.95,
+       "fah": 1.25,
+       "fae": 0.6,
+       "bah": 1.05,
+       "bae": 0.85
+      },
+      {
+       "id": "mantis",
+       "x": 790,
+       "f": 1,
+       "ex": 1,
+       "rot": -1.5,
+       "tl": 0.25,
+       "flh": 1.94,
+       "flk": 1.05,
+       "blh": 1.35,
+       "blk": 1.5,
+       "fah": 1.4,
+       "fae": 0.9,
+       "bah": 1.2,
+       "bae": 1.1
+      }
+     ]
+    },
+    "s": [
+     "In a fight, there are three distances.",
+     "Far away, you kick. Up close, you grab and tackle. And then there's the ground.",
+     "If you learn only one art, you get a hole somewhere else. Let's take a look!"
     ],
-    words: W({ "two hundred": "200", bragged: "자랑했다", "dandelion puff": "민들레 홀씨", floating: "떠다니는", lately: "요즘", "messes up": "엉망으로 만든다", cooler: "더 멋진", bounced: "통통 뛰었다", fired: "날렸다", hugged: "끌어안았다", angrily: "화나서", swept: "쓸어 넘겼다", completely: "완전히", defense: "방어", lumbered: "쿵쿵 걸어왔다", sprawl: "스프롤(다리를 뒤로 빼기)", crush: "짓누르다", balance: "균형", faked: "속였다(페이크)", zooming: "쌩 날아다니며" }),
-    talk: ["Why did Buzz stop practicing wrestling and judo?", "Was it fair when Bob caught her leg? Why?", "How did Buzz beat Bob the second time?", "Which do you like more, kicking or wrestling? Why do you need both?"],
-    quiz: [
-      { t: "choice", q: "Why did Buzz stop practicing wrestling and judo?", a: ["She thought kicks were cooler", "She hurt her wing", "The coach told her to stop"], e: ["😎", "🤕", "🗣️"] },
-      { t: "choice", q: "What did Bob do when Buzz kicked high?", a: ["He caught her leg", "He ran away", "He kicked back"], e: ["✋", "🏃", "🦵"] },
-      { t: "choice", q: "How did Buzz beat Bob the second time?", a: ["A fake kick, then a tackle", "A spinning kick", "She flew away"], e: ["💥", "🌀", "🪽"] },
-      { t: "word", q: "'방어'는 영어로?", a: ["defense", "distance", "dessert"] },
-      { t: "say", q: "Say it! Buzz cheered: Kicks and wrestling ...", say: "Kicks and wrestling together!", key: ["together"] },
-      { t: "say", q: "Tell me! If someone catches your kick, what would you do? Start with: I would ...", say: "I would keep my balance and grip back.", key: ["would"], free: true }
+    "beat": "map",
+    "ch": "Chapter 1 · Three Distances"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "hop",
+       "x": 345,
+       "f": 1,
+       "ex": 2,
+       "rot": -1.5,
+       "tl": 0.25,
+       "flh": 1.7,
+       "flk": 1.05,
+       "blh": 1.35,
+       "blk": 1.5,
+       "fah": 1.38,
+       "fae": 0.9,
+       "bah": 1.2,
+       "bae": 1.1
+      },
+      {
+       "id": "rhino",
+       "x": 420,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.9,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      }
+     ]
+    },
+    "s": [
+     "First, what if you only do taekwondo?",
+     "Taekwondo kicks are fast and strong from far away, but when you lift your leg, you're standing on just one foot.",
+     "If someone catches your kick, it's hop, hop, hop... BOOM!",
+     "And if your opponent gets really close, there's no room to kick at all."
+    ],
+    "beat": "tkdonly"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "stag",
+       "x": 520,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.9,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      },
+      {
+       "id": "mantis",
+       "x": 600,
+       "f": 1,
+       "ex": 1,
+       "rot": 4.71,
+       "tl": 0.25,
+       "flh": 1.56,
+       "flk": 1.05,
+       "blh": 1.35,
+       "blk": 1.5,
+       "fah": 1.4,
+       "fae": 0.9,
+       "bah": 1.2,
+       "bae": 1.1
+      }
+     ]
+    },
+    "s": [
+     "Second, what if you only do jiu-jitsu?",
+     "Jiu-jitsu is the best on the ground, but if you can't fight standing up, your opponent can throw you whenever they want.",
+     "BOOM! They get two points, and you start on the bottom.",
+     "Your opponent gets to choose where the fight happens."
+    ],
+    "beat": "bjjonly",
+    "ch": "Chapter 2 · The Missing Pieces"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "fire",
+       "x": 600,
+       "f": 1,
+       "ex": 1,
+       "gl": 0.4,
+       "tl": 0.35,
+       "flh": 0.95,
+       "flk": 1.49,
+       "blh": -0.05,
+       "blk": 1.1,
+       "fah": 1.69,
+       "fae": 0.2,
+       "bah": 1.49,
+       "bae": 0.6
+      },
+      {
+       "id": "katy",
+       "x": 650,
+       "f": 1,
+       "ex": 2,
+       "rot": 6.28,
+       "tl": 0.48,
+       "flh": 0.95,
+       "flk": 1.5,
+       "blh": -0.05,
+       "blk": 1.1,
+       "fah": 1.6,
+       "fae": 0.5,
+       "bah": 1.5,
+       "bae": 0.6
+      }
+     ]
+    },
+    "s": [
+     "Third, what if you never learn judo?",
+     "When someone grabs your collar, they can drag you all over the place, and if you push hard, a judo player uses your push to throw you.",
+     "Judo teaches you how to grip, how to use your opponent's strength, and how to fall safely."
+    ],
+    "beat": "nojudo"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "butter",
+       "x": 370,
+       "f": 1,
+       "ex": 4,
+       "rot": -1.57,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.5,
+       "fae": 0.2,
+       "bah": 0.25,
+       "bae": 0.2
+      },
+      {
+       "id": "rhino",
+       "x": 440,
+       "f": -1,
+       "ex": 1,
+       "tl": 1.2,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      }
+     ]
+    },
+    "s": [
+     "Fourth, what if you skip wrestling?",
+     "You don't know how to stop a tackle, so down you go, and then you get stuck under heavy pressure and run out of breath fast.",
+     "Wrestling is hard, but the harder it is, the more strength and stamina you build."
+    ],
+    "beat": "nowr"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "mantis",
+       "x": 600,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.9,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      },
+      {
+       "id": "cicada",
+       "x": 665,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.9,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      }
+     ]
+    },
+    "s": [
+     "So how does wrestling help in jiu-jitsu? It gives you four weapons.",
+     "One: you choose when to take them down, so you start on top. Two: your pressure is so heavy that they can't move.",
+     "Three: in a scramble, you get to their back first. Four: even if you end up on the bottom, you pop right back up."
+    ],
+    "beat": "combo",
+    "ch": "Chapter 3 · Four Weapons"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "mantis",
+       "x": 560,
+       "f": -1,
+       "ex": 3,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "cicada",
+       "x": 655,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      }
+     ]
+    },
+    "s": [
+     "Hajun's strong top pressure comes from all those tough morning wrestling sessions, too!"
+    ],
+    "beat": "combo"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "hop",
+       "x": 150,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "stag",
+       "x": 300,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 0,
+       "tl": -0.0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.37,
+       "fae": 0.36,
+       "bah": -0.01,
+       "bae": 0.36
+      },
+      {
+       "id": "rhino",
+       "x": 660,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "mantis",
+       "x": 810,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "If you learn all four arts, you always have something to do: far away, up close, and on the ground.",
+     "Tough morning wrestling and group judo class fill in those holes.",
+     "Let's fill them up one by one, just like Mem-Mem. Everybody together: \"Thank you!\""
+    ],
+    "beat": "sum"
+   }
+  ],
+  "words": {
+   "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
+   "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
+   "pinch": "집게 (사슴벌레 · 유도 사범님)",
+   "grip": "꽉이 (사마귀 · 주짓수 사범님) / 꽉 잡다",
+   "pop": "팡이 (메뚜기 · 태권도 사범님)",
+   "dot": "동글이 (무당벌레)",
+   "flutter": "팔랑이 (나비)",
+   "longlegs": "긴다리 (여치)",
+   "sparkle": "반짝이 (반딧불이)",
+   "buzz": "윙윙이 (꿀벌)",
+   "bob": "콩콩이 (방아깨비)",
+   "strum": "띵가 (베짱이)",
+   "rolly": "굴리 (쇠똥구리)",
+   "rocky": "단단이 (개미)",
+   "chirpy": "뚜리 (귀뚜라미)",
+   "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
+   "distances": "거리들",
+   "ground": "바닥",
+   "hole": "구멍",
+   "opponent": "상대",
+   "room": "공간",
+   "points": "점수",
+   "bottom": "아래쪽",
+   "collar": "깃",
+   "drag": "끌고 다니다",
+   "safely": "안전하게",
+   "pressure": "누르는 힘",
+   "breath": "숨",
+   "stamina": "체력",
+   "weapons": "무기",
+   "scramble": "뒤엉킨 상황",
+   "pop right back up": "벌떡 다시 일어나다",
+   "fill": "채우다"
+  },
+  "talk": [
+   "What are the three distances in a fight?",
+   "What happens if you only do taekwondo?",
+   "What are the four weapons wrestling gives you in jiu-jitsu?",
+   "Which hole do you want to fill next?"
+  ],
+  "quiz": [
+   {
+    "t": "choice",
+    "q": "What can happen if you only do taekwondo?",
+    "a": [
+     "Your kick gets caught",
+     "You get too tall",
+     "You fly away"
+    ],
+    "e": [
+     "🦵",
+     "🦒",
+     "🪽"
     ]
-  }
+   },
+   {
+    "t": "choice",
+    "q": "What does judo teach you?",
+    "a": [
+     "How to fall safely",
+     "How to swim",
+     "How to sing"
+    ],
+    "e": [
+     "🥋",
+     "🏊",
+     "🎵"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "In jiu-jitsu, where is the best spot to get to in a scramble?",
+    "a": [
+     "Their back",
+     "The door",
+     "Under the mat"
+    ],
+    "e": [
+     "🔙",
+     "🚪",
+     "🟦"
+    ]
+   },
+   {
+    "t": "word",
+    "q": "'체력'은 영어로?",
+    "a": [
+     "stamina",
+     "stomach",
+     "station"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Say it! Wrestling is hard, but it builds strength and ...",
+    "say": "It builds strength and stamina.",
+    "key": [
+     "stamina"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Tell me! Which art is the hardest for you, and why? Start with: The hardest one is ... because ...",
+    "say": "The hardest one is wrestling because I get tired.",
+    "key": [
+     "because"
+    ],
+    "free": true
+   }
+  ],
+  "dojoIdx": 2
+ },
+ {
+  "id": "ep3",
+  "ep": 3,
+  "dojoEp": "3화",
+  "level": 3,
+  "style": "곤충 무술 도장 · 3화",
+  "title": "Bug Dojo 3: The Growth Stairs, Part One",
+  "cover": {
+   "e": "🥋",
+   "bg": "#E3D9A8",
+   "art": {
+    "actors": [
+     {
+      "id": "dung",
+      "x": 290,
+      "f": 1,
+      "ex": 0,
+      "tl": 0,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.25,
+      "fae": 0.35,
+      "bah": -0.15,
+      "bae": 0.35
+     },
+     {
+      "id": "cicada",
+      "x": 480,
+      "f": 1,
+      "ex": 3,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     },
+     {
+      "id": "ant",
+      "x": 640,
+      "f": -1,
+      "ex": 3,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     },
+     {
+      "id": "cricket",
+      "x": 770,
+      "f": -1,
+      "ex": 3,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     }
+    ]
+   }
+  },
+  "blurb": "3화 「성장 계단 ① 운동만 잘하면 될까?」를 영어로 — 바닥의 짱 굴리, 밤마다 300번 단단이, 단체반의 팔랑이, 두 달 다닌 뚜리.",
+  "pages": [
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.18,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "These days, Mem-Mem was in the best mood ever, because he had learned all four arts!",
+     "\"I'm good at sports now, so I'm done, right?\" he said.",
+     "But was that really true? Today, Mem-Mem's growth stairs began."
+    ],
+    "beat": "proud",
+    "ch": "Chapter 1 · Am I Done?"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dung",
+       "x": 400,
+       "f": 1,
+       "ex": 1,
+       "rot": 6.28,
+       "tl": -0.2,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      },
+      {
+       "id": "cicada",
+       "x": 440,
+       "f": -1,
+       "ex": 1,
+       "tl": 1.05,
+       "flh": 1.25,
+       "flk": 1.7,
+       "blh": -0.7,
+       "blk": 0.3,
+       "fah": 1.75,
+       "fae": 0.3,
+       "bah": 1.6,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "In group class, there was Rolly the dung beetle, the king of the ground.",
+     "Rolly only did jiu-jitsu, so nobody could beat him lying down.",
+     "But when it was time to fight standing up, BOOM! And BOOM again! He kept falling."
+    ],
+    "beat": "gulli"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dung",
+       "x": 350,
+       "f": 1,
+       "ex": 3,
+       "rot": 6.28,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.62,
+       "fae": 0.49,
+       "bah": 2.41,
+       "bae": 0.49
+      },
+      {
+       "id": "cicada",
+       "x": 430,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.67,
+       "fae": 0.5,
+       "bah": 2.46,
+       "bae": 0.5
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem helped him up. \"Let's practice standing up together!\"",
+     "That was the first step on the growth stairs."
+    ],
+    "beat": "gulli"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 480,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.35,
+       "flh": 0.95,
+       "flk": 1.5,
+       "blh": -0.05,
+       "blk": 1.1,
+       "fah": 1.6,
+       "fae": 0.5,
+       "bah": 1.5,
+       "bae": 0.6
+      },
+      {
+       "id": "cicada",
+       "x": 340,
+       "f": 1,
+       "ex": 2,
+       "rot": -1.57,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.5,
+       "fae": 0.2,
+       "bah": 0.25,
+       "bae": 0.2
+      }
+     ]
+    },
+    "s": [
+     "Rocky the ant used to be a friend Mem-Mem always beat.",
+     "But lately? Whoosh! THUD! It was Mem-Mem who kept flying through the air.",
+     "Why had Rocky gotten so strong?"
+    ],
+    "beat": "ant1",
+    "ch": "Chapter 2 · Secrets Nobody Sees"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 430,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.01,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 2.6,
+       "fae": 0.4,
+       "bah": 2.5,
+       "bae": 0.4
+      }
+     ],
+     "night": true
+    },
+    "s": [
+     "It turned out that every night, Rocky swung a Bulgarian bag at home.",
+     "One, two, three... three hundred times a day!",
+     "Real ants can lift things more than ten times heavier than their own bodies.",
+     "Hard work that nobody sees turns into strength one day. That was the second step."
+    ],
+    "beat": "antnight"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "butter",
+       "x": 562,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.9,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      },
+      {
+       "id": "cicada",
+       "x": 620,
+       "f": -1,
+       "ex": 2,
+       "rot": -1.5,
+       "tl": 0.25,
+       "flh": 1.7,
+       "flk": 1.05,
+       "blh": 1.35,
+       "blk": 1.5,
+       "fah": 1.94,
+       "fae": 0.9,
+       "bah": 1.2,
+       "bae": 1.1
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem thought, \"I've had lots of private jiu-jitsu lessons, so I must be the best.\"",
+     "But in group sparring, Flutter the butterfly flipped him right over.",
+     "Flutter hadn't had many private lessons, but she rolled in group class every single day.",
+     "A move becomes yours only when you use it again and again in sparring. That was the third step!"
+    ],
+    "beat": "bjjgroup"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cricket",
+       "x": 406,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.98,
+       "flh": 0.64,
+       "flk": 1.1,
+       "blh": 0.03,
+       "blk": 1.07,
+       "fah": 1.9,
+       "fae": 1.21,
+       "bah": 1.51,
+       "bae": 1.58
+      },
+      {
+       "id": "cicada",
+       "x": 401,
+       "f": 1,
+       "ex": 1,
+       "y": -24,
+       "rot": 0.32,
+       "tl": 0.69,
+       "flh": 0.26,
+       "flk": 0.23,
+       "blh": -0.22,
+       "blk": 0.19,
+       "fah": 1.27,
+       "fae": 0.32,
+       "bah": 1.06,
+       "bae": 0.61
+      }
+     ]
+    },
+    "s": [
+     "Next came a new friend, Chirpy the cricket.",
+     "Chirpy had only been going to group judo class for two months, and he had never had a private lesson.",
+     "But he threw his friends one after another, even Mem-Mem, who had taken private lessons for more than half a year!"
+    ],
+    "beat": "cricket",
+    "ch": "Chapter 3 · The Two-Month Mystery"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cricket",
+       "x": 430,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "cicada",
+       "x": 530,
+       "f": -1,
+       "ex": 0,
+       "rot": 6.28,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "His secret? For two months, he had sparred with kids his own age every single day.",
+     "That was the fourth step."
+    ],
+    "beat": "cricket"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dung",
+       "x": 200,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.68,
+       "fae": 0.5,
+       "bah": 2.47,
+       "bae": 0.5
+      },
+      {
+       "id": "ant",
+       "x": 320,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.67,
+       "fae": 0.5,
+       "bah": 2.47,
+       "bae": 0.5
+      },
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 1,
+       "tl": -0.09,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 2.6,
+       "fae": 0.4,
+       "bah": 2.5,
+       "bae": 0.4
+      },
+      {
+       "id": "butter",
+       "x": 640,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.66,
+       "fae": 0.5,
+       "bah": 2.46,
+       "bae": 0.5
+      },
+      {
+       "id": "cricket",
+       "x": 770,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.65,
+       "fae": 0.5,
+       "bah": 2.45,
+       "bae": 0.5
+      }
+     ]
+    },
+    "s": [
+     "\"I thought being good at sports was enough,\" said Mem-Mem, \"but there are still lots of stairs to climb!\"",
+     "So he made a plan: spar a lot in group class, swing the Bulgarian bag at home, and learn from his friends.",
+     "What step do you think Mem-Mem will climb next?"
+    ],
+    "beat": "step3"
+   }
+  ],
+  "words": {
+   "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
+   "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
+   "pinch": "집게 (사슴벌레 · 유도 사범님)",
+   "grip": "꽉이 (사마귀 · 주짓수 사범님) / 꽉 잡다",
+   "pop": "팡이 (메뚜기 · 태권도 사범님)",
+   "dot": "동글이 (무당벌레)",
+   "flutter": "팔랑이 (나비)",
+   "longlegs": "긴다리 (여치)",
+   "sparkle": "반짝이 (반딧불이)",
+   "buzz": "윙윙이 (꿀벌)",
+   "bob": "콩콩이 (방아깨비)",
+   "strum": "띵가 (베짱이)",
+   "rolly": "굴리 (쇠똥구리)",
+   "rocky": "단단이 (개미)",
+   "chirpy": "뚜리 (귀뚜라미)",
+   "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
+   "mood": "기분",
+   "growth stairs": "성장 계단",
+   "step": "계단 한 칸",
+   "dung beetle": "쇠똥구리",
+   "king of the ground": "바닥의 짱",
+   "lying down": "누워서",
+   "lately": "요즘",
+   "Bulgarian bag": "불가리안 백",
+   "swung": "휘둘렀다",
+   "heavier": "더 무거운",
+   "hard work": "노력",
+   "flipped": "뒤집었다",
+   "rolled": "굴렀다(스파링했다)",
+   "cricket": "귀뚜라미",
+   "mystery": "수수께끼",
+   "half a year": "반년",
+   "age": "나이",
+   "climb": "오르다"
+  },
+  "talk": [
+   "Why did Rolly keep falling when he was standing up?",
+   "What was Rocky's secret?",
+   "Why could Chirpy beat Mem-Mem after only two months?",
+   "Which growth step is the most important for you?"
+  ],
+  "quiz": [
+   {
+    "t": "choice",
+    "q": "What was Rolly the dung beetle good at?",
+    "a": [
+     "Fighting on the ground",
+     "Kicking high",
+     "Flying fast"
+    ],
+    "e": [
+     "🤼",
+     "🦵",
+     "🪽"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What did Rocky do every night?",
+    "a": [
+     "Swung a Bulgarian bag 300 times",
+     "Watched TV",
+     "Played the guitar"
+    ],
+    "e": [
+     "💪",
+     "📺",
+     "🎸"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "Why was Chirpy so good after two months?",
+    "a": [
+     "He sparred with kids his age every day",
+     "He had lots of private lessons",
+     "He was the biggest"
+    ],
+    "e": [
+     "🥋",
+     "💰",
+     "🐘"
+    ]
+   },
+   {
+    "t": "word",
+    "q": "'노력'은 영어로?",
+    "a": [
+     "hard work",
+     "homework",
+     "hard rock"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Say it! Hard work that nobody sees turns into ...",
+    "say": "It turns into strength one day.",
+    "key": [
+     "strength"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Tell me! What hard work do you do that nobody sees? Start with: At home, I ...",
+    "say": "At home, I do push-ups every day.",
+    "key": [
+     "home"
+    ],
+    "free": true
+   }
+  ],
+  "dojoIdx": 3
+ },
+ {
+  "id": "ep4",
+  "ep": 4,
+  "dojoEp": "4화",
+  "level": 3,
+  "style": "곤충 무술 도장 · 4화",
+  "title": "Bug Dojo 4: The Growth Stairs, Part Two",
+  "cover": {
+   "e": "🥋",
+   "bg": "#F6C9C3",
+   "art": {
+    "actors": [
+     {
+      "id": "kidrhino",
+      "x": 250,
+      "f": 1,
+      "ex": 1,
+      "tl": 0.12,
+      "flh": 0.38,
+      "flk": 0.45,
+      "blh": -0.38,
+      "blk": 0.35,
+      "fah": 1.05,
+      "fae": 1.4,
+      "bah": 0.8,
+      "bae": 1.6
+     },
+     {
+      "id": "cicada",
+      "x": 430,
+      "f": 1,
+      "ex": 3,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     },
+     {
+      "id": "dadcicada",
+      "x": 590,
+      "f": -1,
+      "ex": 3,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     },
+     {
+      "id": "bee",
+      "x": 760,
+      "f": -1,
+      "ex": 3,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     }
+    ]
+   }
+  },
+  "blurb": "4화 「성장 계단 ② 진짜 멋진 매미」를 영어로 — 침착한 꼬마뿔과 아빠 스파링, 공부하는 윙윙이, 바뀐 하루, 친절한 마음.",
+  "pages": [
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "katy",
+       "x": 288,
+       "f": 1,
+       "ex": 1,
+       "rot": -5.11,
+       "tl": 0.16,
+       "flh": 1.25,
+       "flk": 1.95,
+       "blh": 0.7,
+       "blk": 1.92,
+       "fah": 2.2,
+       "fae": 0.5,
+       "bah": 2.02,
+       "bae": 0.53
+      },
+      {
+       "id": "kidrhino",
+       "x": 480,
+       "f": -1,
+       "ex": 3,
+       "tl": 0.12,
+       "flh": 0.38,
+       "flk": 0.45,
+       "blh": -0.38,
+       "blk": 0.35,
+       "fah": 1.05,
+       "fae": 1.4,
+       "bah": 0.8,
+       "bae": 1.6
+      },
+      {
+       "id": "cicada",
+       "x": 820,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Little Horn was Coach Flash's son.",
+     "When a big kid tackled him, he calmly stopped it, and he even caught a kick and took the big kid down.",
+     "The big kid tucked into a roll and got right back up.",
+     "Mem-Mem wondered, \"How does Little Horn stay so calm?\""
+    ],
+    "beat": "kidrhino",
+    "ch": "Chapter 1 · Calm Little Horn"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "rhino",
+       "x": 445,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.61,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      },
+      {
+       "id": "kidrhino",
+       "x": 552,
+       "f": -1,
+       "ex": 1,
+       "tl": -0.11,
+       "flh": 0.29,
+       "flk": 0.28,
+       "blh": -0.27,
+       "blk": 0.23,
+       "fah": 1.47,
+       "fae": 0.38,
+       "bah": 1.26,
+       "bae": 0.73
+      }
+     ],
+     "night": true
+    },
+    "s": [
+     "His secret was sparring with his dad every night.",
+     "His dad let him try things for himself. \"Let's go slowly. I'll catch you.\"",
+     "Because they practiced together every day, Little Horn stayed calm in matches, too. That was the fifth step."
+    ],
+    "beat": "dadspar"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dadcicada",
+       "x": 630,
+       "f": -1,
+       "ex": 0,
+       "rot": -0.2,
+       "tl": -0.26,
+       "flh": 0.08,
+       "flk": 0.07,
+       "blh": -0.04,
+       "blk": 0.07,
+       "fah": 0.28,
+       "fae": 0.33,
+       "bah": -0.1,
+       "bae": 0.33
+      },
+      {
+       "id": "cicada",
+       "x": 573,
+       "f": 1,
+       "ex": 1,
+       "tl": 1.05,
+       "flh": 0.87,
+       "flk": 1.88,
+       "blh": -0.3,
+       "blk": 1,
+       "fah": 1.8,
+       "fae": 0.38,
+       "bah": 1.63,
+       "bae": 0.4
+      }
+     ],
+     "night": true
+    },
+    "s": [
+     "Mem-Mem went up to his own dad. \"Dad, let's spar tonight!\"",
+     "He got low, grabbed both legs, and turned the corner.",
+     "His dad fell slowly onto the mat, laughing."
+    ],
+    "beat": "mmdad"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "bee",
+       "x": 460,
+       "f": 1,
+       "ex": 1,
+       "rot": -0.15,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.6,
+       "fae": 0.9,
+       "bah": 1.5,
+       "bae": 1.1
+      }
+     ],
+     "text": [
+      {
+       "x": 640,
+       "y": 190,
+       "s": "📚",
+       "emoji": true
+      }
+     ]
+    },
+    "s": [
+     "After training, Buzz the bee went home to read English books and solve math problems.",
+     "She wanted to be good at sports AND at school, so she worked on them a little bit every day.",
+     "Real honeybees dance to show their friends where the flowers are!",
+     "The power to learn and think was the sixth step."
+    ],
+    "beat": "beestudy",
+    "ch": "Chapter 2 · Strong in Every Way"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 309,
+       "f": 1,
+       "ex": 1,
+       "rot": -0.01,
+       "tl": 0.86,
+       "flh": 0.61,
+       "flk": 2.06,
+       "blh": 0.22,
+       "blk": 1.72,
+       "fah": 1.83,
+       "fae": 0.48,
+       "bah": 1.64,
+       "bae": 0.49
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem tried doing his jobs one at a time: wrestling in the morning, the Bulgarian bag at home, and group class in the evening.",
+     "He sparred with his dad, read English books, and did his math homework.",
+     "Every time he kept a small promise, he grew a little bit."
+    ],
+    "beat": "montage"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dung",
+       "x": 205,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      },
+      {
+       "id": "grass",
+       "x": 345,
+       "f": 1,
+       "ex": 0,
+       "rust": 0.1,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "lady",
+       "x": 650,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.33,
+       "fae": 0.35,
+       "bah": -0.07,
+       "bae": 0.35
+      },
+      {
+       "id": "cricket",
+       "x": 770,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "cicada",
+       "x": 565,
+       "f": 1,
+       "ex": 2,
+       "rot": -1.56,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.13,
+       "blh": 0.06,
+       "blk": 0.13,
+       "fah": -0.69,
+       "fae": 0.2,
+       "bah": 0.26,
+       "bae": 0.2
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem went up to his friends first.",
+     "He taught Rolly how to grip standing up, helped Strum to his feet when he fell, and showed Dot how to break her fall.",
+     "His heart for helping friends grew, too. That was the seventh step."
+    ],
+    "beat": "kind",
+    "ch": "Chapter 3 · A Kind Heart"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dadcicada",
+       "x": 47,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "dung",
+       "x": 144,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "ant",
+       "x": 241,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "grass",
+       "x": 338,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "cicada",
+       "x": 435,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "kidrhino",
+       "x": 532,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "bee",
+       "x": 629,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "cricket",
+       "x": 726,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "butter",
+       "x": 823,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "lady",
+       "x": 920,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      }
+     ]
+    },
+    "s": [
+     "Step by step, Mem-Mem grew: in sports, in learning, and in caring for his friends.",
+     "Everybody bowed together. \"Thank you!\""
+    ],
+    "beat": "shine"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      }
+     ]
+    },
+    "s": [
+     "Which step would you like to climb first?"
+    ],
+    "beat": "end4"
+   }
+  ],
+  "words": {
+   "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
+   "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
+   "pinch": "집게 (사슴벌레 · 유도 사범님)",
+   "grip": "꽉이 (사마귀 · 주짓수 사범님) / 꽉 잡다",
+   "pop": "팡이 (메뚜기 · 태권도 사범님)",
+   "dot": "동글이 (무당벌레)",
+   "flutter": "팔랑이 (나비)",
+   "longlegs": "긴다리 (여치)",
+   "sparkle": "반짝이 (반딧불이)",
+   "buzz": "윙윙이 (꿀벌)",
+   "bob": "콩콩이 (방아깨비)",
+   "strum": "띵가 (베짱이)",
+   "rolly": "굴리 (쇠똥구리)",
+   "rocky": "단단이 (개미)",
+   "chirpy": "뚜리 (귀뚜라미)",
+   "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
+   "son": "아들",
+   "calmly": "침착하게",
+   "tucked": "몸을 웅크렸다",
+   "wondered": "궁금했다",
+   "for himself": "스스로",
+   "turned the corner": "옆으로 돌아 방향을 바꿨다",
+   "solve": "풀다",
+   "math problems": "수학 문제",
+   "honeybees": "꿀벌들",
+   "jobs": "할 일들",
+   "homework": "숙제",
+   "kept a promise": "약속을 지켰다",
+   "break her fall": "낙법하다",
+   "heart": "마음",
+   "caring": "아끼는"
+  },
+  "talk": [
+   "How did Little Horn stay so calm?",
+   "What did Buzz do after training?",
+   "What small promises did Mem-Mem keep every day?",
+   "How do you help your friends at the dojo?"
+  ],
+  "quiz": [
+   {
+    "t": "choice",
+    "q": "Who is Little Horn's dad?",
+    "a": [
+     "Coach Flash",
+     "Coach Pop",
+     "Strum"
+    ],
+    "e": [
+     "🪲",
+     "🦗",
+     "🎸"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What did Buzz do after training?",
+    "a": [
+     "Read English books and did math",
+     "Went to sleep",
+     "Played games all night"
+    ],
+    "e": [
+     "📚",
+     "😴",
+     "🎮"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "How did Mem-Mem help Rolly?",
+    "a": [
+     "He taught him to grip standing up",
+     "He gave him a cake",
+     "He carried him home"
+    ],
+    "e": [
+     "🤝",
+     "🍰",
+     "🏠"
+    ]
+   },
+   {
+    "t": "word",
+    "q": "'침착하게'는 영어로?",
+    "a": [
+     "calmly",
+     "quickly",
+     "loudly"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Say it! Every time he kept a small promise, he ...",
+    "say": "He grew a little bit.",
+    "key": [
+     "grew"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Tell me! What small promise can you keep every day? Start with: Every day, I will ...",
+    "say": "Every day, I will read one English book.",
+    "key": [
+     "every",
+     "day"
+    ],
+    "free": true
+   }
+  ],
+  "dojoIdx": 4
+ },
+ {
+  "id": "ep5",
+  "ep": 5,
+  "dojoEp": "5화",
+  "level": 3,
+  "style": "곤충 무술 도장 · 5화",
+  "title": "Bug Dojo 5: Mem-Mem's First Tournament",
+  "cover": {
+   "e": "🥋",
+   "bg": "#FFE08A",
+   "art": {
+    "actors": [
+     {
+      "id": "stag",
+      "x": 290,
+      "f": 1,
+      "ex": 3,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     },
+     {
+      "id": "cicada",
+      "x": 480,
+      "f": 1,
+      "ex": 3,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     },
+     {
+      "id": "bang",
+      "x": 670,
+      "f": -1,
+      "ex": 3,
+      "tl": -0.05,
+      "flh": 0.1,
+      "flk": 0.1,
+      "blh": -0.1,
+      "blk": 0.1,
+      "fah": 2.7,
+      "fae": 0.5,
+      "bah": 2.5,
+      "bae": 0.5
+     }
+    ]
+   }
+  },
+  "blurb": "5화 「맴맴이의 첫 대회」를 영어로 — 네 번 숨쉬기, 한 체급 위 콩콩이 형에게 도전, 탭, 대회는 배우러 가는 곳.",
+  "pages": [
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 380,
+       "f": 1,
+       "ex": 4,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "stag",
+       "x": 620,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "On the morning of the tournament, Mem-Mem felt like butterflies were flying around in his tummy.",
+     "Coach Pinch spoke slowly. \"Let's take four breaths through your nose.\"",
+     "\"One... two... three... four.\""
+    ],
+    "beat": "breathe5",
+    "ch": "Chapter 1 · Butterflies in His Tummy"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "stag",
+       "x": 700,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      }
+     ],
+     "text": [
+      {
+       "x": 480,
+       "y": 150,
+       "s": "🥇",
+       "emoji": true
+      }
+     ]
+    },
+    "s": [
+     "Nobody else in Mem-Mem's weight class showed up.",
+     "So he got the gold medal all by himself."
+    ],
+    "beat": "gold5"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 390,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.12,
+       "flh": 0.38,
+       "flk": 0.45,
+       "blh": -0.38,
+       "blk": 0.35,
+       "fah": 1.05,
+       "fae": 1.4,
+       "bah": 0.8,
+       "bae": 1.6
+      },
+      {
+       "id": "bang",
+       "x": 580,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      }
+     ]
+    },
+    "s": [
+     "One weight class up was big brother Bob, who was bigger and had a higher belt.",
+     "Mem-Mem found his courage. \"I want to try, too!\"",
+     "They faced each other and bowed."
+    ],
+    "beat": "challenge5"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 475,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.3,
+       "flh": 0.75,
+       "flk": 1.15,
+       "blh": -0.3,
+       "blk": 0.95,
+       "fah": 1.25,
+       "fae": 0.6,
+       "bah": 1.05,
+       "bae": 0.85
+      },
+      {
+       "id": "bang",
+       "x": 560,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.05,
+       "flh": 0.75,
+       "flk": 1.15,
+       "blh": -0.3,
+       "blk": 0.95,
+       "fah": 1.25,
+       "fae": 0.6,
+       "bah": 1.05,
+       "bae": 0.85
+      }
+     ]
+    },
+    "s": [
+     "The match began, and Bob grabbed Mem-Mem's arm and pulled hard.",
+     "Mem-Mem got low and held his ground on both feet.",
+     "The strength he had built in wrestling was helping him."
+    ],
+    "beat": "standing5",
+    "ch": "Chapter 2 · The Big Match"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "bang",
+       "x": 590,
+       "f": -1,
+       "ex": 1,
+       "rot": -1.5,
+       "tl": 0.25,
+       "flh": 1.89,
+       "flk": 1.05,
+       "blh": 1.5,
+       "blk": 1.5,
+       "fah": 1.4,
+       "fae": 0.9,
+       "bah": 1.2,
+       "bae": 1.1
+      },
+      {
+       "id": "cicada",
+       "x": 484,
+       "f": 1,
+       "ex": 1,
+       "tl": 1.09,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      }
+     ]
+    },
+    "s": [
+     "Then Bob lay back and made a guard with his legs.",
+     "Mem-Mem tried to slide his knee across and pass. That's called a knee cut.",
+     "But it was still hard to get past Bob's legs."
+    ],
+    "beat": "guard5"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "bang",
+       "x": 590,
+       "f": -1,
+       "ex": 1,
+       "rot": -1.5,
+       "tl": 0.25,
+       "flh": 1.86,
+       "flk": 1.05,
+       "blh": 1.47,
+       "blk": 1.5,
+       "fah": 1.4,
+       "fae": 0.9,
+       "bah": 1.2,
+       "bae": 1.1
+      },
+      {
+       "id": "cicada",
+       "x": 485,
+       "f": 1,
+       "ex": 1,
+       "tl": 1.08,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      }
+     ]
+    },
+    "s": [
+     "Someone called from outside. \"Mem-Mem!\"",
+     "He almost turned his head, but then he remembered what Flutter had taught him: \"Focus on your partner!\""
+    ],
+    "beat": "focus5"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 555,
+       "f": 1,
+       "ex": 0,
+       "rot": -1.34,
+       "tl": 0.05,
+       "flh": 0.29,
+       "flk": 0.32,
+       "blh": 0.04,
+       "blk": 0.27,
+       "fah": 0.66,
+       "fae": 0.24,
+       "bah": 0.44,
+       "bae": 0.26
+      },
+      {
+       "id": "bang",
+       "x": 375,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.33,
+       "flh": 1.14,
+       "flk": 1.6,
+       "blh": 0.25,
+       "blk": 1.23,
+       "fah": 1.56,
+       "fae": 0.51,
+       "bah": 1.44,
+       "bae": 0.63
+      }
+     ]
+    },
+    "s": [
+     "Bob grabbed his arm, swung his leg over, and set up an armbar.",
+     "Before it could hurt, Mem-Mem tapped. Tap, tap!",
+     "Bob let go right away, and even though Mem-Mem lost, they both finished safely and bowed."
+    ],
+    "beat": "tap5"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 4,
+       "tl": 0.85,
+       "flh": 0.95,
+       "flk": 1.5,
+       "blh": -0.05,
+       "blk": 1.1,
+       "fah": 1.6,
+       "fae": 0.5,
+       "bah": 1.5,
+       "bae": 0.6
+      },
+      {
+       "id": "fire",
+       "x": 320,
+       "f": 1,
+       "ex": 0,
+       "gl": 0.3,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "grass",
+       "x": 640,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem hung his head. \"I'm never doing a tournament again.\"",
+     "Sparkle and Strum came and sat beside him, and they listened to how he felt."
+    ],
+    "beat": "upset5",
+    "ch": "Chapter 3 · Learning From Losing"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "fire",
+       "x": 170,
+       "f": 1,
+       "ex": 0,
+       "gl": 0.3,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "grass",
+       "x": 310,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.07,
+       "flk": 0.07,
+       "blh": -0.06,
+       "blk": 0.07,
+       "fah": 0.26,
+       "fae": 0.35,
+       "bah": -0.14,
+       "bae": 0.35
+      },
+      {
+       "id": "stag",
+       "x": 630,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "rhino",
+       "x": 800,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "The coaches came over, too.",
+     "\"You don't go to a tournament only to win. You go to learn,\" they said.",
+     "\"Just stepping onto the mat took courage, and you held your ground against a much bigger kid!\"",
+     "Little by little, Mem-Mem lifted his head."
+    ],
+    "beat": "learn5"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "fire",
+       "x": 170,
+       "f": 1,
+       "ex": 0,
+       "gl": 0.3,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "grass",
+       "x": 310,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "mantis",
+       "x": 650,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "stag",
+       "x": 820,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "There were two things to practice next: the knee cut to pass the guard, and keeping his arms close to stop the armbar.",
+     "He would learn them in private lessons and try them with friends in group class.",
+     "Practicing a lot with bugs your own size is how a move really becomes yours."
+    ],
+    "beat": "plan5"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "rhino",
+       "x": 140,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.04,
+       "flh": 0.09,
+       "flk": 0.09,
+       "blh": -0.09,
+       "blk": 0.09,
+       "fah": 1.99,
+       "fae": 0.46,
+       "bah": 1.73,
+       "bae": 0.46
+      },
+      {
+       "id": "stag",
+       "x": 255,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.04,
+       "flh": 0.09,
+       "flk": 0.09,
+       "blh": -0.09,
+       "blk": 0.09,
+       "fah": 1.99,
+       "fae": 0.46,
+       "bah": 1.73,
+       "bae": 0.46
+      },
+      {
+       "id": "fire",
+       "x": 370,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.04,
+       "flh": 0.09,
+       "flk": 0.09,
+       "blh": -0.09,
+       "blk": 0.09,
+       "fah": 1.99,
+       "fae": 0.46,
+       "bah": 1.73,
+       "bae": 0.46
+      },
+      {
+       "id": "cicada",
+       "x": 485,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.04,
+       "flh": 0.09,
+       "flk": 0.09,
+       "blh": -0.09,
+       "blk": 0.09,
+       "fah": 1.99,
+       "fae": 0.46,
+       "bah": 1.73,
+       "bae": 0.46
+      },
+      {
+       "id": "grass",
+       "x": 600,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.04,
+       "flh": 0.09,
+       "flk": 0.09,
+       "blh": -0.09,
+       "blk": 0.09,
+       "fah": 1.99,
+       "fae": 0.46,
+       "bah": 1.73,
+       "bae": 0.46
+      },
+      {
+       "id": "mantis",
+       "x": 715,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.04,
+       "flh": 0.09,
+       "flk": 0.09,
+       "blh": -0.09,
+       "blk": 0.09,
+       "fah": 1.99,
+       "fae": 0.46,
+       "bah": 1.73,
+       "bae": 0.46
+      },
+      {
+       "id": "bang",
+       "x": 830,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.04,
+       "flh": 0.09,
+       "flk": 0.09,
+       "blh": -0.09,
+       "blk": 0.09,
+       "fah": 1.99,
+       "fae": 0.46,
+       "bah": 1.73,
+       "bae": 0.46
+      }
+     ]
+    },
+    "s": [
+     "\"I'm going to the next tournament, too!\" said Mem-Mem.",
+     "Everybody bowed together. \"Thank you!\""
+    ],
+    "beat": "bow5"
+   }
+  ],
+  "words": {
+   "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
+   "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
+   "pinch": "집게 (사슴벌레 · 유도 사범님)",
+   "grip": "꽉이 (사마귀 · 주짓수 사범님) / 꽉 잡다",
+   "pop": "팡이 (메뚜기 · 태권도 사범님)",
+   "dot": "동글이 (무당벌레)",
+   "flutter": "팔랑이 (나비)",
+   "longlegs": "긴다리 (여치)",
+   "sparkle": "반짝이 (반딧불이)",
+   "buzz": "윙윙이 (꿀벌)",
+   "bob": "콩콩이 (방아깨비)",
+   "strum": "띵가 (베짱이)",
+   "rolly": "굴리 (쇠똥구리)",
+   "rocky": "단단이 (개미)",
+   "chirpy": "뚜리 (귀뚜라미)",
+   "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
+   "tummy": "배",
+   "breaths": "숨",
+   "weight class": "체급",
+   "showed up": "나타났다",
+   "gold medal": "금메달",
+   "belt": "띠",
+   "courage": "용기",
+   "faced": "마주 봤다",
+   "held his ground": "버텼다",
+   "guard": "가드",
+   "knee cut": "니컷",
+   "pass": "(가드를) 넘다",
+   "armbar": "암바",
+   "tapped": "탭했다(그만 신호)",
+   "let go": "놓아주었다",
+   "safely": "안전하게",
+   "hung his head": "고개를 숙였다",
+   "listened": "귀 기울여 들었다",
+   "lifted": "들었다"
+  },
+  "talk": [
+   "How did Mem-Mem calm down before the tournament?",
+   "Why did Mem-Mem tap?",
+   "What did the coaches say about tournaments?",
+   "Have you ever felt butterflies in your tummy? What helped you?"
+  ],
+  "quiz": [
+   {
+    "t": "choice",
+    "q": "How did Coach Pinch help Mem-Mem calm down?",
+    "a": [
+     "Four slow breaths",
+     "A big snack",
+     "A loud song"
+    ],
+    "e": [
+     "🌬️",
+     "🍪",
+     "🎵"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "Why did Mem-Mem get a gold medal first?",
+    "a": [
+     "Nobody else was in his weight class",
+     "He beat ten bugs",
+     "He found it"
+    ],
+    "e": [
+     "🥇",
+     "🔟",
+     "🔍"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "Why do we tap?",
+    "a": [
+     "To stop before it hurts",
+     "To say hello",
+     "To win"
+    ],
+    "e": [
+     "✋",
+     "👋",
+     "🏆"
+    ]
+   },
+   {
+    "t": "word",
+    "q": "'용기'는 영어로?",
+    "a": [
+     "courage",
+     "cabbage",
+     "cottage"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Say it! You don't go to a tournament only to win. You go to ...",
+    "say": "You go to learn.",
+    "key": [
+     "learn"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Tell me about your tournament! Start with: At my tournament, I ...",
+    "say": "At my tournament, I was nervous but I tried my best.",
+    "key": [
+     "tournament"
+    ],
+    "free": true
+   }
+  ],
+  "dojoIdx": 5
+ },
+ {
+  "id": "ep6",
+  "ep": 6,
+  "dojoEp": "6화",
+  "level": 3,
+  "style": "곤충 무술 도장 · 6화",
+  "title": "Bug Dojo 6: Same Attendance, Different Secret",
+  "cover": {
+   "e": "🥋",
+   "bg": "#C9B8E0",
+   "art": {
+    "actors": [
+     {
+      "id": "cicada",
+      "x": 250,
+      "f": 1,
+      "ex": 0,
+      "tl": 0,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.25,
+      "fae": 0.35,
+      "bah": -0.15,
+      "bae": 0.35
+     },
+     {
+      "id": "fire",
+      "x": 480,
+      "f": -1,
+      "ex": 0,
+      "tl": 0,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.25,
+      "fae": 0.35,
+      "bah": -0.15,
+      "bae": 0.35
+     },
+     {
+      "id": "grass",
+      "x": 710,
+      "f": -1,
+      "ex": 0,
+      "tl": 0,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.25,
+      "fae": 0.35,
+      "bah": -0.15,
+      "bae": 0.35
+     }
+    ]
+   }
+  },
+  "blurb": "6화 「같은 출석, 다른 비밀」을 영어로 — 출석은 같은데 실력이 달라진 이유, 반짝이의 복습 작전(영상·더미·사범님께 확인).",
+  "pages": [
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 250,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "fire",
+       "x": 480,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "grass",
+       "x": 710,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Sparkle and Strum came to the dojo on the very same days.",
+     "They got exactly the same attendance stamps.",
+     "But before each class, Sparkle always tried to remember the steps from the last lesson."
+    ],
+    "beat": "same6",
+    "ch": "Chapter 1 · The Same Stamps"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "grass",
+       "x": 380,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      },
+      {
+       "id": "mantis",
+       "x": 660,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "When Strum went home, he thought, \"I went to class, so that's enough!\"",
+     "By the next class, the steps he had learned were all fuzzy."
+    ],
+    "beat": "forgot6"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "fire",
+       "x": 300,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.15,
+       "flh": 0.4,
+       "flk": 0.49,
+       "blh": -0.38,
+       "blk": 0.39,
+       "fah": 1.06,
+       "fae": 1.35,
+       "bah": 0.82,
+       "bae": 1.55
+      },
+      {
+       "id": "grass",
+       "x": 650,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "After a few weeks, the difference was easy to see.",
+     "Sparkle flowed from one move to the next, but Strum kept stopping to ask what came next.",
+     "Mem-Mem really wanted to know Sparkle's secret."
+    ],
+    "beat": "gap6"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "fire",
+       "x": 480,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ],
+     "night": true
+    },
+    "s": [
+     "Sparkle smiled. \"Want to see my secret mission?\"",
+     "Our story goes back to the night before, in Sparkle's room."
+    ],
+    "beat": "secret6",
+    "ch": "Chapter 2 · Sparkle's Secret Mission"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "fire",
+       "x": 225,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.44,
+       "fae": 0.74,
+       "bah": 1.28,
+       "bae": 0.94
+      }
+     ],
+     "night": true,
+     "text": [
+      {
+       "x": 560,
+       "y": 200,
+       "s": "📱",
+       "emoji": true
+      }
+     ]
+    },
+    "s": [
+     "Sparkle watched a video of her private lesson again with her dad.",
+     "\"Oh, this is where I got stuck,\" she said.",
+     "She paused the video and remembered one step her coach had taught her."
+    ],
+    "beat": "review6"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "fire",
+       "x": 225,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.55,
+       "fae": 0.85,
+       "bah": 1.43,
+       "bae": 1.05
+      }
+     ],
+     "night": true
+    },
+    "s": [
+     "Her dad had also signed up for a YouTube membership with the same drills.",
+     "Together, they picked the part she had learned that day.",
+     "Instead of watching a lot, she decided to remember just one thing."
+    ],
+    "beat": "member6"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dummy",
+       "x": 570,
+       "f": -1,
+       "ex": 2,
+       "rot": -1.57,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.5,
+       "fae": 0.2,
+       "bah": 0.25,
+       "bae": 0.2
+      },
+      {
+       "id": "fire",
+       "x": 408,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.88,
+       "flh": 0.55,
+       "flk": 2.05,
+       "blh": 0.16,
+       "blk": 1.71,
+       "fah": 1.83,
+       "fae": 0.45,
+       "bah": 1.63,
+       "bae": 0.46
+      }
+     ],
+     "night": true
+    },
+    "s": [
+     "The jiu-jitsu dummy in her room was her practice partner.",
+     "She slowly tried only the moves her coach said were okay to do at home.",
+     "When she got mixed up, she watched the video again, and she never cranked hard on the dummy."
+    ],
+    "beat": "dummy6"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "fire",
+       "x": 250,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "mantis",
+       "x": 480,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "grass",
+       "x": 710,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "At the next group class, Sparkle asked, \"Coach, is this the right order?\"",
+     "She fixed the parts she had remembered wrong and practiced them again with a friend."
+    ],
+    "beat": "check6",
+    "ch": "Chapter 3 · Everyone Has a Secret"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "kidrhino",
+       "x": 250,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "ant",
+       "x": 480,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "fire",
+       "x": 710,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Little Horn practiced with his dad, and Rocky kept doing his exercises.",
+     "Sparkle went over what she had learned with videos and the dummy.",
+     "Behind every friend who was good at something, there was time they had built up, little by little."
+    ],
+    "beat": "different6"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 250,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "fire",
+       "x": 480,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "grass",
+       "x": 710,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Strum said, \"I'm going to start again, with just one thing I learned today!\"",
+     "The friends practiced together and bowed. \"Thank you!\""
+    ],
+    "beat": "start6"
+   }
+  ],
+  "words": {
+   "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
+   "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
+   "pinch": "집게 (사슴벌레 · 유도 사범님)",
+   "grip": "꽉이 (사마귀 · 주짓수 사범님) / 꽉 잡다",
+   "pop": "팡이 (메뚜기 · 태권도 사범님)",
+   "dot": "동글이 (무당벌레)",
+   "flutter": "팔랑이 (나비)",
+   "longlegs": "긴다리 (여치)",
+   "sparkle": "반짝이 (반딧불이)",
+   "buzz": "윙윙이 (꿀벌)",
+   "bob": "콩콩이 (방아깨비)",
+   "strum": "띵가 (베짱이)",
+   "rolly": "굴리 (쇠똥구리)",
+   "rocky": "단단이 (개미)",
+   "chirpy": "뚜리 (귀뚜라미)",
+   "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
+   "attendance": "출석",
+   "stamps": "도장",
+   "exactly": "정확히",
+   "steps": "순서",
+   "fuzzy": "가물가물한",
+   "difference": "차이",
+   "flowed": "물 흐르듯 이어 갔다",
+   "mission": "작전",
+   "paused": "멈췄다",
+   "membership": "멤버십",
+   "drills": "연습 동작",
+   "dummy": "더미(연습 인형)",
+   "mixed up": "헷갈린",
+   "cranked": "세게 꺾었다",
+   "order": "순서",
+   "fixed": "고쳤다",
+   "exercises": "운동",
+   "built up": "쌓아 왔다"
+  },
+  "talk": [
+   "Why did Strum forget the steps?",
+   "What was Sparkle's secret mission?",
+   "Why did Sparkle ask the coach at the next class?",
+   "What is one thing you learned this week that you want to review?"
+  ],
+  "quiz": [
+   {
+    "t": "choice",
+    "q": "What was the same for Sparkle and Strum?",
+    "a": [
+     "Their attendance stamps",
+     "Their color",
+     "Their favorite song"
+    ],
+    "e": [
+     "📅",
+     "🎨",
+     "🎵"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What did Sparkle watch with her dad?",
+    "a": [
+     "A video of her private lesson",
+     "A scary movie",
+     "A cooking show"
+    ],
+    "e": [
+     "📱",
+     "👻",
+     "🍳"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What did Sparkle do when she got mixed up?",
+    "a": [
+     "Watched the video again",
+     "Gave up",
+     "Cranked hard on the dummy"
+    ],
+    "e": [
+     "🔁",
+     "🏳️",
+     "💥"
+    ]
+   },
+   {
+    "t": "word",
+    "q": "'출석'은 영어로?",
+    "a": [
+     "attendance",
+     "attention",
+     "adventure"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Say it! Instead of watching a lot, she decided to remember just ...",
+    "say": "She decided to remember just one thing.",
+    "key": [
+     "one",
+     "thing"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Tell me! What did you learn in your last lesson? Start with: In my last lesson, I learned ...",
+    "say": "In my last lesson, I learned a new sweep.",
+    "key": [
+     "learned"
+    ],
+    "free": true
+   }
+  ],
+  "dojoIdx": 6
+ },
+ {
+  "id": "ep7",
+  "ep": 7,
+  "dojoEp": "7화",
+  "level": 3,
+  "style": "곤충 무술 도장 · 7화",
+  "title": "Bug Dojo 7: Hajun's Champion Table",
+  "cover": {
+   "e": "🥋",
+   "bg": "#B8D08D",
+   "art": {
+    "actors": [
+     {
+      "id": "cicada",
+      "x": 250,
+      "f": 1,
+      "ex": 0,
+      "tl": 0,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.25,
+      "fae": 0.35,
+      "bah": -0.15,
+      "bae": 0.35
+     },
+     {
+      "id": "cricket",
+      "x": 480,
+      "f": 1,
+      "ex": 0,
+      "tl": 0,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.25,
+      "fae": 0.35,
+      "bah": -0.15,
+      "bae": 0.35
+     },
+     {
+      "id": "mantis",
+      "x": 730,
+      "f": -1,
+      "ex": 0,
+      "tl": 0,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.25,
+      "fae": 0.35,
+      "bah": -0.15,
+      "bae": 0.35
+     }
+    ]
+   }
+  },
+  "blurb": "7화 「하준이의 챔피언 식당」을 영어로 — 늦게 시작한 뚜리에게 밀린 이유, 뚜리의 식탁, 스스로 챙기는 식사·물·잠, 다시 대회 우승.",
+  "pages": [
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 320,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "dadcicada",
+       "x": 680,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem didn't pay much attention when grown-ups told him to eat well.",
+     "\"I'm just small,\" he said. \"I'll eat a little and practice more instead.\"",
+     "His training got better, but he kept putting off eating."
+    ],
+    "beat": "dismiss7",
+    "ch": "Chapter 1 · Who Needs Lunch?"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 630,
+       "f": -1,
+       "ex": 0,
+       "rot": -0.2,
+       "tl": -0.26,
+       "flh": 0.08,
+       "flk": 0.07,
+       "blh": -0.04,
+       "blk": 0.07,
+       "fah": 0.28,
+       "fae": 0.33,
+       "bah": -0.1,
+       "bae": 0.33
+      },
+      {
+       "id": "cricket",
+       "x": 573,
+       "f": 1,
+       "ex": 1,
+       "tl": 1.05,
+       "flh": 0.87,
+       "flk": 1.88,
+       "blh": -0.3,
+       "blk": 1,
+       "fah": 1.8,
+       "fae": 0.38,
+       "bah": 1.63,
+       "bae": 0.4
+      }
+     ]
+    },
+    "s": [
+     "A few months later, he lost to Chirpy again in a practice match.",
+     "Chirpy had started training after Mem-Mem, but now he looked sturdy, and his grip was stronger than ever.",
+     "\"I started first,\" thought Mem-Mem. \"So why are we so different now?\""
+    ],
+    "beat": "loss7"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 250,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "cricket",
+       "x": 480,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "mantis",
+       "x": 730,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Chirpy said, \"I practice too. But I also take care of eating and resting.\"",
+     "So Mem-Mem followed Chirpy to his secret dinner table."
+    ],
+    "beat": "mystery7"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cricket",
+       "x": 200,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      },
+      {
+       "id": "cicada",
+       "x": 770,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      }
+     ],
+     "text": [
+      {
+       "x": 430,
+       "y": 300,
+       "s": "🍅",
+       "emoji": true
+      },
+      {
+       "x": 490,
+       "y": 300,
+       "s": "🥑",
+       "emoji": true
+      },
+      {
+       "x": 550,
+       "y": 300,
+       "s": "🥚",
+       "emoji": true
+      },
+      {
+       "x": 610,
+       "y": 300,
+       "s": "🍚",
+       "emoji": true
+      }
+     ]
+    },
+    "s": [
+     "On the table were tomatoes, avocado, and boiled eggs, with rice, tofu, and lots of vegetables.",
+     "Even on busy days when he moved a lot, Chirpy never skipped his meals."
+    ],
+    "beat": "meal7",
+    "ch": "Chapter 2 · The Champion's Table"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "mantis",
+       "x": 200,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "cicada",
+       "x": 770,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      }
+     ]
+    },
+    "s": [
+     "The coach said, \"On days when you move a lot, your body may need more food.\"",
+     "\"You need energy to practice, and building blocks to grow and recover.\"",
+     "At last, Mem-Mem understood what he had been missing."
+    ],
+    "beat": "learn7"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 200,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      },
+      {
+       "id": "dadcicada",
+       "x": 770,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      }
+     ]
+    },
+    "s": [
+     "Now Mem-Mem sat down at the table without anyone making him.",
+     "\"Mom, Dad, I moved a lot today, so I'm hungry. Can I have a little more?\"",
+     "When he felt full, he stopped, and he took care of his meals together with the grown-ups."
+    ],
+    "beat": "choose7"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 3,
+       "tl": 0.43,
+       "flh": 0.19,
+       "flk": 0.23,
+       "blh": -0.19,
+       "blk": 0.17,
+       "fah": 0.58,
+       "fae": 0.75,
+       "bah": 0.44,
+       "bae": 0.85
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem ate well and practiced the moves he had learned.",
+     "He drank water and got a good night's sleep.",
+     "After a few months, he felt strong all the way to the end of practice."
+    ],
+    "beat": "months7",
+    "ch": "Chapter 3 · Champion!"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cricket",
+       "x": 630,
+       "f": -1,
+       "ex": 0,
+       "rot": -0.2,
+       "tl": -0.26,
+       "flh": 0.08,
+       "flk": 0.07,
+       "blh": -0.04,
+       "blk": 0.07,
+       "fah": 0.28,
+       "fae": 0.33,
+       "bah": -0.1,
+       "bae": 0.33
+      },
+      {
+       "id": "cicada",
+       "x": 573,
+       "f": 1,
+       "ex": 1,
+       "tl": 1.05,
+       "flh": 0.87,
+       "flk": 1.88,
+       "blh": -0.3,
+       "blk": 1,
+       "fah": 1.8,
+       "fae": 0.38,
+       "bah": 1.63,
+       "bae": 0.4
+      }
+     ]
+    },
+    "s": [
+     "Tournament day came again.",
+     "This time, Mem-Mem didn't just push with his strength; he calmly used the moves he had learned.",
+     "He made it through the very last match, and he won!"
+    ],
+    "beat": "match7"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "cricket",
+       "x": 240,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      },
+      {
+       "id": "fire",
+       "x": 730,
+       "f": -1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      }
+     ],
+     "text": [
+      {
+       "x": 480,
+       "y": 120,
+       "s": "🥇",
+       "emoji": true
+      }
+     ]
+    },
+    "s": [
+     "With the gold medal around his neck, Mem-Mem smiled.",
+     "\"Taking care of my body was part of my training, too!\"",
+     "Eating, resting, reviewing, and steady training had all added up."
+    ],
+    "beat": "champion7"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 250,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "cricket",
+       "x": 480,
+       "f": 1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      },
+      {
+       "id": "mantis",
+       "x": 730,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Chirpy congratulated Mem-Mem on his win.",
+     "Mem-Mem bowed to his friend and the coach who had shared the secret.",
+     "\"Thank you! Let's keep practicing together!\""
+    ],
+    "beat": "bow7"
+   }
+  ],
+  "words": {
+   "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
+   "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
+   "pinch": "집게 (사슴벌레 · 유도 사범님)",
+   "grip": "잡는 힘",
+   "pop": "팡이 (메뚜기 · 태권도 사범님)",
+   "dot": "동글이 (무당벌레)",
+   "flutter": "팔랑이 (나비)",
+   "longlegs": "긴다리 (여치)",
+   "sparkle": "반짝이 (반딧불이)",
+   "buzz": "윙윙이 (꿀벌)",
+   "bob": "콩콩이 (방아깨비)",
+   "strum": "띵가 (베짱이)",
+   "rolly": "굴리 (쇠똥구리)",
+   "rocky": "단단이 (개미)",
+   "chirpy": "뚜리 (귀뚜라미)",
+   "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
+   "pay attention": "귀 기울이다",
+   "grown-ups": "어른들",
+   "putting off": "미루기",
+   "sturdy": "튼튼한·든든한",
+   "resting": "쉬기",
+   "followed": "따라갔다",
+   "avocado": "아보카도",
+   "boiled eggs": "삶은 달걀",
+   "tofu": "두부",
+   "vegetables": "채소",
+   "skipped": "걸렀다",
+   "meals": "끼니",
+   "energy": "힘·에너지",
+   "building blocks": "재료",
+   "recover": "회복하다",
+   "full": "배부른",
+   "a good night's sleep": "푹 자기",
+   "calmly": "침착하게",
+   "congratulated": "축하했다",
+   "steady": "꾸준한",
+   "added up": "쌓였다"
+  },
+  "talk": [
+   "Why was Mem-Mem losing to Chirpy?",
+   "What was on Chirpy's table?",
+   "Why does your body need more food on busy days?",
+   "What will you take care of by yourself today?"
+  ],
+  "quiz": [
+   {
+    "t": "choice",
+    "q": "What did Mem-Mem keep putting off?",
+    "a": [
+     "Eating",
+     "Practicing",
+     "Bowing"
+    ],
+    "e": [
+     "🍽️",
+     "🥋",
+     "🙇"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What was NOT on Chirpy's table?",
+    "a": [
+     "Candy",
+     "Boiled eggs",
+     "Tofu"
+    ],
+    "e": [
+     "🍬",
+     "🥚",
+     "🧈"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What helped Mem-Mem win in the end?",
+    "a": [
+     "Eating, resting, reviewing, and training",
+     "A lucky hat",
+     "Pushing really hard"
+    ],
+    "e": [
+     "🏆",
+     "🧢",
+     "💥"
+    ]
+   },
+   {
+    "t": "word",
+    "q": "'회복하다'는 영어로?",
+    "a": [
+     "recover",
+     "remember",
+     "repeat"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Say it! Taking care of my body was part of my ...",
+    "say": "Taking care of my body was part of my training.",
+    "key": [
+     "training"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Tell me! What did you eat today? Start with: Today, I ate ...",
+    "say": "Today, I ate rice, tofu, and eggs.",
+    "key": [
+     "ate"
+    ],
+    "free": true
+   }
+  ],
+  "dojoIdx": 7
+ }
 ];
 window.LILY_BOOKS = BUGDOJO.concat(window.LILY_BOOKS || []);
 })();
