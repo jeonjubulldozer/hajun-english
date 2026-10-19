@@ -1,6 +1,6 @@
 // 곤충 무술 도장: 앱으로 설치했을 때 인터넷이 없어도 화면이 열리게 해 주는 도우미
-const CACHE = 'insect-dojo-v3';
-const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
+const CACHE = 'insect-dojo-v4';
+const CORE = ['./', './index.html', './voice.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
 });
