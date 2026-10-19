@@ -120,6 +120,7 @@ section h2{font-family:var(--display);font-weight:400;font-size:28px;line-height
     <span class="vstat" id="vstat" aria-live="polite"></span>
     <a class="btn" id="siteLink" href="https://jeonjubulldozer.github.io/hajun-english/dojo/" target="_blank" rel="noopener" hidden>목소리 나오는 버전 열기 ↗</a>
     <input id="gkey" type="password" autocomplete="off" placeholder="제미나이 키 붙여 넣기 (AIza…)" hidden>
+    <input id="ckey" type="password" autocomplete="off" placeholder="클라우드 목소리 키 붙여 넣기 (insect-dojo-voice)" hidden>
   </div>
   <div class="voicebar" id="installRow" hidden>
     <button class="btn" id="installBtn" type="button">앱으로 설치하기</button>
@@ -888,7 +889,7 @@ const TTS_MODELS=['gemini-3.8-flash-tts','gemini-3.8-flash-lite-tts','gemini-2.5
 const GVOICES=[['Leda','밝은 누나 목소리'],['Zephyr','또랑또랑한 목소리'],['Sulafat','따뜻한 목소리'],['Puck','신나는 형 목소리']];
 const ONSITE=/github\.io$/i.test(location.hostname);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const prefs=Object.assign({gv:'Leda',on:true,gkey:''},store.get('insect-dojo.prefs',{}));
+const prefs=Object.assign({gv:'Leda',on:true,gkey:'',ckey:''},store.get('insect-dojo.prefs',{}));
 const savePrefs=()=>store.set('insect-dojo.prefs',prefs);
 READ=prefs.on!==false;
 function dojoKey(){
@@ -897,7 +898,7 @@ function dojoKey(){
   try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k==='insect-dojo.prefs')continue;const m=(localStorage.getItem(k)||'').match(/AIza[0-9A-Za-z_\-]{30,}/);if(m)return m[0]}}catch(e){}
   return'';
 }
-const gKey=()=>(prefs.gkey||dojoKey()||'').trim();
+const gKey=()=>(prefs.gkey||dojoKey()||'').trim(),anyKey=()=>!!(gKey()||prefs.ckey);
 const UA=navigator.userAgent,ANDROID=/Android/i.test(UA),INCHROME=/Chrome\//.test(UA)&&!/SamsungBrowser|; wv\)|EdgA|OPR|Whale|NAVER|KAKAOTALK|Instagram|FBAN/i.test(UA);
 const sleepMs=ms=>new Promise(r=>setTimeout(r,ms));
 const IDB=(()=>{const mem=new Map();let dbp=null;
@@ -909,7 +910,7 @@ function pcmToWav(u8,rate){const n=u8.length,out=new Uint8Array(44+n),d=new Data
 function mimeOf(buf){const x=new Uint8Array(buf,0,4);return(x[0]===0x52&&x[1]===0x49&&x[2]===0x46)?'audio/wav':'audio/mpeg'}
 let ttsIdx=0,ttsExhaustedAt=0,ttsLastErr=null;
 async function synth(text,voice){
-  const key=gKey();if(!key)throw{code:'no_key',fatal:true};
+  const key=gKey();if(!key){if(prefs.ckey)return cloudSynth(text,voice,'');throw{code:'no_key',fatal:true}}
   if(ttsIdx>=TTS_MODELS.length&&Date.now()-ttsExhaustedAt>90000)ttsIdx=0;
   let lastErr=null;
   for(let mi=ttsIdx;mi<TTS_MODELS.length;mi++){
@@ -937,7 +938,7 @@ async function synth(text,voice){
   if(lastErr)ttsLastErr=lastErr;const err=Object.assign({},lastErr||ttsLastErr||{code:'tts_failed',message:'잠시 뒤 다시'});err.fatal=err.code==='rate_limited';throw err;
 }
 async function cloudSynth(text,voice,key){
-  const r=await fetch('https://texttospeech.googleapis.com/v1/text:synthesize',{method:'POST',headers:{'content-type':'application/json','x-goog-api-key':key},
+  const r=await fetch('https://texttospeech.googleapis.com/v1/text:synthesize',{method:'POST',headers:{'content-type':'application/json','x-goog-api-key':prefs.ckey||key},
     body:JSON.stringify({input:{text},voice:{languageCode:'ko-KR',name:'ko-KR-Chirp3-HD-'+voice},audioConfig:{audioEncoding:'MP3',speakingRate:1.0}})});
   if(!r.ok)throw{code:'cloud'};const j=await r.json();if(!j.audioContent)throw{code:'cloud'};return b64ToU8(j.audioContent).buffer;
 }
@@ -945,7 +946,7 @@ function errCopy(e){
   if(!e)return'';
   if(e.code==='no_key')return'제미나이 키가 없어요.';
   if(e.code==='bad_key')return'제미나이 키가 맞지 않아요. 키를 다시 확인해 주세요.';
-  if(e.code==='rate_limited')return'제미나이 목소리 한도에 잠시 걸렸어요. 조금 뒤 다시 열면 이어서 받아 와요.';
+  if(e.code==='rate_limited'){ckeyRow.hidden=!!prefs.ckey;return prefs.ckey?'제미나이 한도가 차서 클라우드 목소리로도 시도했는데 안 됐어요. 클라우드 키를 확인해 주세요.':'제미나이 오늘 한도가 찼어요. 아래 칸에 클라우드 목소리 키를 한 번 넣으면 바로 이어서 나와요.'}
   if(e.code==='network')return e.message;
   return'목소리를 받아 오지 못했어요. ('+(e.message||e.code)+')';
 }
@@ -963,7 +964,7 @@ AU.onended=()=>{NARR.state='done'};
 function stopNarr(){try{AU.pause()}catch(e){}NARR={beat:-1,state:'idle'}}
 function startNarr(i){
   stopNarr();
-  if(!READ||!gKey()){NARR={beat:i,state:'done'};return}
+  if(!READ||!anyKey()){NARR={beat:i,state:'done'};return}
   const text=sayOf(SC[i]),k=ckey(prefs.gv,text),me={beat:i,state:'wait',since:performance.now(),k};NARR=me;
   ensure(text).then(buf=>{
     if(NARR!==me)return;
@@ -977,11 +978,11 @@ let PF=0;
 function readyCount(){const ts=[...new Set(SC.map(sayOf))];return[ts.filter(t=>{const e=CLIP[ckey(prefs.gv,t)];return e&&e.state==='ready'}).length,ts.length]}
 function showReady(){
   if(!READ){setV('목소리를 껐어요. 자막으로 봐요.');return}
-  if(!gKey()){setV(!ONSITE?'목소리는 하준이 사이트 버전에서 나와요.':(ANDROID&&!INCHROME)?'이 브라우저에는 영어 도장 키가 없어요. 크롬으로 열면 목소리가 나와요.':'이 크롬에서 영어 도장 키를 못 찾았어요. 영어 도장이 열리는 크롬인지 확인하거나, 키를 붙여 넣어 주세요.');return}
+  if(!anyKey()){setV(!ONSITE?'목소리는 하준이 사이트 버전에서 나와요.':(ANDROID&&!INCHROME)?'이 브라우저에는 영어 도장 키가 없어요. 크롬으로 열면 목소리가 나와요.':'이 크롬에서 영어 도장 키를 못 찾았어요. 영어 도장이 열리는 크롬인지 확인하거나, 키를 붙여 넣어 주세요.');return}
   const [n,t]=readyCount();setV(n>=t?'목소리 준비 끝 · 바로 나와요':`목소리 받아 두는 중 ${n} / ${t} · 처음 한 번만 해요`);
 }
 async function prefetch(){
-  const my=++PF;keyUI();showReady();if(!READ||!gKey())return;
+  const my=++PF;keyUI();showReady();if(!READ||!anyKey())return;
   const s=Math.max(0,cur),order=[...new Set([...SC.slice(s),...SC.slice(0,s)].map(sayOf))];
   for(const t of order){
     if(my!==PF)return;
@@ -995,6 +996,8 @@ gvSel.value=GVOICES.some(g=>g[0]===prefs.gv)?prefs.gv:'Leda';
 gvSel.onchange=()=>{prefs.gv=gvSel.value;savePrefs();if(PLAY&&cur>=0)startNarr(cur);prefetch()};
 function takeKey(){const m=keyIn.value.match(/AIza[0-9A-Za-z_\-]{30,}/);if(!m)return;prefs.gkey=m[0];savePrefs();keyIn.value='';setV('키를 저장했어요. 이 기기에서도 목소리가 나와요.');setTimeout(prefetch,600)}
 keyIn.oninput=takeKey;keyIn.onchange=takeKey;
+const ckeyRow=document.getElementById('ckey');function takeCKey(){const m=ckeyRow.value.match(/AIza[0-9A-Za-z_\-]{30,}/);if(!m)return;prefs.ckey=m[0];savePrefs();ckeyRow.value='';ckeyRow.hidden=true;ttsIdx=TTS_MODELS.length;ttsExhaustedAt=Date.now();setV('클라우드 목소리 키를 저장했어요. 이어서 받아 와요.');setTimeout(prefetch,600)}
+ckeyRow.oninput=takeCKey;ckeyRow.onchange=takeCKey;
 
 /* ---------- 자막 ---------- */
 const whoEl=document.getElementById('who'),lineEl=document.getElementById('line');
