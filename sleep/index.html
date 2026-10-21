@@ -107,6 +107,10 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
 .elpanel { border: 1px solid var(--line); border-radius: 12px; background: var(--ink); padding: 14px; display: flex; flex-direction: column; gap: 14px; }
 .vbtns { display: flex; gap: 6px; flex: none; }
 .chosen { color: var(--lamp); border-color: var(--lamp); font-weight: 600; }
+.voiceok { margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--ink); }
+.voiceok b { color: var(--lamp); }
+.adv summary { cursor: pointer; color: var(--dusk); font-size: 14px; padding: 4px 0; }
+.advbody { margin-top: 12px; }
 .bank { display: flex; flex-direction: column; gap: 8px; }
 .install { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; margin-top: 6px; }
 .installbtn { border-color: var(--lamp); color: var(--lamp); font-weight: 600; }
@@ -175,6 +179,10 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
 
   <section class="settings" aria-labelledby="set-h">
     <h2 id="set-h">목소리와 소리</h2>
+    <p class="voiceok">목소리: <b>성우 녹음</b> · 서버에 저장돼 있어서 키 없이 바로 나와요. 크롬 기록을 지워도 그대로예요.</p>
+    <details class="adv">
+    <summary>고급: 다른 목소리로 바꾸기</summary>
+    <div class="settings advbody">
     <p class="hint" id="keyState"></p>
     <div class="field" id="keyField" hidden>
       <label class="fieldlabel" for="gkey">제미나이 API 키</label>
@@ -220,6 +228,8 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
         <input class="range" type="range" id="pitch" min="0.7" max="1.2" step="0.05">
       </div>
     </div>
+    </div>
+    </details>
     <div class="field">
       <div class="top"><label class="fieldlabel" for="vvol">목소리 크기</label><output id="vvolOut"></output></div>
       <input class="range" type="range" id="vvol" min="0.2" max="1" step="0.05">
@@ -228,7 +238,7 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
       <div class="top"><label class="fieldlabel" for="mvol">음악 크기</label><output id="mvolOut"></output></div>
       <input class="range" type="range" id="mvol" min="0" max="1" step="0.05">
     </div>
-    <div class="bank">
+    <div class="bank" hidden>
       <button class="ghost" id="bankBtn" type="button">목소리 전부 미리 받아 두기</button>
       <p class="hint" id="bankState"></p>
       <p class="hint">와이파이에서 한 번 눌러 두면 모든 세션의 목소리를 미리 받아 둬요. 그러면 처음 듣는 세션도 기다림 없이 바로 나오고, 인터넷이 없어도 들을 수 있어요. 안 눌러도 세션마다 처음 들을 때 저절로 받아 와요.</p>
