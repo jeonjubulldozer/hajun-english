@@ -1604,6 +1604,24 @@ function initSettings() {
   $('#bankBtn').addEventListener('click', toggleBank);
   refreshBankState();
 }
+
+/* ---------- 서버(깃허브)에 저장된 성우 녹음: 브라우저 기록을 지워도 안 사라져요 ---------- */
+let STATIC = null;
+async function loadStatic() {
+  if (STATIC) return STATIC;
+  try { const r = await fetch('audio/manifest.json', { cache: 'no-cache' }); if (r.ok) { const j = await r.json(); STATIC = new Set(j.files || []); } } catch (e) {}
+  if (!STATIC) STATIC = new Set();
+  return STATIC;
+}
+function fnv(str) { let h = 0x811c9dc5; for (const ch of new TextEncoder().encode(str)) { h ^= ch; h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); }
+function staticName(lang, text) { return fnv((lang === 'en' ? 'en' : 'ko') + '|' + text); }
+async function staticClip(lang, text) {
+  const set = await loadStatic(); const n = staticName(lang, text);
+  if (!set.has(n)) return null;
+  try { const r = await fetch('audio/' + n + '.mp3'); if (r.ok) return await r.arrayBuffer(); } catch (e) {}
+  return null;
+}
+
 /* ---------- 일레븐랩스 성우 목소리 ---------- */
 const EL_API = 'https://api.elevenlabs.io';
 const EL_MODELS = { eleven_v4: 'v4 · 가장 자연스러움', eleven_multilingual_v2: 'v2 · 안정적, 조금 천천히' };
@@ -1822,7 +1840,8 @@ async function refreshBankState() {
   if (bankRun) return;
   const keys = new Set(await IDB.keys());
   const lines = bankLines();
-  const left = lines.filter(l => !keys.has(l.k));
+  const st = await loadStatic();
+  const left = lines.filter(l => !keys.has(l.k) && !st.has(staticName(langOfTier(l.tier), l.say)));
   const have = lines.length - left.length;
   const elChars = left.filter(l => isEl(l.v)).reduce((a, l) => a + l.say.length, 0);
   el.textContent = `이 목소리로 받아 둔 문장 ${have} / ${lines.length}` + (!left.length ? ' · 전부 준비됐어요. 인터넷 없이도 들을 수 있어요.' : ' · 안 받아 둔 세션은 처음 들을 때 저절로 받아 와요.') + (elChars ? ` 남은 걸 다 받으면 일레븐랩스 크레딧이 약 ${elChars.toLocaleString()} 들어요.` : '');
@@ -1833,7 +1852,8 @@ async function toggleBank() {
   const me = bankRun = { stop: false };
   const btn = $('#bankBtn'); btn.textContent = '그만 받기'; hint('');
   const keys = new Set(await IDB.keys());
-  const todo = bankLines().filter(l => !keys.has(l.k));
+  const st = await loadStatic();
+  const todo = bankLines().filter(l => !keys.has(l.k) && !st.has(staticName(langOfTier(l.tier), l.say)));
   let n = 0;
   for (const l of todo) {
     if (me.stop) break;
@@ -1849,7 +1869,7 @@ async function toggleBank() {
 function setNote(t) { const el = $('#pNote'); if (el) el.textContent = t; }
 function startPrefetch(run, items) {
   run.clips = new Map();
-  const v = run.voice = voiceFor(run.s.lang); if (v === 'phone') return;
+  const v = run.voice = voiceFor(run.s.lang);
   const order = [];
   items.forEach((it) => {
     const k = clipKey(v, it.tier, it.say);
@@ -1863,7 +1883,9 @@ function startPrefetch(run, items) {
     for (const [k, it] of order) {
       const ent = run.clips.get(k);
       if (run.stopped) { ent.resolve(null); continue; }
-      let buf = cached.has(k) ? await IDB.get(k) : null;
+      let buf = await staticClip(run.s.lang, it.say);
+      if (!buf && v === 'phone') { ent.resolve(null); continue; }
+      if (!buf) buf = cached.has(k) ? await IDB.get(k) : null;
       if (!buf && isEl(v) && run.elFailed) {   // 일레븐랩스가 막히면 제미나이 목소리로 이어서
         const bk = clipKey(backup, it.tier, it.say);
         buf = await IDB.get(bk);
@@ -1903,7 +1925,7 @@ async function playClip(run, buf, prog) {
 }
 async function say(run, item, prog) {
   const v = run.voice;
-  if (v && v !== 'phone' && run.clips) {
+  if (run.clips) {
     const ent = run.clips.get(clipKey(v, item.tier, item.say));
     const buf = ent ? await ent.p : null;
     if (run.stopped) return;
