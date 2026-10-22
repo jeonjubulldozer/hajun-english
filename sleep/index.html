@@ -149,6 +149,11 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
 .pctl { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
 .btnrow { display: flex; gap: 10px; }
 .btnrow button { flex: 1; }
+.seek input { width: 100%; }
+.seekt { display: flex; justify-content: space-between; font-size: 12px; color: var(--dusk); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.pchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pchips .chip { font-size: 13px; padding: 6px 10px; }
+#pPrevPh, #pRe, #pNextPh { font-size: 14px; padding: 10px 6px; }
 .pbtn { border: 1px solid var(--line); background: var(--ink); border-radius: 12px; padding: 12px; cursor: pointer; font-weight: 500; }
 .pbtn.main { background: var(--moon); color: var(--night); border-color: var(--moon); }
 .wl { font-size: 12.5px; color: var(--dusk); text-align: center; margin: 0; }
@@ -269,6 +274,16 @@ input.text { width: 100%; background: var(--night); color: var(--moon); border: 
   <div class="ui" id="pBottom">
     <div class="clock" id="pClock"></div>
     <div class="pctl" id="pCtl">
+      <div class="seek">
+        <input type="range" id="pSeek" min="0" max="1000" step="1" value="0" aria-label="재생 위치">
+        <div class="seekt"><span id="pPos">0:00</span><span id="pDur">0:00</span></div>
+      </div>
+      <div class="btnrow">
+        <button class="pbtn" id="pPrevPh" type="button">이전 단계</button>
+        <button class="pbtn" id="pRe" type="button">한 문장 뒤로</button>
+        <button class="pbtn" id="pNextPh" type="button">다음 단계</button>
+      </div>
+      <div class="chips pchips" id="pChips" role="group" aria-label="단계로 바로 가기"></div>
       <div class="btnrow">
         <button class="pbtn main" id="pPause" type="button">일시정지</button>
         <button class="pbtn" id="pStop" type="button">끝내기</button>
@@ -2464,6 +2479,7 @@ async function playClip(run, buf, prog) {
   const g = E.ctx.createGain(); g.gain.value = clamp(prefs.voiceVol * (1 - (run.s.awake ? 0.05 : 0.3) * prog), 0.05, 1) * 1.15;
   src.connect(g); g.connect(E.voice);
   const ended = new Promise(r => { src.onended = r; });
+  run.src = src;
   src.start();
   await Promise.race([ended, run.wait(ab.duration + 1.5)]);
 }
@@ -2474,8 +2490,9 @@ async function say(run, item, prog) {
     const buf = ent ? await ent.p : null;
     if (run.stopped) return;
     if (buf) {
+      const sg = run.seekGen;
       await run.waitFor(() => !run.paused);
-      if (run.stopped) return;
+      if (run.stopped || run.seekGen !== sg) return;
       showSub(item.say);
       await playClip(run, buf, prog);
       fadeSub();
@@ -2955,13 +2972,14 @@ class Run {
     this.stopped = false; this.paused = false; this.pauseGen = 0;
     this.active = 0; this.last = performance.now();
     this.phase = ''; this.ended = false;
+    this.seekGen = 0; this.target = null; this.cur = 0; this.src = null;
   }
   elapsed() { return this.active + (this.paused ? 0 : (performance.now() - this.last) / 1000); }
   wait(sec) {
     return new Promise((res) => {
-      const end = this.elapsed() + sec;
+      const end = this.elapsed() + sec, sg = this.seekGen;
       const tick = () => {
-        if (this.stopped) return res();
+        if (this.stopped || this.seekGen !== sg) return res();
         const left = end - this.elapsed();
         if (left <= 0) return res();
         setTimeout(tick, Math.min(400, Math.max(30, left * 1000)));
@@ -2969,7 +2987,7 @@ class Run {
       tick();
     });
   }
-  async waitFor(fn) { while (!this.stopped && !fn()) await this.wait(0.4); }
+  async waitFor(fn) { const sg = this.seekGen; while (!this.stopped && this.seekGen === sg && !fn()) await this.wait(0.4); }
   grow(prog) { return 1 + (this.s.grow - 1) * Math.pow(prog, 1.5); }
 }
 
@@ -3017,15 +3035,15 @@ function speakChunk(run, text, prog) {
   });
 }
 async function sayPhone(run, text, prog) {
-  const chunks = splitChunks(text);
+  const chunks = splitChunks(text), sg = run.seekGen;
   for (let i = 0; i < chunks.length; i++) {
     for (;;) {
       await run.waitFor(() => !run.paused);
-      if (run.stopped) return;
+      if (run.stopped || run.seekGen !== sg) return;
       const gen = run.pauseGen;
       showSub(chunks[i]);
       await speakChunk(run, chunks[i], prog);
-      if (run.stopped) return;
+      if (run.stopped || run.seekGen !== sg) return;
       if (run.pauseGen === gen) break;
     }
     if (i < chunks.length - 1) await run.wait(0.7 + 0.9 * prog);
@@ -3033,71 +3051,193 @@ async function sayPhone(run, text, prog) {
   fadeSub();
 }
 
+function estPlan(run, plan) {
+  const s = run.s, N = Math.max(1, plan.length - 1);
+  const cps = prefs.gvoice !== 'phone' ? (s.lang === 'en' ? 9 : 4.8) : 7.5 * prefs.rate;
+  const est = [s.narr ? LEAD : 2];
+  plan.forEach((x, i) => {
+    let d = 0;
+    if (x.say) {
+      d = x.say.length / cps + 0.9 * (splitChunks(x.say).length - 1) + 0.4;
+      let p = x.fix ? x.p : x.p * run.scale * run.grow(i / N);
+      if (!x.fix) p = Math.min(p, 45 + 50 * (i / N));
+      d += p;
+    }
+    est.push(est[i] + d);
+  });
+  return est;
+}
+function phaseAt(plan, idx) { for (let i = Math.min(idx, plan.length - 1); i >= 0; i--) if (plan[i].ph) return plan[i].ph; return ''; }
 async function runSession(run) {
   const s = run.s, T = run.T, Tsec = T * 60;
   const plan = buildPlan(s, T);
   run.scale = planScale(run, plan);
+  run.plan = plan; run.est = estPlan(run, plan);
+  const deadline = s.end === 'wake' ? Tsec - 60 : (T && !s.awake ? Tsec - 45 : Infinity);
+  run.narrEnd = Math.min(run.est[plan.length], deadline === Infinity ? Infinity : deadline);
+  buildChips(run);
   setNote('');
   startPrefetch(run, plan.filter(x => x.say).concat((s.wake || []).filter(Array.isArray).map(st => ({ say: st[0], tier: 'wake' }))));
   const N = Math.max(1, plan.length - 1);
-  const deadline = s.end === 'wake' ? Tsec - 60 : (T && !s.awake ? Tsec - 45 : Infinity);
   setPhase(run, plan.length && plan[0].ph ? plan[0].ph : '');
+  let i = 0;
+  const jumped = () => { if (run.target == null) return false; i = run.target; run.target = null; return true; };
   await run.wait(s.narr ? LEAD : 2);
-  for (let i = 0; i < plan.length; i++) {
+  for (;;) {
     if (run.stopped) return;
-    if (run.elapsed() >= deadline) break;
-    const it = plan[i], prog = i / N;
-    if (it.ph) { setPhase(run, it.ph); continue; }
-    await say(run, it, prog);
-    if (run.stopped) return;
-    let p = it.fix ? it.p : it.p * run.scale * run.grow(prog);
-    if (!it.fix) p = Math.min(p, 45 + 50 * prog);
-    p = Math.min(p, Math.max(0, deadline - run.elapsed()));
-    if (p > 0) await run.wait(p);
-  }
-  if (run.stopped) return;
-  setPhase(run, s.end === 'wake' ? '쉬는 중' : (s.narr ? '음악만' : soundLabel(run.music, run.nature)));
-  fadeSub(true);
-
-  if (s.end === 'wake') {
-    await run.waitFor(() => run.elapsed() >= Tsec - 55);
-    if (run.stopped) return;
-    setPhase(run, '깨어나기');
-    for (const st of s.wake) {
+    jumped();
+    while (i < plan.length) {
       if (run.stopped) return;
-      if (!Array.isArray(st)) { run.engine.bowl(0.32); await run.wait(st.chime); continue; }
-      await say(run, { say: st[0], tier: 'wake' }, 0);
-      await run.wait(st[1]);
+      if (jumped()) continue;
+      if (run.elapsed() >= deadline) break;
+      const it = plan[i], prog = i / N;
+      if (it.ph) { setPhase(run, it.ph); i++; continue; }
+      run.cur = i; run.sayStart = run.elapsed();
+      await say(run, it, prog);
+      if (run.stopped) return;
+      if (jumped()) continue;
+      let p = it.fix ? it.p : it.p * run.scale * run.grow(prog);
+      if (!it.fix) p = Math.min(p, 45 + 50 * prog);
+      p = Math.min(p, Math.max(0, deadline - run.elapsed()));
+      if (p > 0) await run.wait(p);
+      if (run.stopped) return;
+      if (jumped()) continue;
+      i++;
     }
+    if (run.stopped) return;
+    run.cur = plan.length;
+    setPhase(run, s.end === 'wake' ? '쉬는 중' : (s.narr ? '음악만' : soundLabel(run.music, run.nature)));
     fadeSub(true);
-    run.engine.fadeOut(25);
-    await run.wait(26);
-    finish(run, '개운한 오후 보내세요.');
+
+    if (s.end === 'wake') {
+      await run.waitFor(() => run.elapsed() >= Tsec - 55);
+      if (run.stopped) return;
+      if (run.target != null) continue;
+      setPhase(run, '깨어나기');
+      for (const st of s.wake) {
+        if (run.stopped || run.target != null) break;
+        if (!Array.isArray(st)) { run.engine.bowl(0.32); await run.wait(st.chime); continue; }
+        await say(run, { say: st[0], tier: 'wake' }, 0);
+        await run.wait(st[1]);
+      }
+      if (run.stopped) return;
+      if (run.target != null) continue;
+      fadeSub(true);
+      run.engine.fadeOut(25);
+      await run.wait(26);
+      if (run.stopped) return;
+      if (run.target != null) continue;
+      finish(run, '개운한 오후 보내세요.');
+      return;
+    }
+
+    const fadeLen = () => clamp(Tsec - run.elapsed(), 20, 150);
+    let fl = 150;
+    await run.waitFor(() => {
+      if (!T || prefs.keep) return false;
+      fl = fadeLen();
+      return run.elapsed() >= Tsec - fl;
+    });
+    if (run.stopped) return;
+    if (run.target != null) continue;
+    run.engine.fadeOut(fl);
+    setPhase(run, '천천히 꺼지는 중');
+    await run.waitFor(() => run.elapsed() >= Tsec || prefs.keep);
+    if (run.stopped) return;
+    if (run.target != null) continue;
+    if (prefs.keep) {
+      run.engine.fadeIn(6); setPhase(run, '음악만');
+      await run.waitFor(() => !prefs.keep);
+      if (run.stopped) return;
+      if (run.target != null) continue;
+      run.engine.fadeOut(60);
+      setPhase(run, '천천히 꺼지는 중');
+      await run.wait(61);
+      if (run.stopped) return;
+      if (run.target != null) continue;
+    }
+    finish(run, run.s.doneMsg || '푹 쉬셨어요.');
     return;
   }
-
-  const fadeLen = () => clamp(Tsec - run.elapsed(), 20, 150);
-  let fl = 150;
-  await run.waitFor(() => {
-    if (!T || prefs.keep) return false;
-    fl = fadeLen();
-    return run.elapsed() >= Tsec - fl;
-  });
-  if (run.stopped) return;
-  run.engine.fadeOut(fl);
-  setPhase(run, '천천히 꺼지는 중');
-  await run.waitFor(() => run.elapsed() >= Tsec || prefs.keep);
-  if (run.stopped) return;
-  if (prefs.keep) { run.engine.fadeIn(6); setPhase(run, '음악만'); return runTailKeep(run); }
-  finish(run, run.s.doneMsg || '푹 쉬셨어요.');
 }
-async function runTailKeep(run) {
-  await run.waitFor(() => !prefs.keep);
-  if (run.stopped) return;
-  run.engine.fadeOut(60);
-  setPhase(run, '천천히 꺼지는 중');
-  await run.wait(61);
-  if (!run.stopped) finish(run, run.s.doneMsg || '푹 쉬셨어요.');
+
+/* ---------- 구간 이동 ---------- */
+function seekTo(idx) {
+  const run = R;
+  if (!run || run.ended || run.stopped || !run.plan) return;
+  const plan = run.plan;
+  idx = clamp(idx, 0, plan.length);
+  run.target = idx; run.seekGen++;
+  const t = run.est[idx];
+  if (run.paused) run.active = t; else { run.active = t; run.last = performance.now(); }
+  if (run.src) { try { run.src.stop(); } catch (e) {} run.src = null; }
+  if (TTS) { try { speechSynthesis.cancel(); } catch (e) {} }
+  if (run.engine) run.engine.fadeIn(2);
+  fadeSub(true);
+  setPhase(run, idx >= plan.length ? (run.s.narr ? '음악만' : '') : phaseAt(plan, idx));
+  updateClock(); updateSeek(); wake();
+}
+function sayIdx(plan, from, dir) { for (let i = from; i >= 0 && i < plan.length; i += dir) if (plan[i].say) return i; return -1; }
+function seekPhase(dir) {
+  const run = R; if (!run || !run.plan) return;
+  const plan = run.plan, here = Math.min(run.cur, plan.length);
+  const heads = []; plan.forEach((x, i) => { if (x.ph) heads.push(i); });
+  if (!heads.length || heads[0] !== 0) heads.unshift(0);
+  let k = 0; heads.forEach((h, j) => { if (h <= here) k = j; });
+  if (dir < 0) {
+    // 단계 시작한 지 얼마 안 됐으면 그 앞 단계로, 아니면 이 단계 처음으로
+    const into = run.elapsed() - run.est[heads[k]];
+    if (into < 8 && k > 0) k--;
+    seekTo(heads[k]);
+  } else {
+    if (k + 1 < heads.length) seekTo(heads[k + 1]); else seekTo(plan.length);
+  }
+}
+function seekSentence() {
+  const run = R; if (!run || !run.plan) return;
+  let i = Math.min(run.cur, run.plan.length - 1);
+  if (run.elapsed() - (run.sayStart || 0) < 3) i = sayIdx(run.plan, i - 1, -1);
+  else i = sayIdx(run.plan, i, -1);
+  seekTo(Math.max(0, i));
+}
+let seeking = false;
+function updateSeek() {
+  const run = R, el = $('#pSeek');
+  if (!run || !run.plan || !el) return;
+  const total = run.narrEnd, e = Math.min(run.elapsed(), total);
+  if (!seeking) el.value = String(Math.round(1000 * e / total));
+  $('#pPos').textContent = fmt(seeking ? total * el.value / 1000 : e);
+  $('#pDur').textContent = fmt(total);
+  const ph = run.phase;
+  document.querySelectorAll('#pChips .chip').forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.ph === ph)));
+}
+function buildChips(run) {
+  const box = $('#pChips'); box.innerHTML = '';
+  run.plan.forEach((x, i) => {
+    if (!x.ph) return;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = x.ph; b.dataset.ph = x.ph;
+    b.addEventListener('click', () => seekTo(i));
+    box.appendChild(b);
+  });
+  box.hidden = !box.children.length;
+  updateSeek();
+}
+function initSeek() {
+  const el = $('#pSeek');
+  el.addEventListener('input', () => { seeking = true; updateSeek(); wake(); });
+  el.addEventListener('change', () => {
+    seeking = false;
+    const run = R; if (!run || !run.plan) return;
+    const want = run.narrEnd * el.value / 1000;
+    let idx = 0;
+    for (let i = 0; i <= run.plan.length; i++) { if (run.est[i] <= want + 0.5) idx = i; else break; }
+    if (idx < run.plan.length && !run.plan[idx].say) { const n = sayIdx(run.plan, idx, 1); if (n >= 0) idx = n; }
+    seekTo(idx);
+  });
+  $('#pPrevPh').addEventListener('click', () => seekPhase(-1));
+  $('#pNextPh').addEventListener('click', () => seekPhase(1));
+  $('#pRe').addEventListener('click', seekSentence);
 }
 
 /* ---------- 플레이어 화면 ---------- */
@@ -3116,6 +3256,7 @@ function updateClock() {
   } else {
     el.innerHTML = fmt(R.T * 60 - e) + '<small>' + (R.s.end === 'wake' ? '깨워 드릴 때까지' : '남은 시간') + '</small>';
   }
+  updateSeek();
   const prog = R.T ? clamp(e / (R.T * 60), 0, 1) : clamp(e / 3600, 0, 1);
   $('#orb').style.setProperty('--glow', String(0.85 - 0.62 * prog));
 }
@@ -3162,6 +3303,7 @@ function startSession(s, T, music, nature) {
   syncRanges();
   const p = $('#player'); p.hidden = false; p.classList.remove('paused');
   document.body.style.overflow = 'hidden';
+  try { if (!(history.state && history.state.bam === 'player')) history.pushState({ bam: 'player' }, ''); } catch (e) {}
   lockScreen();
   wake();
   clearInterval(uiTimer); uiTimer = setInterval(updateClock, 1000); updateClock();
@@ -3221,8 +3363,10 @@ function initPlayer() {
   }, true);
   p.addEventListener('keydown', wake);
   $('#pPause').addEventListener('click', togglePause);
-  $('#pStop').addEventListener('click', closePlayer);
-  $('#pBack').addEventListener('click', closePlayer);
+  $('#pStop').addEventListener('click', () => closePlayer());
+  $('#pBack').addEventListener('click', () => closePlayer());
+  window.addEventListener('popstate', () => { if (!$('#player').hidden) closePlayer(); });
+  initSeek();
   $('#pSubs').addEventListener('change', (e) => { prefs.subs = e.target.checked; savePrefs(); if (!prefs.subs && TTS) $('#sub').textContent = ''; });
   $('#pKeep').addEventListener('change', (e) => { prefs.keep = e.target.checked; savePrefs(); updateClock(); });
 }
