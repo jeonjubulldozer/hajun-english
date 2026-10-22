@@ -1080,7 +1080,8 @@ async function prefetch(){
   }
 }
 function keyUI(){
-  keyIn.hidden=prefs.source!=='gemini'||!!gKey();ckeyRow.hidden=prefs.source!=='cloud'||!!prefs.ckey;
+  if(!gKey()&&prefs.ckey&&prefs.source!=='cloud'){prefs.source='cloud';savePrefs();if(typeof sourceSel!=='undefined')sourceSel.value='cloud'}
+  keyIn.hidden=prefs.source!=='gemini'||!!gKey();ckeyRow.hidden=!!prefs.ckey||(prefs.source!=='cloud'&&!!gKey());
   const toChrome=ONSITE&&ANDROID&&!INCHROME&&!voiceKey(voiceProfile());siteLink.hidden=!toChrome;
   if(toChrome){siteLink.textContent='크롬으로 열기 ↗';siteLink.href='intent://'+location.host+location.pathname+'#Intent;scheme=https;package=com.android.chrome;end';siteLink.removeAttribute('target')}
 }
@@ -1093,7 +1094,7 @@ function changeVoice(){
 gvSel.onchange=changeVoice;sourceSel.onchange=changeVoice;
 function takeKey(input,name){
   const m=input.value.match(/AIza[0-9A-Za-z_\-]{30,}/);if(!m)return;
-  prefs[name]=m[0];savePrefs();input.value='';keyUI();setV('키를 저장했어요. 고른 목소리로 준비할게요.');prefetch();
+  prefs[name]=m[0];if(name==='ckey'&&!gKey()){prefs.source='cloud';sourceSel.value='cloud'}savePrefs();input.value='';keyUI();setV('키를 저장했어요. 고른 목소리로 준비할게요.');prefetch();
 }
 keyIn.oninput=keyIn.onchange=()=>takeKey(keyIn,'gkey');
 ckeyRow.oninput=ckeyRow.onchange=()=>takeKey(ckeyRow,'ckey');
