@@ -2476,7 +2476,7 @@ async function playClip(run, buf, prog) {
   try { ab = await E.ctx.decodeAudioData(buf.slice(0)); } catch (e) { return; }
   if (run.stopped) return;
   const src = E.ctx.createBufferSource(); src.buffer = ab;
-  const g = E.ctx.createGain(); g.gain.value = clamp(prefs.voiceVol * (1 - (run.s.awake ? 0.05 : 0.3) * prog), 0.05, 1) * 1.15;
+  const g = E.ctx.createGain(); g.gain.value = clamp(prefs.voiceVol * (1 - (run.s.awake ? 0.05 : 0.3) * prog), 0.05, 1);
   src.connect(g); g.connect(E.voice);
   const ended = new Promise(r => { src.onended = r; });
   run.src = src;
@@ -2533,15 +2533,17 @@ const MELODIES = [
 class Engine {
   constructor() {
     const AC = window.AudioContext || window.webkitAudioContext;
-    this.ctx = new AC();
+    try { this.ctx = new AC({ latencyHint: 'playback' }); } catch (e) { this.ctx = new AC(); }
     const ctx = this.ctx;
     this.out = ctx.createDynamicsCompressor();
     this.out.threshold.value = -18; this.out.ratio.value = 3; this.out.attack.value = 0.05; this.out.release.value = 0.5;
-    this.out.connect(ctx.destination);
+    this.limit = ctx.createDynamicsCompressor();
+    try { const L = this.limit; L.threshold.value = -3; L.knee.value = 0; L.ratio.value = 20; L.attack.value = 0.002; L.release.value = 0.1; } catch (e) {}
+    this.out.connect(this.limit); this.limit.connect(ctx.destination);
     this.master = ctx.createGain(); this.master.gain.value = 0; this.master.connect(this.out);
     this.voice = ctx.createGain(); this.voice.gain.value = 1; this.voice.connect(this.master);
     this.music = ctx.createGain(); this.music.gain.value = prefs.musicVol * prefs.musicVol * 1.6; this.music.connect(this.master);
-    this.reverb = ctx.createConvolver(); this.reverb.buffer = this.impulse(5, 2.4);
+    this.reverb = ctx.createConvolver(); this.reverb.buffer = this.impulse(3, 2.4);
     const wet = ctx.createGain(); wet.gain.value = 0.85; this.reverb.connect(wet); wet.connect(this.music);
     this.fx = ctx.createGain(); this.fx.gain.value = 1; this.fx.connect(this.master);
     this.bufs = {}; this.layers = []; this.timers = new Set();
