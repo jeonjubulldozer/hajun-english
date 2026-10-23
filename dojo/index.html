@@ -124,6 +124,7 @@ section h2{font-family:var(--display);font-weight:400;font-size:28px;line-height
     <span class="vstat" id="vstat" aria-live="polite"></span>
     <a class="btn" id="siteLink" href="https://jeonjubulldozer.github.io/hajun-english/dojo/" target="_blank" rel="noopener" hidden>목소리 나오는 버전 열기 ↗</a>
     <input id="gkey" type="password" autocomplete="off" placeholder="제미나이 키 붙여 넣기 (AIza…)" hidden>
+    <input id="elkey" type="password" autocomplete="off" placeholder="일레븐랩스 성우 키 붙여 넣기 (sk_…)" hidden>
     <input id="ckey" type="password" autocomplete="off" placeholder="클라우드 목소리 키 붙여 넣기 (insect-dojo-voice)" hidden>
   </div>
   <div class="voicebar" id="installRow" hidden>
@@ -140,7 +141,7 @@ section h2{font-family:var(--display);font-weight:400;font-size:28px;line-height
   </section>
 </div>
 
-<script src="./voice.js?v=natural4"></script>
+<script src="./voice.js?v=eleven1"></script>
 <script>
 (()=>{
 'use strict';
@@ -1025,9 +1026,16 @@ function dojoKey(){
 }
 const gKey=()=>(prefs.gkey||dojoKey()||'').trim();
 if(!DojoSpeech.VOICES.includes(prefs.gv))prefs.gv=DojoSpeech.DEFAULT_VOICE;
-if(!['gemini','cloud'].includes(prefs.source))prefs.source=prefs.ckey&&!gKey()?'cloud':'gemini';
-const voiceProfile=()=>DojoSpeech.profile(prefs.source,prefs.gv);
-const voiceKey=p=>p.source==='cloud'?String(prefs.ckey||'').trim():gKey();
+/* 일레븐랩스 성우: 밤의 쉼표에 넣어 둔 키와 고른 한국어 성우를 그대로 씀 */
+function swim(){try{return JSON.parse(localStorage.getItem('swim.prefs')||'{}')||{}}catch(e){return{}}}
+const elKey=()=>String(prefs.elkey||swim().elKey||'').trim();
+const elModel=()=>swim().elModel||DojoSpeech.EL_MODEL;
+let EL_VOICES=[];
+if(!prefs.elDefault2&&elKey()){prefs.source='eleven';prefs.elDefault2=1}
+if(!['gemini','cloud','eleven'].includes(prefs.source))prefs.source=elKey()?'eleven':prefs.ckey&&!gKey()?'cloud':'gemini';
+function elVoice(){const s=swim();return prefs.elv||(s.elKo&&s.elKo.id)||(EL_VOICES[0]&&EL_VOICES[0][0])||''}
+const voiceProfile=()=>prefs.source==='eleven'?DojoSpeech.profile('eleven',elVoice()||'none',elModel()):DojoSpeech.profile(prefs.source,prefs.gv);
+const voiceKey=p=>p.source==='eleven'?elKey():p.source==='cloud'?String(prefs.ckey||'').trim():gKey();
 const UA=navigator.userAgent,ANDROID=/Android/i.test(UA),INCHROME=/Chrome\//.test(UA)&&!/SamsungBrowser|; wv\)|EdgA|OPR|Whale|NAVER|KAKAOTALK|Instagram|FBAN/i.test(UA);
 const IDB=(()=>{const mem=new Map();let dbp=null;
   function db(){if(!dbp)dbp=new Promise(res=>{try{const r=indexedDB.open('insect-dojo',1);r.onupgradeneeded=()=>r.result.createObjectStore('clips');r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)}catch(e){res(null)}});return dbp}
@@ -1071,7 +1079,8 @@ function speakText(text,i,preview=false){
 const vstat=document.getElementById('vstat'),gvSel=document.getElementById('gv'),sourceSel=document.getElementById('voiceSource'),keyIn=document.getElementById('gkey'),ckeyRow=document.getElementById('ckey'),siteLink=document.getElementById('siteLink'),voiceRetry=document.getElementById('voiceRetry');
 const setV=t=>{vstat.textContent=t};
 function errCopy(e){
-  const source=(e.source||prefs.source)==='cloud'?'클라우드':'제미나이';
+  const src=e.source||prefs.source,source=src==='eleven'?'일레븐랩스 성우':src==='cloud'?'클라우드':'제미나이';
+  if(e.code==='el_quota')return '일레븐랩스 크레딧을 다 썼어요. 음성 방식을 제미나이나 클라우드로 바꿔 주세요.';
   if(e.code==='no_key')return `${source} 음성 키를 입력해 주세요. 목소리를 끄면 자막으로 볼 수 있어요.`;
   if(e.code==='bad_key')return `${source} 키와 이 음성을 사용할 수 있는지 확인해 주세요. 다른 목소리로 바꾸지 않고 기다릴게요.`;
   if(e.code==='rate_limited')return `${source} 음성 한도에 걸렸어요. 잠시 뒤 같은 목소리로 다시 시도해 주세요.`;
@@ -1086,7 +1095,7 @@ function showReady(){
   if(!READ){setV('목소리를 껐어요. 자막으로 봐요.');return}
   if(NARR.state==='error')return;
   const [n,t]=readyCount();
-  const selected=`${prefs.source==='cloud'?'클라우드':'제미나이'} · ${prefs.gv}`;
+  const selected=prefs.source==='eleven'?`성우 · ${(EL_VOICES.find(v=>v[0]===elVoice())||[0,(swim().elKo||{}).name||'일레븐랩스'])[1]}`:`${prefs.source==='cloud'?'클라우드':'제미나이'} · ${prefs.gv}`;
   setV(n>=t?`${selected} · 목소리 준비 끝`:`${selected} · 준비 중 ${n} / ${t}`);
 }
 async function prefetch(){
@@ -1099,14 +1108,30 @@ async function prefetch(){
   }
 }
 function keyUI(){
+  elIn.hidden=prefs.source!=='eleven'||!!elKey();
   keyIn.hidden=prefs.source!=='gemini'||!!gKey();ckeyRow.hidden=!!prefs.ckey||(prefs.source!=='cloud'&&!!gKey());
   const toChrome=ONSITE&&ANDROID&&!INCHROME&&!voiceKey(voiceProfile());siteLink.hidden=!toChrome;
   if(toChrome){siteLink.textContent='크롬으로 열기 ↗';siteLink.href='intent://'+location.host+location.pathname+'#Intent;scheme=https;package=com.android.chrome;end';siteLink.removeAttribute('target')}
 }
-GVOICES.forEach(([v,n])=>{const o=document.createElement('option');o.value=v;o.textContent=n;gvSel.appendChild(o)});
-gvSel.value=prefs.gv;sourceSel.value=prefs.source;
+const elIn=document.getElementById('elkey');
+{const o=document.createElement('option');o.value='eleven';o.textContent='성우 목소리 · 일레븐랩스';sourceSel.insertBefore(o,sourceSel.firstChild)}
+function fillVoices(){
+  gvSel.innerHTML='';
+  const list=prefs.source==='eleven'?(EL_VOICES.length?EL_VOICES:[[elVoice()||'none',(swim().elKo||{}).name||'밤의 쉼표에서 고른 성우']]):GVOICES;
+  list.forEach(([v,n])=>{const o=document.createElement('option');o.value=v;o.textContent=n;gvSel.appendChild(o)});
+  gvSel.value=prefs.source==='eleven'?elVoice():prefs.gv;
+}
+async function loadElVoices(){
+  const k=elKey();if(!k)return;
+  try{const r=await fetch('https://api.elevenlabs.io/v1/voices',{headers:{'xi-api-key':k}});if(!r.ok)return;const j=await r.json();
+    const ko=v=>/korean|ko\b|한국/i.test(JSON.stringify(v.labels||{})+(v.name||'')+(v.description||'')),fav=(swim().elKo||{}).id;
+    EL_VOICES=(j.voices||[]).sort((a,b)=>(b.voice_id===fav)-(a.voice_id===fav)||ko(b)-ko(a)).map(v=>[v.voice_id,v.name+(ko(v)?' · 한국어':'')]);
+    if(prefs.source==='eleven'){fillVoices();showReady()}
+  }catch(e){}
+}
+fillVoices();sourceSel.value=prefs.source;loadElVoices();
 function changeVoice(){
-  const i=beatAt(gT);++PF;stopNarr();prefs.gv=gvSel.value;prefs.source=sourceSel.value;savePrefs();
+  const i=beatAt(gT);++PF;stopNarr();const was=prefs.source;prefs.source=sourceSel.value;if(was!==prefs.source)fillVoices();else if(prefs.source==='eleven')prefs.elv=gvSel.value;else prefs.gv=gvSel.value;savePrefs();
   jump(SC[i].start);voiceRetry.hidden=true;prefetch();
 }
 gvSel.onchange=changeVoice;sourceSel.onchange=changeVoice;
@@ -1115,6 +1140,7 @@ function takeKey(input,name){
   prefs[name]=m[0];savePrefs();input.value='';keyUI();setV('키를 저장했어요. 고른 목소리로 준비할게요.');prefetch();
 }
 keyIn.oninput=keyIn.onchange=()=>takeKey(keyIn,'gkey');
+elIn.oninput=elIn.onchange=()=>{const m=elIn.value.match(/sk_[0-9A-Za-z]{20,}/);if(!m)return;prefs.elkey=m[0];prefs.source='eleven';sourceSel.value='eleven';savePrefs();elIn.value='';keyUI();setV('성우 키를 저장했어요.');loadElVoices().then(()=>{fillVoices();prefetch()})};
 ckeyRow.oninput=ckeyRow.onchange=()=>takeKey(ckeyRow,'ckey');
 voiceRetry.onclick=()=>{const i=beatAt(gT);jump(SC[i].start);voiceRetry.hidden=true;play();render();prefetch()};
 document.getElementById('voicePreview').onclick=()=>{

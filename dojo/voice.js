@@ -18,7 +18,9 @@
     if(!VOICES.includes(next.gv))next.gv=DEFAULT_VOICE;
     return next;
   }
-  function profile(source,voice){
+  const EL_MODEL='eleven_v4';
+  function profile(source,voice,model){
+    if(source==='eleven'){if(!voice)throw new Error('Unknown voice profile');return Object.freeze({version:VERSION,source,model:model||EL_MODEL,voice,rate:1})}
     if(!['gemini','cloud'].includes(source)||!VOICES.includes(voice))throw new Error('Unknown voice profile');
     return Object.freeze({version:VERSION,source,model:source==='gemini'?MODEL:'chirp3-hd',voice,style:STYLE,rate:1});
   }
@@ -29,6 +31,7 @@
   // lets the provider produce each whole scene with its own prosody.
   function transcript(text){return text.trim().replace(/\r\n?/g,'\n').replace(/[ \t]*\n[ \t]*/g,'\n').replace(/\n{3,}/g,'\n\n').replace(/([^\n])\n(?!\n)/g,'$1 ')}
   function requestSpec(p,text){
+    if(p.source==='eleven')return{url:`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(p.voice)}?output_format=mp3_44100_128`,body:{text:transcript(text),model_id:p.model,language_code:'ko',voice_settings:p.model==='eleven_multilingual_v2'?{stability:0.5,similarity_boost:0.75,style:0.15,use_speaker_boost:true,speed:0.95}:{stability:0.5,similarity_boost:0.75}}};
     if(p.source==='cloud')return{url:'https://texttospeech.googleapis.com/v1/text:synthesize',body:{input:{text:transcript(text)},voice:{languageCode:'ko-KR',name:'ko-KR-Chirp3-HD-'+p.voice},audioConfig:{audioEncoding:'MP3',speakingRate:p.rate}}};
     return{url:`https://generativelanguage.googleapis.com/v1beta/models/${p.model}:generateContent`,body:{contents:[{role:'user',parts:[{text:transcript(text),speech_metadata:{style:p.style}}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{voice:p.voice}}}}};
   }
@@ -61,10 +64,18 @@
     for(let attempt=0;attempt<2;attempt++){
       const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),options.timeoutMs||30000);
       let response,json;
-      try{response=await fetcher(spec.url,{method:'POST',headers:{'content-type':'application/json','x-goog-api-key':key},body:JSON.stringify(spec.body),signal:controller.signal});json=await response.json()}
+      const el=p.source==='eleven',headers=el?{'content-type':'application/json',accept:'audio/mpeg','xi-api-key':key}:{'content-type':'application/json','x-goog-api-key':key};
+      let audio=null,errText='';
+      try{response=await fetcher(spec.url,{method:'POST',headers,body:JSON.stringify(spec.body),signal:controller.signal});
+        if(el){if(response.ok)audio=await response.arrayBuffer();else errText=await response.text().catch(()=>'')}else json=await response.json()}
       catch(e){throw{code:controller.signal.aborted?'timeout':'network',source:p.source}}
       finally{clearTimeout(timer)}
-      if(response.ok)return decode(json,p);
+      if(response.ok){
+        if(!el)return decode(json,p);
+        if(!audio||audio.byteLength<200)throw{code:'empty_audio',source:p.source};
+        return{buffer:audio,mime:'audio/mpeg'};
+      }
+      if(el&&(/quota|credit/i.test(errText)||response.status===402))throw{code:'el_quota',status:response.status,source:p.source};
       // No key or provider message is persisted or printed. Keep the status for diagnostics.
       const code=response.status===429?'rate_limited':response.status===401||response.status===403?'bad_key':'tts_failed';
       if(attempt===0&&(response.status===429||response.status>=500)){await wait(2500);continue}
@@ -87,6 +98,6 @@
     }
     return{ensure,ready:(p,text)=>entries.get(cacheKey(p,text))?.state==='ready'};
   }
-  const api={VERSION,MODEL,STYLE,VOICES,DEFAULT_VOICE,PREVIEW,migratePrefs,profile,profileKey,cacheKey,transcript,requestSpec,decode,pcmToWav,synth,createClient};
+  const api={EL_MODEL,VERSION,MODEL,STYLE,VOICES,DEFAULT_VOICE,PREVIEW,migratePrefs,profile,profileKey,cacheKey,transcript,requestSpec,decode,pcmToWav,synth,createClient};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.DojoSpeech=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
