@@ -31,7 +31,7 @@
   // lets the provider produce each whole scene with its own prosody.
   function transcript(text){return text.trim().replace(/\r\n?/g,'\n').replace(/[ \t]*\n[ \t]*/g,'\n').replace(/\n{3,}/g,'\n\n').replace(/([^\n])\n(?!\n)/g,'$1 ')}
   function requestSpec(p,text){
-    if(p.source==='eleven')return{url:`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(p.voice)}?output_format=mp3_44100_128`,body:{text:transcript(text),model_id:p.model,language_code:'ko',voice_settings:p.model==='eleven_multilingual_v2'?{stability:0.5,similarity_boost:0.75,style:0.15,use_speaker_boost:true,speed:0.95}:{stability:0.5,similarity_boost:0.75}}};
+    if(p.source==='eleven')return{url:`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(p.voice)}?output_format=mp3_44100_128`,body:{text:transcript(text),model_id:p.model,voice_settings:p.model==='eleven_multilingual_v2'?{stability:0.5,similarity_boost:0.75,style:0.15,use_speaker_boost:true,speed:0.95}:{stability:0.5,similarity_boost:0.75}}};
     if(p.source==='cloud')return{url:'https://texttospeech.googleapis.com/v1/text:synthesize',body:{input:{text:transcript(text)},voice:{languageCode:'ko-KR',name:'ko-KR-Chirp3-HD-'+p.voice},audioConfig:{audioEncoding:'MP3',speakingRate:p.rate}}};
     return{url:`https://generativelanguage.googleapis.com/v1beta/models/${p.model}:generateContent`,body:{contents:[{role:'user',parts:[{text:transcript(text),speech_metadata:{style:p.style}}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{voice:p.voice}}}}};
   }
