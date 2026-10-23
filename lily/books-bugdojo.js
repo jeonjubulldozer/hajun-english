@@ -6110,6 +6110,641 @@ const BUGDOJO = [
    }
   ],
   "dojoIdx": 7
+ },
+ {
+  "id": "ep8",
+  "ep": 8,
+  "dojoEp": "8화",
+  "level": 3,
+  "style": "곤충 무술 도장 · 8화",
+  "title": "Bug Dojo 8: A Chance to Start Again",
+  "cover": {
+   "e": "🥋",
+   "bg": "#B8DDEB",
+   "art": {
+    "actors": [
+     {
+      "id": "grass",
+      "x": 480,
+      "f": 1,
+      "ex": 4,
+      "tl": 0.2,
+      "flh": 2.2,
+      "flk": 2.2,
+      "blh": 2,
+      "blk": 2,
+      "fah": 1.3,
+      "fae": 0.6,
+      "bah": 1.1,
+      "bae": 0.8
+     }
+    ],
+    "night": true
+   }
+  },
+  "blurb": "8화 「다시 시작할 수 있어」를 영어로 — 띵가의 긴 꿈, 피하는 마음과 다시 배우는 마음, 오늘의 작은 선택.",
+  "pages": [
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "grass",
+       "x": 360,
+       "f": 1,
+       "ex": 2,
+       "tl": 0.1,
+       "flh": 0.33,
+       "flk": 0.38,
+       "blh": -0.33,
+       "blk": 0.3,
+       "fah": 0.91,
+       "fae": 1.22,
+       "bah": 0.64,
+       "bae": 1.39
+      },
+      {
+       "id": "mantis",
+       "x": 700,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "One night, Strum dreamed about going back to the dojo.",
+     "After a week away, he felt clumsy and forgot some steps."
+    ],
+    "beat": "week8",
+    "ch": "Chapter 1 · The Door to the Dojo"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "grass",
+       "x": 630,
+       "f": -1,
+       "ex": 0,
+       "rot": -0.2,
+       "tl": -0.26,
+       "flh": 0.08,
+       "flk": 0.07,
+       "blh": -0.04,
+       "blk": 0.07,
+       "fah": 0.28,
+       "fae": 0.33,
+       "bah": -0.1,
+       "bae": 0.33
+      },
+      {
+       "id": "cricket",
+       "x": 573,
+       "f": 1,
+       "ex": 1,
+       "tl": 1.05,
+       "flh": 0.87,
+       "flk": 1.88,
+       "blh": -0.3,
+       "blk": 1,
+       "fah": 1.8,
+       "fae": 0.38,
+       "bah": 1.63,
+       "bae": 0.4
+      }
+     ]
+    },
+    "s": [
+     "He lost several practice matches to Chirpy, who had started later.",
+     "Strum felt upset and embarrassed, but Chirpy never laughed at him.",
+     "They finished safely and bowed to each other on the mat."
+    ],
+    "beat": "loss8"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "grass",
+       "x": 400,
+       "f": -1,
+       "ex": 4,
+       "tl": 0.35,
+       "flh": 0.95,
+       "flk": 1.5,
+       "blh": -0.05,
+       "blk": 1.1,
+       "fah": 1.6,
+       "fae": 0.5,
+       "bah": 1.5,
+       "bae": 0.6
+      }
+     ]
+    },
+    "s": [
+     "The next day, Strum stopped outside the dojo door.",
+     "His dad offered to help him try other sports, too.",
+     "But Strum shook his head because he feared losing again."
+    ],
+    "beat": "hide8"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "grass",
+       "x": 210,
+       "f": -1,
+       "ex": 4,
+       "tl": 0.35,
+       "flh": 0.95,
+       "flk": 1.5,
+       "blh": -0.05,
+       "blk": 1.1,
+       "fah": 1.6,
+       "fae": 0.5,
+       "bah": 1.5,
+       "bae": 0.6
+      },
+      {
+       "id": "cricket",
+       "x": 560,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.3,
+       "flh": 0.54,
+       "flk": 0.75,
+       "blh": -0.35,
+       "blk": 0.61,
+       "fah": 1.14,
+       "fae": 1.06,
+       "bah": 0.91,
+       "bae": 1.28
+      },
+      {
+       "id": "fire",
+       "x": 770,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.12,
+       "flh": 0.38,
+       "flk": 0.45,
+       "blh": -0.38,
+       "blk": 0.35,
+       "fah": 1.05,
+       "fae": 1.4,
+       "bah": 0.8,
+       "bae": 1.6
+      }
+     ]
+    },
+    "s": [
+     "Months passed in the dream, and Strum kept avoiding practice.",
+     "His friends improved while the steps grew harder to remember.",
+     "He said he disliked sports, but really he feared losing."
+    ],
+    "beat": "drift8"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 350,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.32,
+       "flh": 0.03,
+       "flk": 0.03,
+       "blh": -0.03,
+       "blk": 0.03,
+       "fah": 0.19,
+       "fae": 0.24,
+       "bah": -0.05,
+       "bae": 0.24
+      },
+      {
+       "id": "rhino",
+       "x": 680,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem had upsetting days when he lost practice matches, too.",
+     "Instead of hiding, he asked his coach to explain one thing again.",
+     "The coach saw that he wanted to learn and helped him."
+    ],
+    "beat": "choice8",
+    "ch": "Chapter 2 · A Different Choice"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dadcicada",
+       "x": 630,
+       "f": -1,
+       "ex": 0,
+       "rot": -0.2,
+       "tl": -0.26,
+       "flh": 0.08,
+       "flk": 0.07,
+       "blh": -0.04,
+       "blk": 0.07,
+       "fah": 0.28,
+       "fae": 0.33,
+       "bah": -0.1,
+       "bae": 0.33
+      },
+      {
+       "id": "cicada",
+       "x": 573,
+       "f": 1,
+       "ex": 1,
+       "tl": 1.05,
+       "flh": 0.87,
+       "flk": 1.88,
+       "blh": -0.3,
+       "blk": 1,
+       "fah": 1.8,
+       "fae": 0.38,
+       "bah": 1.63,
+       "bae": 0.4
+      }
+     ]
+    },
+    "s": [
+     "He did not need new equipment to practice something he already knew.",
+     "At home, his dad helped him practice one move slowly.",
+     "His dad matched his pace instead of trying to overpower him."
+    ],
+    "beat": "dad8"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "grass",
+       "x": 200,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      },
+      {
+       "id": "cicada",
+       "x": 530,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.12,
+       "flh": 0.38,
+       "flk": 0.45,
+       "blh": -0.38,
+       "blk": 0.35,
+       "fah": 1.05,
+       "fae": 1.4,
+       "bah": 0.8,
+       "bae": 1.6
+      },
+      {
+       "id": "mantis",
+       "x": 770,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Years passed in the dream, and their small choices added up.",
+     "Mem-Mem kept asking questions, while Strum watched from far away.",
+     "Strum felt upset when the difference between them grew larger."
+    ],
+    "beat": "gap8"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "grass",
+       "x": 230,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      },
+      {
+       "id": "cicada",
+       "x": 630,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.64,
+       "fae": 0.52,
+       "bah": 2.36,
+       "bae": 0.49
+      }
+     ]
+    },
+    "s": [
+     "As grown-ups in the dream, they tried working in a toy repair shop.",
+     "Mem-Mem asked questions, practiced, and learned to fix a broken toy.",
+     "Strum hid because he feared mistakes and missed a chance to learn.",
+     "He wished he had tried the work he wanted to do."
+    ],
+    "beat": "grown8"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "grass",
+       "x": 480,
+       "f": 1,
+       "ex": 3,
+       "tl": -0.05,
+       "flh": 0.1,
+       "flk": 0.1,
+       "blh": -0.1,
+       "blk": 0.1,
+       "fah": 2.7,
+       "fae": 0.5,
+       "bah": 2.5,
+       "bae": 0.5
+      }
+     ]
+    },
+    "s": [
+     "Strum opened his eyes and realized it had been a dream.",
+     "His future was not decided, and he could choose again today."
+    ],
+    "beat": "wake8",
+    "ch": "Chapter 3 · Today Is Another Chance"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "grass",
+       "x": 390,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.05,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.33,
+       "bah": -0.14,
+       "bae": 0.33
+      },
+      {
+       "id": "mantis",
+       "x": 690,
+       "f": -1,
+       "ex": 0,
+       "tl": 0,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.25,
+       "fae": 0.35,
+       "bah": -0.15,
+       "bae": 0.35
+      }
+     ]
+    },
+    "s": [
+     "Back at the dojo, Strum told his coach how he felt.",
+     "The coach listened and said it was okay to rest.",
+     "When he returned, they could start with something easy together."
+    ],
+    "beat": "return8"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "grass",
+       "x": 270,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.19,
+       "flh": 0.04,
+       "flk": 0.04,
+       "blh": -0.04,
+       "blk": 0.04,
+       "fah": 0.22,
+       "fae": 0.29,
+       "bah": -0.09,
+       "bae": 0.29
+      },
+      {
+       "id": "cicada",
+       "x": 500,
+       "f": 1,
+       "ex": 3,
+       "tl": 0.74,
+       "flh": 0,
+       "flk": 0,
+       "blh": -0.0,
+       "blk": 0,
+       "fah": 0.12,
+       "fae": 0.1,
+       "bah": 0.08,
+       "bae": 0.1
+      },
+      {
+       "id": "mantis",
+       "x": 750,
+       "f": -1,
+       "ex": 3,
+       "tl": 0.74,
+       "flh": 0,
+       "flk": 0,
+       "blh": -0.0,
+       "blk": 0,
+       "fah": 0.12,
+       "fae": 0.1,
+       "bah": 0.08,
+       "bae": 0.1
+      }
+     ]
+    },
+    "s": [
+     "Strum tried one simple stance again with his friends nearby.",
+     "He did not win right away, but he stayed and asked questions.",
+     "Then everyone smiled and bowed to say thank you together."
+    ],
+    "beat": "bow8"
+   }
+  ],
+  "words": {
+   "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
+   "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
+   "pinch": "집게 (사슴벌레 · 유도 사범님)",
+   "grip": "꽉이 (사마귀 · 주짓수 사범님) / 꽉 잡다",
+   "pop": "팡이 (메뚜기 · 태권도 사범님)",
+   "dot": "동글이 (무당벌레)",
+   "flutter": "팔랑이 (나비)",
+   "longlegs": "긴다리 (여치)",
+   "sparkle": "반짝이 (반딧불이)",
+   "buzz": "윙윙이 (꿀벌)",
+   "bob": "콩콩이 (방아깨비)",
+   "strum": "띵가 (베짱이)",
+   "rolly": "굴리 (쇠똥구리)",
+   "rocky": "단단이 (개미)",
+   "chirpy": "뚜리 (귀뚜라미)",
+   "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
+   "dreamed": "꿈꾸었다",
+   "clumsy": "어색한",
+   "embarrassed": "부끄러운",
+   "avoiding": "피하는",
+   "equipment": "장비",
+   "pace": "속도",
+   "overpower": "힘으로 압도하다",
+   "repair": "수리",
+   "mistakes": "실수",
+   "future": "미래",
+   "decided": "정해진",
+   "stance": "자세"
+  },
+  "talk": [
+   "Why did Strum stop outside the dojo?",
+   "What did Mem-Mem do when he got stuck?",
+   "Was Strum's future already decided?",
+   "What small thing would you like to try again?"
+  ],
+  "quiz": [
+   {
+    "t": "choice",
+    "q": "Why did Strum avoid the dojo?",
+    "a": [
+     "He feared losing again",
+     "The door was locked",
+     "His friends laughed at him"
+    ],
+    "e": [
+     "🚪",
+     "🔒",
+     "🙅"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "How did Mem-Mem's dad help?",
+    "a": [
+     "He practiced slowly with him",
+     "He always won quickly",
+     "He hid the equipment"
+    ],
+    "e": [
+     "🤝",
+     "💨",
+     "📦"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What did Strum learn after waking up?",
+    "a": [
+     "He could choose again today",
+     "His future was fixed",
+     "Resting was forbidden"
+    ],
+    "e": [
+     "🌅",
+     "🔒",
+     "🚫"
+    ]
+   },
+   {
+    "t": "word",
+    "q": "'미래'는 영어로?",
+    "a": [
+     "future",
+     "furniture",
+     "feather"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Say it! I can start ...",
+    "say": "I can start again today.",
+    "key": [
+     "again",
+     "today"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "What would you like to try again? Start with: I want to try ...",
+    "say": "I want to try my stance again.",
+    "key": [
+     "try"
+    ],
+    "free": true
+   }
+  ],
+  "dojoIdx": 8
  }
 ];
 window.LILY_BOOKS = BUGDOJO.concat(window.LILY_BOOKS || []);

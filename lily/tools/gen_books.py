@@ -231,7 +231,32 @@ B.append(book("ep7", 7, "7화", "Bug Dojo 7: Hajun's Champion Table",
    {"t": "say", "q": "Tell me! What did you eat today? Start with: Today, I ate ...", "say": "Today, I ate rice, tofu, and eggs.", "key": ["ate"], "free": True}],
   "#B8D08D"))
 
-IDX = {"ep1": 0, "ep2": 1, "epsp": 2, "ep3": 3, "ep4": 4, "ep5": 5, "ep6": 6, "ep7": 7}   # position in dojo/index.html EPS
+# ---------------------------------------------------------------- 8화
+B.append(book("ep8", 8, "8화", "Bug Dojo 8: A Chance to Start Again",
+  "8화 「다시 시작할 수 있어」를 영어로 — 띵가의 긴 꿈, 피하는 마음과 다시 배우는 마음, 오늘의 작은 선택.",
+  art(8, "t8"), [
+  P(8, "week8", ["One night, Strum dreamed about going back to the dojo.", "After a week away, he felt clumsy and forgot some steps."], ch="Chapter 1 · The Door to the Dojo"),
+  P(8, "loss8", ["He lost several practice matches to Chirpy, who had started later.", "Strum felt upset and embarrassed, but Chirpy never laughed at him.", "They finished safely and bowed to each other on the mat."]),
+  P(8, "hide8", ["The next day, Strum stopped outside the dojo door.", "His dad offered to help him try other sports, too.", "But Strum shook his head because he feared losing again."]),
+  P(8, "drift8", ["Months passed in the dream, and Strum kept avoiding practice.", "His friends improved while the steps grew harder to remember.", "He said he disliked sports, but really he feared losing."]),
+  P(8, "choice8", ["Mem-Mem had upsetting days when he lost practice matches, too.", "Instead of hiding, he asked his coach to explain one thing again.", "The coach saw that he wanted to learn and helped him."], ch="Chapter 2 · A Different Choice"),
+  P(8, "dad8", ["He did not need new equipment to practice something he already knew.", "At home, his dad helped him practice one move slowly.", "His dad matched his pace instead of trying to overpower him."]),
+  P(8, "gap8", ["Years passed in the dream, and their small choices added up.", "Mem-Mem kept asking questions, while Strum watched from far away.", "Strum felt upset when the difference between them grew larger."]),
+  P(8, "grown8", ["As grown-ups in the dream, they tried working in a toy repair shop.", "Mem-Mem asked questions, practiced, and learned to fix a broken toy.", "Strum hid because he feared mistakes and missed a chance to learn.", "He wished he had tried the work he wanted to do."]),
+  P(8, "wake8", ["Strum opened his eyes and realized it had been a dream.", "His future was not decided, and he could choose again today."], ch="Chapter 3 · Today Is Another Chance"),
+  P(8, "return8", ["Back at the dojo, Strum told his coach how he felt.", "The coach listened and said it was okay to rest.", "When he returned, they could start with something easy together."]),
+  P(8, "bow8", ["Strum tried one simple stance again with his friends nearby.", "He did not win right away, but he stayed and asked questions.", "Then everyone smiled and bowed to say thank you together."]),
+  ], {"dreamed": "꿈꾸었다", "clumsy": "어색한", "embarrassed": "부끄러운", "avoiding": "피하는", "equipment": "장비", "pace": "속도", "overpower": "힘으로 압도하다", "repair": "수리", "mistakes": "실수", "future": "미래", "decided": "정해진", "stance": "자세"},
+  ["Why did Strum stop outside the dojo?", "What did Mem-Mem do when he got stuck?", "Was Strum's future already decided?", "What small thing would you like to try again?"],
+  [{"t":"choice", "q":"Why did Strum avoid the dojo?", "a":["He feared losing again", "The door was locked", "His friends laughed at him"], "e":["🚪", "🔒", "🙅"]},
+   {"t":"choice", "q":"How did Mem-Mem's dad help?", "a":["He practiced slowly with him", "He always won quickly", "He hid the equipment"], "e":["🤝", "💨", "📦"]},
+   {"t":"choice", "q":"What did Strum learn after waking up?", "a":["He could choose again today", "His future was fixed", "Resting was forbidden"], "e":["🌅", "🔒", "🚫"]},
+   {"t":"word", "q":"'미래'는 영어로?", "a":["future", "furniture", "feather"]},
+   {"t":"say", "q":"Say it! I can start ...", "say":"I can start again today.", "key":["again", "today"]},
+   {"t":"say", "q":"What would you like to try again? Start with: I want to try ...", "say":"I want to try my stance again.", "key":["try"], "free":True}],
+  "#B8DDEB"))
+
+IDX = {"ep1": 0, "ep2": 1, "epsp": 2, "ep3": 3, "ep4": 4, "ep5": 5, "ep6": 6, "ep7": 7, "ep8": 8}   # position in dojo/index.html EPS
 for b in B: b["dojoIdx"] = IDX[b["id"]]
 js = "// 곤충 무술 도장 영어책 — 애니메이션(dojo/) 각 화의 이야기를 영어 챕터북으로 옮긴 것. 그림은 애니메이션 장면의 자세를 그대로 가져왔어요.\n"
 js += "// 새 화가 생기면 scratchpad의 gen_books.py 방식대로 같은 형식으로 추가하면 돼요.\n"
