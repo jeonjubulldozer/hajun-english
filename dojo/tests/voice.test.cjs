@@ -21,14 +21,29 @@ test('cache identity separates provider, model, voice, style and old mixed clips
   const text='고맙습니다!';const keys=[p,voice.profile('cloud','Leda'),voice.profile('gemini','Puck'),{...p,model:'another-model'},{...p,style:'another-style'}].map(x=>voice.cacheKey(x,text));
   assert.equal(new Set(keys).size,keys.length);assert.ok(keys.every(k=>k!=='Leda|'+text));
 });
-test('Korean breath marks stay at authored boundaries; dialogue is one request',()=>{
+test('Korean spacing is not converted into fixed pauses or vocal tags',()=>{
   const text='맴맴이가 말했어요.\n\n“아빠, 같이 해요!”\n아빠가 웃었어요.';
-  const a=voice.requestSpec(p,text),b=voice.requestSpec(voice.profile('cloud','Leda'),text);
-  assert.equal(a.body.contents[0].parts.length,1);
-  assert.equal(a.body.contents[0].parts[0].text,'맴맴이가 말했어요. <short pause> “아빠, 같이 해요!” <short pause> 아빠가 웃었어요.');
-  assert.match(b.body.input.ssml,/<break time="650ms"\/>“아빠, 같이 해요!”<break time="400ms"\/>/);
-  assert.equal(b.body.voice.languageCode,'ko-KR');assert.ok(b.body.audioConfig.speakingRate<1);
-  assert.equal(voice.ssml('A & B < C'),'<speak>A &amp; B &lt; C</speak>');
+  const expected='맴맴이가 말했어요.\n\n“아빠, 같이 해요!” 아빠가 웃었어요.';
+  for(const name of voice.VOICES){
+    const a=voice.requestSpec(voice.profile('gemini',name),text);
+    const b=voice.requestSpec(voice.profile('cloud',name),text);
+    assert.equal(a.body.contents[0].parts.length,1);
+    assert.equal(a.body.contents[0].parts[0].text,expected);
+    assert.equal(a.body.generationConfig.speechConfig.voiceConfig.voice,name);
+    assert.equal(b.body.input.text,expected);
+    assert.equal(b.body.input.ssml,undefined);
+    assert.equal(b.body.voice.name,'ko-KR-Chirp3-HD-'+name);
+    assert.equal(b.body.voice.languageCode,'ko-KR');
+    assert.equal(b.body.audioConfig.speakingRate,1);
+  }
+  assert.equal(voice.transcript('  몸을 낮춰\r\n두 다리를 잡아요.  '),'몸을 낮춰 두 다리를 잡아요.');
+  assert.equal(voice.transcript('하나…\n둘…\n셋…\n넷.'),'하나… 둘… 셋… 넷.');
+  assert.doesNotMatch(voice.STYLE,/여성|남성|중간 음역|예시/);
+});
+test('prosody update invalidates old audio without resetting a chosen narrator',()=>{
+  const saved={source:'cloud',gv:'Zephyr',narratorRevision:'ko-warm-story-v3'};
+  assert.deepEqual(voice.migratePrefs(saved),saved);
+  assert.notEqual(voice.cacheKey({...p,version:'ko-warm-story-v3'},'안녕.'),voice.cacheKey(p,'안녕.'));
 });
 test('compressed MP3 is never wrapped as raw PCM; unknown formats fail',()=>{
   const mp3=Buffer.from([255,251,144,0,1,2,3,4]);
