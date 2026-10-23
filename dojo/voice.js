@@ -1,35 +1,35 @@
 /* One provider, model and narrator per profile. Never substitute a voice on failure.
  * API contracts: ai.google.dev/gemini-api/docs/generate-content/speech-generation
- * docs.cloud.google.com/text-to-speech/docs/chirp3-hd (synchronous SSML)
+ * docs.cloud.google.com/text-to-speech/docs/chirp3-hd (whole-scene plain text)
  */
 (function(root){
   'use strict';
-  const VERSION='ko-warm-story-v3';
+  const VERSION='ko-natural-story-v4';
+  const NARRATOR_REVISION='ko-warm-story-v3';
   const DEFAULT_VOICE='Sulafat';
   const PREVIEW='맴맴이가 조심조심 팔을 톡톡 두드렸어요.\n콩콩이 형이 바로 놓아 주었지요.\n\n“괜찮아, 맴맴아. 처음이라 떨렸지? 우리 같이 조금씩 배워 보자.”';
   const MODEL='gemini-3.8-flash-tts';
   const VOICES=['Leda','Zephyr','Sulafat','Puck'];
-  const STYLE='당신은 일곱 살 아이 곁에 앉아 그림책을 함께 보는 다정한 한국인 어른입니다. 편안한 여성 목소리로, 아이와 눈을 맞추고 살짝 미소 지으며 이야기를 건네세요. 설명을 발표하기보다 사랑하는 아이에게 오늘 있었던 일을 들려주듯 자연스럽게 읽으세요. 중간 음역에서 부드럽고 따뜻하게, 일상 대화의 속도로 말하세요. 문장마다 똑같이 올리고 내리지 말고, 뜻을 따라 자연스럽게 이어 주세요. 문장 안에서는 말의 흐름을 살리고, 끝에서는 아이가 이해할 만큼 한 박자 쉬세요. 격려하는 대사는 아이의 마음을 알아주는 진심을 담아 조금 더 포근하게 말하세요. 인물의 대사도 같은 해설자의 음색으로 읽으세요. 과장된 애교, 만화 성우 연기, 속삭임, 방송 안내 같은 또박또박한 낭독은 피하세요. “괜찮아, 맴맴아.”는 옆에 있는 아이를 안심시키듯, “우리 같이 해 보자.”는 함께하고 싶은 마음으로 읽으세요. 예시 문장은 추가로 읽지 말고 주어진 대본만 읽으세요.';
+  const STYLE='따뜻하고 편안한 한국어 대화체. 아이에게 이야기를 들려주듯 자연스러운 속도로 말한다. 선택한 목소리의 음색을 유지하고 등장인물을 흉내 내지 않는다. 단어와 조사를 이어 읽고, 짧은 구절은 한 호흡으로 읽는다. 쉼표에서는 가볍게 쉬고 문장이 끝나면 자연스럽게 쉰다. 감탄문도 소리치거나 과장하지 않는다.';
   // Apply the requested narrator change once on existing devices; later choices persist.
   function migratePrefs(saved={}){
     const next={...saved};
-    if(next.narratorRevision!==VERSION){next.gv=DEFAULT_VOICE;next.narratorRevision=VERSION}
+    if(next.narratorRevision!==NARRATOR_REVISION){next.gv=DEFAULT_VOICE;next.narratorRevision=NARRATOR_REVISION}
     if(!VOICES.includes(next.gv))next.gv=DEFAULT_VOICE;
     return next;
   }
   function profile(source,voice){
     if(!['gemini','cloud'].includes(source)||!VOICES.includes(voice))throw new Error('Unknown voice profile');
-    return Object.freeze({version:VERSION,source,model:source==='gemini'?MODEL:'chirp3-hd',voice,style:STYLE,rate:source==='cloud'?.94:1});
+    return Object.freeze({version:VERSION,source,model:source==='gemini'?MODEL:'chirp3-hd',voice,style:STYLE,rate:1});
   }
   const profileKey=p=>JSON.stringify(p);
   const cacheKey=(p,text)=>JSON.stringify([profileKey(p),text]);
-  const escapeXML=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
-  // Authors put a newline at a breath, and a blank line before a change of speaker.
-  // Keep each complete scene in one request so words retain their Korean prosody.
-  function ssml(text){return '<speak>'+text.trim().split(/(\n+)/).map(s=>/^\n+$/.test(s)?`<break time="${s.length>1?650:400}ms"/>`:escapeXML(s)).join('')+'</speak>'}
-  function transcript(text){return text.trim().replace(/\n+/g,' <short pause> ')}
+  // Newlines format the script, not a timer. Preserve paragraph boundaries and
+  // Korean word spacing; punctuation, not an injected pause after every line,
+  // lets the provider produce each whole scene with its own prosody.
+  function transcript(text){return text.trim().replace(/\r\n?/g,'\n').replace(/[ \t]*\n[ \t]*/g,'\n').replace(/\n{3,}/g,'\n\n').replace(/([^\n])\n(?!\n)/g,'$1 ')}
   function requestSpec(p,text){
-    if(p.source==='cloud')return{url:'https://texttospeech.googleapis.com/v1/text:synthesize',body:{input:{ssml:ssml(text)},voice:{languageCode:'ko-KR',name:'ko-KR-Chirp3-HD-'+p.voice},audioConfig:{audioEncoding:'MP3',speakingRate:p.rate}}};
+    if(p.source==='cloud')return{url:'https://texttospeech.googleapis.com/v1/text:synthesize',body:{input:{text:transcript(text)},voice:{languageCode:'ko-KR',name:'ko-KR-Chirp3-HD-'+p.voice},audioConfig:{audioEncoding:'MP3',speakingRate:p.rate}}};
     return{url:`https://generativelanguage.googleapis.com/v1beta/models/${p.model}:generateContent`,body:{contents:[{role:'user',parts:[{text:transcript(text),speech_metadata:{style:p.style}}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{voice:p.voice}}}}};
   }
   function bytes(b64){const s=atob(b64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u}
@@ -87,6 +87,6 @@
     }
     return{ensure,ready:(p,text)=>entries.get(cacheKey(p,text))?.state==='ready'};
   }
-  const api={VERSION,MODEL,STYLE,VOICES,DEFAULT_VOICE,PREVIEW,migratePrefs,profile,profileKey,cacheKey,ssml,transcript,requestSpec,decode,pcmToWav,synth,createClient};
+  const api={VERSION,MODEL,STYLE,VOICES,DEFAULT_VOICE,PREVIEW,migratePrefs,profile,profileKey,cacheKey,transcript,requestSpec,decode,pcmToWav,synth,createClient};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.DojoSpeech=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

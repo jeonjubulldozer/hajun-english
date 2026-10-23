@@ -93,6 +93,53 @@ def main():
         print(f'PASS: {chapters} chapter buttons, 4/5 on mobile/tablet; {audit["samples"]} motion samples')
         context.close()
 
+        # Rendering settings must never switch an explicitly selected provider,
+        # even if only the other provider has a stored credential.
+        for selected, stored in [('gemini', {'ckey':'test-only-cloud'}), ('cloud', {'gkey':'test-only-gemini'})]:
+            context, page = page_for({'on':False,'source':selected,'gv':'Zephyr',
+                                     'narratorRevision':'ko-warm-story-v3',**stored}, True)
+            page.goto(url, wait_until='networkidle')
+            assert page.locator('#voiceSource').input_value()==selected
+            assert page.locator('#gv').input_value()=='Zephyr'
+            page.locator('#eps button').nth(5).click()
+            assert page.locator('#voiceSource').input_value()==selected
+            context.close()
+        print('PASS: settings/prefetch preserve selected provider and narrator')
+
+        # All eight provider/voice combinations must retain their chosen profile.
+        # The MP3 fixture is a quiet 220 Hz tone, NOT a recorded or generated voice.
+        mp3 = base64.b64encode((ROOT/'dojo/tests/fixtures/tone.mp3').read_bytes()).decode()
+        for source in ['gemini','cloud']:
+            for name in ['Sulafat','Leda','Zephyr','Puck']:
+                context, page = page_for({'on':True,'source':source,'gv':name,
+                    'narratorRevision':'ko-warm-story-v3','gkey':'test-only-key','ckey':'test-only-key'}, True)
+                calls=[]
+                def respond(route):
+                    body=route.request.post_data_json
+                    calls.append((route.request.url,body))
+                    if source=='cloud':
+                        assert body['voice']['name']=='ko-KR-Chirp3-HD-'+name
+                        assert 'ssml' not in body['input']
+                        assert body['audioConfig']['speakingRate']==1
+                        route.fulfill(json={'audioContent':mp3})
+                    else:
+                        assert body['generationConfig']['speechConfig']['voiceConfig']['voice']==name
+                        assert '<short pause>' not in body['contents'][0]['parts'][0]['text']
+                        route.fulfill(json={'candidates':[{'content':{'parts':[{'inlineData':{'mimeType':'audio/wav','data':wav_fixture()}}]}}]})
+                page.route('https://generativelanguage.googleapis.com/**', respond)
+                page.route('https://texttospeech.googleapis.com/**', respond)
+                page.goto(url,wait_until='networkidle')
+                page.locator('#voicePreview').click()
+                page.wait_for_function('__test.state().narr==="play"')
+                state=page.evaluate('__test.state()')
+                assert state['profile']['source']==source and state['profile']['voice']==name
+                page.wait_for_function('__test.state().narr==="done"')
+                assert calls
+                domain='texttospeech.googleapis.com' if source=='cloud' else 'generativelanguage.googleapis.com'
+                assert all(domain in url for url,body in calls)
+                context.close()
+        print('PASS: all 8 provider/voice profiles decode, play and finish using synthetic fixtures')
+
         # A real HTMLAudioElement decodes a synthetic WAV; no live API credentials are used.
         context, page = page_for({'on':True,'gv':'Leda','source':'gemini','gkey':'test-only-not-a-real-key'}, True)
         requests = []
