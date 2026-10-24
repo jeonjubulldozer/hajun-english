@@ -67,7 +67,7 @@ def main():
         page.on('pageerror',lambda e:errors.append(str(e)))
         page.route('**/dojo/',lambda r:r.fulfill(body=source.replace(marker,HOOK+marker),content_type='text/html'))
         page.goto(f'http://127.0.0.1:{server.server_port}/dojo/',wait_until='networkidle')
-        assert page.locator('#eps button').last.inner_text()=='11화'
+        assert page.locator('#eps button').nth(11).inner_text()=='11화'
         for epi in [10,11]:
             page.set_viewport_size({'width':1200,'height':1000})
             page.locator('#eps button').nth(epi).click()
@@ -91,7 +91,7 @@ def main():
                 for i in range(chapters.count()):chapters.nth(i).click()
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 page.screenshot(path=str(OUT/f'ep{epi}-mobile-{width}.png'))
-        assert page.evaluate('__dragon.ORDER.at(-1)')=='dragon'
+        assert page.evaluate('__dragon.ORDER.includes("dragon")')
         assert page.locator('#grid').inner_text().find('빠른 깃 잡기 · 허리후리기 · 삼각조르기 연결')>=0
         assert not errors,errors
         browser.close()

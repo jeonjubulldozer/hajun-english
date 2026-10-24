@@ -8074,6 +8074,1563 @@ const BUGDOJO = [
    }
   ],
   "dojoIdx": 11
+ },
+ {
+  "id": "ep12",
+  "ep": 12,
+  "dojoEp": "12화",
+  "level": 3,
+  "style": "곤충 무술 도장 · 12화",
+  "title": "Bug Dojo 12: The Judo Visitors",
+  "cover": {
+   "e": "🥋",
+   "bg": "#B8DDEB",
+   "art": {
+    "actors": [
+     {
+      "id": "pine",
+      "x": 240,
+      "f": 1,
+      "ex": 0,
+      "tl": 0.04,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.24,
+      "fae": 0.34,
+      "bah": -0.14,
+      "bae": 0.34
+     },
+     {
+      "id": "amber",
+      "x": 720,
+      "f": -1,
+      "ex": 0,
+      "tl": 0.04,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.24,
+      "fae": 0.34,
+      "bah": -0.14,
+      "bae": 0.34
+     }
+    ]
+   }
+  },
+  "blurb": "솔숲 유도관 고수들과 만나는 유도 대회.",
+  "pages": [
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "pine",
+       "x": 240,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "amber",
+       "x": 720,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      }
+     ]
+    },
+    "s": [
+     "Rocky met Pine and Amber from the Pine Forest Judo Club.",
+     "They practiced judo every day and welcomed a friendly challenge."
+    ],
+    "beat": "visitors12",
+    "ch": "Chapter 1 · New Friends, New Footwork"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 501,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      },
+      {
+       "id": "pine",
+       "x": 558,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      }
+     ]
+    },
+    "s": [
+     "Pine led with his left foot while Rocky led with his right.",
+     "Their grips felt different, so Rocky pushed forward even harder."
+    ],
+    "beat": "opposite12"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 543,
+       "f": 1,
+       "ex": 0,
+       "y": -47,
+       "rot": 1.5,
+       "tl": 0.09,
+       "flh": 1.29,
+       "flk": 2,
+       "blh": 0.9,
+       "blk": 2.09,
+       "fah": 2.3,
+       "fae": 0.48,
+       "bah": 2.1,
+       "bae": 0.48
+      },
+      {
+       "id": "pine",
+       "x": 530,
+       "f": 1,
+       "ex": 0,
+       "tl": 1.25,
+       "flh": 0.55,
+       "flk": 0.6,
+       "blh": -0.65,
+       "blk": 0.3,
+       "fah": 0.9,
+       "fae": 0.3,
+       "bah": 0.6,
+       "bae": 0.4
+      }
+     ]
+    },
+    "s": [
+     "Pine turned and guided Rocky toward the open front corner.",
+     "Rocky landed safely, surprised by the timing of the throw."
+    ],
+    "beat": "tai12"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 610,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.24,
+       "bae": 0.7
+      },
+      {
+       "id": "pine",
+       "x": 500,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.24,
+       "bae": 0.7
+      }
+     ]
+    },
+    "s": [
+     "More force had not solved the problem in that exchange.",
+     "Rocky asked a question and watched the next match carefully."
+    ],
+    "beat": "ask12"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dragon",
+       "x": 520,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.7,
+       "flh": 0.65,
+       "flk": 1.15,
+       "blh": 0.1,
+       "blk": 1.15,
+       "fah": 2,
+       "fae": 1.3,
+       "bah": 1.6,
+       "bae": 1.7
+      },
+      {
+       "id": "pine",
+       "x": 580,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.55,
+       "flh": 0.75,
+       "flk": 1.15,
+       "blh": -0.3,
+       "blk": 0.95,
+       "fah": 1.25,
+       "fae": 0.6,
+       "bah": 1.05,
+       "bae": 0.85
+      }
+     ]
+    },
+    "s": [
+     "Zippy wrapped an arm around Pine and tried entering a hip throw.",
+     "Pine moved his hips away before Zippy could lift him."
+    ],
+    "beat": "turn12",
+    "ch": "Chapter 2 · When the First Attack Stops"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dragon",
+       "x": 625,
+       "f": -1,
+       "ex": 0,
+       "rot": -1.57,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.13,
+       "blh": 0.06,
+       "blk": 0.13,
+       "fah": 0.51,
+       "fae": 0.2,
+       "bah": 0.26,
+       "bae": 0.2
+      },
+      {
+       "id": "pine",
+       "x": 520,
+       "f": -1,
+       "ex": 0,
+       "rot": -1.3,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.13,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.5,
+       "fae": 0.2,
+       "bah": 0.25,
+       "bae": 0.2
+      }
+     ]
+    },
+    "s": [
+     "As Zippy stood back up, his weight shifted toward his heels.",
+     "Pine moved behind his feet and dropped sideways into a counter.",
+     "Zippy landed safely, then thanked Pine for the challenging match."
+    ],
+    "beat": "tani12"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "lady",
+       "x": 510,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      },
+      {
+       "id": "amber",
+       "x": 600,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      }
+     ]
+    },
+    "s": [
+     "Dot watched Amber step sideways and followed without rushing her attack.",
+     "When the feet came together, Dot spotted her next opening."
+    ],
+    "beat": "gather12"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "lady",
+       "x": 510,
+       "f": 1,
+       "ex": 0,
+       "tl": 1.19,
+       "flh": 0.53,
+       "flk": 0.57,
+       "blh": -0.62,
+       "blk": 0.29,
+       "fah": 0.87,
+       "fae": 0.3,
+       "bah": 0.56,
+       "bae": 0.4
+      },
+      {
+       "id": "amber",
+       "x": 620,
+       "f": -1,
+       "ex": 0,
+       "rot": -1.49,
+       "tl": 0.01,
+       "flh": 0.28,
+       "flk": 0.23,
+       "blh": 0.16,
+       "blk": 0.22,
+       "fah": 0.54,
+       "fae": 0.22,
+       "bah": 0.29,
+       "bae": 0.23
+      }
+     ]
+    },
+    "s": [
+     "Dot swept both moving feet, and Amber landed on the mat.",
+     "The referee ended their match, and both friends bowed with respect."
+    ],
+    "beat": "okuri12"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 580,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      },
+      {
+       "id": "cicada",
+       "x": 520,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.95,
+       "flh": 0.65,
+       "flk": 1.15,
+       "blh": 0.1,
+       "blk": 1.15,
+       "fah": 1.99,
+       "fae": 1.3,
+       "bah": 1.59,
+       "bae": 1.69
+      }
+     ]
+    },
+    "s": [
+     "Back home, Rocky practiced wrestling without grabbing a jacket.",
+     "Mem-Mem straightened up, and Rocky slipped past the defending arm."
+    ],
+    "beat": "throwby12",
+    "ch": "Chapter 3 · Back to Practice"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 525,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.9,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.69,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      },
+      {
+       "id": "cicada",
+       "x": 470,
+       "f": 1,
+       "ex": 0,
+       "rot": -1.57,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.13,
+       "blh": 0.06,
+       "blk": 0.13,
+       "fah": 0.51,
+       "fae": 0.2,
+       "bah": 0.26,
+       "bae": 0.2
+      }
+     ]
+    },
+    "s": [
+     "When Mem-Mem brought a knee forward, Rocky found another opening.",
+     "He touched the knee and circled as their balance changed."
+    ],
+    "beat": "kneepick12"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 490,
+       "f": -1,
+       "ex": 0,
+       "y": -30,
+       "rot": -3.47,
+       "tl": 0.1,
+       "flh": 1.35,
+       "flk": 2.1,
+       "blh": 0.95,
+       "blk": 2.2,
+       "fah": 2.4,
+       "fae": 0.5,
+       "bah": 2.2,
+       "bae": 0.5
+      },
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 0,
+       "y": -30,
+       "rot": 3.47,
+       "tl": 0.1,
+       "flh": 1.35,
+       "flk": 2.1,
+       "blh": 0.95,
+       "blk": 2.2,
+       "fah": 2.4,
+       "fae": 0.5,
+       "bah": 2.2,
+       "bae": 0.5
+      }
+     ]
+    },
+    "s": [
+     "Coach Flash watched closely while the friends practiced a slow rolling turn.",
+     "They finished, let go, and made room to start again."
+    ],
+    "beat": "roll12"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 240,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "pine",
+       "x": 400,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "lady",
+       "x": 560,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "amber",
+       "x": 720,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      }
+     ]
+    },
+    "s": [
+     "Pine and Amber wanted to learn wrestling with their new friends.",
+     "Everyone had something to share and something still to practice."
+    ],
+    "beat": "bow12"
+   }
+  ],
+  "words": {
+   "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
+   "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
+   "pinch": "집게 (사슴벌레 · 유도 사범님)",
+   "grip": "꽉이 (사마귀 · 주짓수 사범님) / 꽉 잡다",
+   "pop": "팡이 (메뚜기 · 태권도 사범님)",
+   "dot": "동글이 (무당벌레)",
+   "flutter": "팔랑이 (나비)",
+   "longlegs": "긴다리 (여치)",
+   "sparkle": "반짝이 (반딧불이)",
+   "buzz": "윙윙이 (꿀벌)",
+   "bob": "콩콩이 (방아깨비)",
+   "strum": "띵가 (베짱이)",
+   "rolly": "굴리 (쇠똥구리)",
+   "rocky": "단단이 (개미)",
+   "chirpy": "뚜리 (귀뚜라미)",
+   "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
+   "pine": "청솔이",
+   "amber": "호박이",
+   "bramble": "털보 (타란튤라)",
+   "widefoot": "넓적이 (농발거미)",
+   "nightwing": "밤날개 (박쥐)",
+   "quicktail": "잽쥐",
+   "longbody": "마디왕 (지네)",
+   "balance": "균형",
+   "counter": "되치기",
+   "timing": "때를 맞추기",
+   "steady": "흔들리지 않는",
+   "release": "놓아주다",
+   "festival": "축제"
+  },
+  "talk": [
+   "What changed when the first attack was stopped?",
+   "How did the friends help each other?",
+   "What would you like to practice with your coach?"
+  ],
+  "quiz": [
+   {
+    "t": "choice",
+    "q": "What helped the friends find another opening?",
+    "a": [
+     "Watching the other person move",
+     "Using more force every time",
+     "Closing their eyes"
+    ],
+    "e": [
+     "👀",
+     "💪",
+     "🙈"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What should happen after a tap?",
+    "a": [
+     "Release immediately",
+     "Keep squeezing",
+     "Pull harder"
+    ],
+    "e": [
+     "🤝",
+     "🚫",
+     "🙅"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "How did their skills grow?",
+    "a": [
+     "Practice with coaches and friends",
+     "One sudden magic spell",
+     "Never trying again"
+    ],
+    "e": [
+     "🥋",
+     "✨",
+     "🏳️"
+    ]
+   },
+   {
+    "t": "word",
+    "q": "'균형'은 영어로?",
+    "a": [
+     "balance",
+     "shadow",
+     "festival"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Say it! I can ...",
+    "say": "I can learn from my friends.",
+    "key": [
+     "learn",
+     "friends"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "What would you practice with your coach?",
+    "say": "I would practice my footwork with my coach.",
+    "key": [
+     "practice"
+    ],
+    "free": true
+   }
+  ],
+  "dojoIdx": 12
+ },
+ {
+  "id": "ep13",
+  "ep": 13,
+  "dojoEp": "13화",
+  "level": 3,
+  "style": "곤충 무술 도장 · 13화",
+  "title": "Bug Dojo 13: The Practice That Protected the Village",
+  "cover": {
+   "e": "🥋",
+   "bg": "#B8DDEB",
+   "art": {
+    "actors": [
+     {
+      "id": "tarantula",
+      "x": 240,
+      "f": 1,
+      "ex": 0,
+      "tl": 0.04,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.24,
+      "fae": 0.34,
+      "bah": -0.14,
+      "bae": 0.34
+     },
+     {
+      "id": "huntsman",
+      "x": 360,
+      "f": 1,
+      "ex": 0,
+      "tl": 0.04,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.24,
+      "fae": 0.34,
+      "bah": -0.14,
+      "bae": 0.34
+     },
+     {
+      "id": "bat",
+      "x": 480,
+      "f": 1,
+      "ex": 0,
+      "tl": 0.04,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.24,
+      "fae": 0.34,
+      "bah": -0.14,
+      "bae": 0.34
+     },
+     {
+      "id": "rat",
+      "x": 600,
+      "f": -1,
+      "ex": 0,
+      "tl": 0.04,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.24,
+      "fae": 0.34,
+      "bah": -0.14,
+      "bae": 0.34
+     },
+     {
+      "id": "centipede",
+      "x": 720,
+      "f": -1,
+      "ex": 0,
+      "tl": 0.04,
+      "flh": 0.06,
+      "flk": 0.06,
+      "blh": -0.06,
+      "blk": 0.06,
+      "fah": 0.24,
+      "fae": 0.34,
+      "bah": -0.14,
+      "bae": 0.34
+     }
+    ]
+   }
+  },
+  "blurb": "그늘패를 막아 선 호걸들, 꾸준한 수련이 이어지는 순간.",
+  "pages": [
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "tarantula",
+       "x": 240,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "huntsman",
+       "x": 360,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "bat",
+       "x": 480,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "rat",
+       "x": 600,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "centipede",
+       "x": 720,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      }
+     ]
+    },
+    "s": [
+     "Five strangers arrived at the village festival and blocked the square.",
+     "The Shadow Gang wanted to claim the space for themselves."
+    ],
+    "beat": "arrival13",
+    "ch": "Chapter 1 · Trouble at the Festival"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 240,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "grass",
+       "x": 480,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "rhino",
+       "x": 720,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      }
+     ]
+    },
+    "s": [
+     "The coaches guided the younger friends to a safe place nearby.",
+     "Mem-Mem felt afraid, but he did not leave his friends alone."
+    ],
+    "beat": "fear13"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 360,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.59,
+       "flh": 0.69,
+       "flk": 1.11,
+       "blh": -0.33,
+       "blk": 0.91,
+       "fah": 1.26,
+       "fae": 0.61,
+       "bah": 1.06,
+       "bae": 0.85
+      },
+      {
+       "id": "rhino",
+       "x": 640,
+       "f": -1,
+       "ex": 1,
+       "tl": 0.58,
+       "flh": 0.78,
+       "flk": 1.18,
+       "blh": -0.32,
+       "blk": 0.92,
+       "fah": 1.28,
+       "fae": 0.58,
+       "bah": 1.08,
+       "bae": 0.82
+      }
+     ]
+    },
+    "s": [
+     "He remembered tired mornings when he had wanted to stop practicing.",
+     "After a rest, he had returned and tried again with his coach."
+    ],
+    "beat": "memory13"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "pine",
+       "x": 240,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "amber",
+       "x": 400,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "ant",
+       "x": 560,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "lady",
+       "x": 720,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      }
+     ]
+    },
+    "s": [
+     "Pine and Amber came to help the village friends together.",
+     "The rivals from the tournament now stood on the same side."
+    ],
+    "beat": "line13"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 580,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      },
+      {
+       "id": "rat",
+       "x": 520,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.95,
+       "flh": 0.65,
+       "flk": 1.15,
+       "blh": 0.1,
+       "blk": 1.15,
+       "fah": 1.99,
+       "fae": 1.3,
+       "bah": 1.59,
+       "bae": 1.69
+      }
+     ]
+    },
+    "s": [
+     "Quicktail pushed against Rocky and tried to block his arm.",
+     "Rocky moved with him, then slipped around as Quicktail stood tall."
+    ],
+    "beat": "ratthrow13",
+    "ch": "Chapter 2 · Different Strengths, One Team"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "lady",
+       "x": 510,
+       "f": 1,
+       "ex": 0,
+       "tl": 1.22,
+       "flh": 0.54,
+       "flk": 0.59,
+       "blh": -0.64,
+       "blk": 0.29,
+       "fah": 0.89,
+       "fae": 0.3,
+       "bah": 0.58,
+       "bae": 0.4
+      },
+      {
+       "id": "centipede",
+       "x": 620,
+       "f": -1,
+       "ex": 0,
+       "rot": -1.54,
+       "tl": 0,
+       "flh": 0.22,
+       "flk": 0.16,
+       "blh": 0.1,
+       "blk": 0.16,
+       "fah": 0.52,
+       "fae": 0.21,
+       "bah": 0.27,
+       "bae": 0.21
+      }
+     ]
+    },
+    "s": [
+     "Dot followed Longbody sideways until the moving feet came together.",
+     "Her sweep sent him rolling safely onto the festival mat."
+    ],
+    "beat": "sweep13"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "pine",
+       "x": 510,
+       "f": -1,
+       "ex": 0,
+       "tl": 1.19,
+       "flh": 0.53,
+       "flk": 0.57,
+       "blh": -0.62,
+       "blk": 0.29,
+       "fah": 0.87,
+       "fae": 0.3,
+       "bah": 0.56,
+       "bae": 0.4
+      },
+      {
+       "id": "bat",
+       "x": 573,
+       "f": -1,
+       "ex": 0,
+       "y": -28,
+       "rot": -1.12,
+       "tl": 0.09,
+       "flh": 1.29,
+       "flk": 2,
+       "blh": 0.9,
+       "blk": 2.09,
+       "fah": 2.3,
+       "fae": 0.48,
+       "bah": 2.1,
+       "bae": 0.48
+      }
+     ]
+    },
+    "s": [
+     "Nightwing landed and pushed toward Pine while holding his jacket.",
+     "Pine turned, guided the movement, and stopped the rush with a throw."
+    ],
+    "beat": "battai13"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 490,
+       "f": 1,
+       "ex": 0,
+       "tl": 1.35,
+       "flh": -0.45,
+       "flk": 0.35,
+       "blh": -0.95,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.8,
+       "bah": 1.25,
+       "bae": 0.9
+      },
+      {
+       "id": "huntsman",
+       "x": 550,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.9,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      }
+     ]
+    },
+    "s": [
+     "Widefoot rushed low, and Mem-Mem could not stop him with his arms alone.",
+     "He moved his legs back and lowered his hips like in practice."
+    ],
+    "beat": "hips13"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 565,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.9,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      },
+      {
+       "id": "huntsman",
+       "x": 520,
+       "f": -1,
+       "ex": 0,
+       "rot": -1.56,
+       "tl": 0.01,
+       "flh": 0.18,
+       "flk": 0.13,
+       "blh": 0.06,
+       "blk": 0.13,
+       "fah": 0.51,
+       "fae": 0.2,
+       "bah": 0.26,
+       "bae": 0.2
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem circled beside Widefoot and controlled the shoulder with a steady base.",
+     "When Widefoot asked him to stop, he released and stepped away."
+    ],
+    "beat": "shoulder13",
+    "ch": "Chapter 3 · Small Days Become Strength"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dung",
+       "x": 470,
+       "f": 1,
+       "ex": 0,
+       "rot": -0.3,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      },
+      {
+       "id": "tarantula",
+       "x": 540,
+       "f": -1,
+       "ex": 0,
+       "rot": 1.57,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.5,
+       "fae": 0.2,
+       "bah": 0.99,
+       "bae": 0.2
+      }
+     ]
+    },
+    "s": [
+     "Bramble sat taller to stop Rolly from closing a triangle.",
+     "Rolly followed the remaining arm into an armbar position instead.",
+     "Bramble tapped early, and Rolly released without hurting his arm."
+    ],
+    "beat": "arm13"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "grass",
+       "x": 240,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "cicada",
+       "x": 720,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      }
+     ]
+    },
+    "s": [
+     "Strum wished he had practiced more before that frightening moment.",
+     "Mem-Mem invited him back: they could begin learning together today."
+    ],
+    "beat": "regret13"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 240,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "ant",
+       "x": 360,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "lady",
+       "x": 480,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "pine",
+       "x": 600,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      },
+      {
+       "id": "dung",
+       "x": 720,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.04,
+       "flh": 0.06,
+       "flk": 0.06,
+       "blh": -0.06,
+       "blk": 0.06,
+       "fah": 0.24,
+       "fae": 0.34,
+       "bah": -0.14,
+       "bae": 0.34
+      }
+     ]
+    },
+    "s": [
+     "The village was safe, and the friends returned to their festival.",
+     "Every small day of practice had helped them stand together.",
+     "They bowed with thanks and promised to meet at practice again."
+    ],
+    "beat": "bow13"
+   }
+  ],
+  "words": {
+   "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
+   "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
+   "pinch": "집게 (사슴벌레 · 유도 사범님)",
+   "grip": "꽉이 (사마귀 · 주짓수 사범님) / 꽉 잡다",
+   "pop": "팡이 (메뚜기 · 태권도 사범님)",
+   "dot": "동글이 (무당벌레)",
+   "flutter": "팔랑이 (나비)",
+   "longlegs": "긴다리 (여치)",
+   "sparkle": "반짝이 (반딧불이)",
+   "buzz": "윙윙이 (꿀벌)",
+   "bob": "콩콩이 (방아깨비)",
+   "strum": "띵가 (베짱이)",
+   "rolly": "굴리 (쇠똥구리)",
+   "rocky": "단단이 (개미)",
+   "chirpy": "뚜리 (귀뚜라미)",
+   "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
+   "pine": "청솔이",
+   "amber": "호박이",
+   "bramble": "털보 (타란튤라)",
+   "widefoot": "넓적이 (농발거미)",
+   "nightwing": "밤날개 (박쥐)",
+   "quicktail": "잽쥐",
+   "longbody": "마디왕 (지네)",
+   "balance": "균형",
+   "counter": "되치기",
+   "timing": "때를 맞추기",
+   "steady": "흔들리지 않는",
+   "release": "놓아주다",
+   "festival": "축제"
+  },
+  "talk": [
+   "What changed when the first attack was stopped?",
+   "How did the friends help each other?",
+   "What would you like to practice with your coach?"
+  ],
+  "quiz": [
+   {
+    "t": "choice",
+    "q": "What helped the friends find another opening?",
+    "a": [
+     "Watching the other person move",
+     "Using more force every time",
+     "Closing their eyes"
+    ],
+    "e": [
+     "👀",
+     "💪",
+     "🙈"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What should happen after a tap?",
+    "a": [
+     "Release immediately",
+     "Keep squeezing",
+     "Pull harder"
+    ],
+    "e": [
+     "🤝",
+     "🚫",
+     "🙅"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "How did their skills grow?",
+    "a": [
+     "Practice with coaches and friends",
+     "One sudden magic spell",
+     "Never trying again"
+    ],
+    "e": [
+     "🥋",
+     "✨",
+     "🏳️"
+    ]
+   },
+   {
+    "t": "word",
+    "q": "'균형'은 영어로?",
+    "a": [
+     "balance",
+     "shadow",
+     "festival"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Say it! I can ...",
+    "say": "I can learn from my friends.",
+    "key": [
+     "learn",
+     "friends"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "What would you practice with your coach?",
+    "say": "I would practice my footwork with my coach.",
+    "key": [
+     "practice"
+    ],
+    "free": true
+   }
+  ],
+  "dojoIdx": 13
  }
 ];
 window.LILY_BOOKS = BUGDOJO.concat(window.LILY_BOOKS || []);

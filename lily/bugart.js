@@ -49,7 +49,19 @@ SP.kidrhino=Object.assign({},SP.rhino,{n:'꼬마뿔',k:'장수풍뎅이',tag:'�
   moves:'매일 밤 아빠랑 스파링',fact:'수컷만 큰 뿔이 있어요.',id:'kidrhino',ph:25.9,ep:4,scene:'kidrhino'});
 SP.dadcicada=Object.assign({},SP.cicada,{n:'아빠',k:'매미',tag:'맴맴이 아빠',arts:['judo','wr','bjj'],s:1.22,col:'#343d24',hc:'#3f4a2c',hero:0,look:'cicada',
   moves:'맴맴이랑 스파링',fact:'수컷 매미만 맴맴 노래해요.',id:'dadcicada',ph:27.1,ep:4,scene:'mmdad'});
-const ORDER=['rhino','stag','mantis','hop','lady','butter','katy','fire','bee','bang','cicada','grass','dung','ant','cricket','kidrhino','dadcicada'];
+// Visitors and story antagonists. Species are not inherently villains.
+SP.pine={...SP.stag,id:'pine',n:'청솔이',k:'사슴벌레',tag:'솔숲 유도관',arts:['judo'],s:.96,col:'#39716b',hc:'#315a52',look:'stag',ph:31,ep:12,scene:'visitors12',moves:'반대잡기 · 빗당겨치기 · 되치기',fact:'큰 턱은 먹이를 씹는 턱이 변한 것이에요.'};
+SP.amber={...SP.lady,id:'amber',n:'호박이',k:'무당벌레',tag:'솔숲 유도관',arts:['judo'],col:'#efaa34',look:'lady',ph:32,ep:12,scene:'visitors12',moves:'발기술 · 모두걸기',fact:'무당벌레는 종류에 따라 색과 무늬가 달라요.'};
+const visitors=[
+ ['tarantula','털보','타란튤라','spider','#78503e',29,38,9],
+ ['huntsman','넓적이','농발거미','spider','#ad8752',26,33,6],
+ ['bat','밤날개','박쥐','bat','#79658e',22,33,7],
+ ['rat','잽쥐','쥐','rat','#899296',23,34,7],
+ ['centipede','마디왕','지네','centipede','#bb6845',15,49,6]
+];
+for(const [i,n,k,creature,col,rx,ry,lw] of visitors){SP[i]={id:i,n,k,creature,col,hc:col,lc:mixVisitorColor(creature),rx,ry,lw,s:1,L:LL({th:33,sn:33}),hr:19,ant:'none',arts:[],ph:35+visitors.findIndex(v=>v[0]===i),tag:'그늘패',ep:13,scene:'arrival13',moves:'힘자랑 대신 함께 배우는 법을 찾는 중',fact:creature==='spider'?'거미는 다리가 여덟 개이고 곤충이 아니에요.':creature==='bat'?'박쥐는 날 수 있는 포유류예요.':creature==='rat'?'쥐는 수염으로 주변의 좁은 틈을 느껴요.':'지네는 몸의 여러 마디마다 다리가 한 쌍씩 있어요.'};}
+function mixVisitorColor(kind){return kind==='spider'?'#624b38':kind==='centipede'?'#8a4532':'#554b63'}
+const ORDER=['rhino','stag','mantis','hop','lady','butter','katy','fire','bee','bang','cicada','grass','dung','ant','cricket','kidrhino','dadcicada','dragon','pine','amber','tarantula','huntsman','bat','rat','centipede'];
 const UNLOCK={lady:5,butter:10,katy:15,fire:25,bee:35,bang:50};
 
 /* ---------- 자세 ---------- */
@@ -154,6 +166,7 @@ function drawArm(c,sp,A,col){
   }else{c.beginPath();c.arc(A.hd[0],A.hd[1],sp.lw*.72,0,TAU);fs(c,col,2.2)}
 }
 function midLegs(c,sp,g,time,col){
+  if(sp.creature)return;
   if(sp.noface)return;const b=g.BC,w=Math.sin(time*3+sp.ph)*.15;
   for(const s of [1,-1]){const a1=s>0?.9+w:-.6-w,p0=[b[0]+s*4,b[1]-4],d1=DR(a1),p1=[p0[0]+d1[0]*16,p0[1]+d1[1]*16],d2=DR(a1*.3),p2=[p1[0]+d2[0]*14,p1[1]+d2[1]*14];limb(c,[p0,p1,p2],sp.lw*.55,col)}
 }
@@ -193,6 +206,7 @@ function wings(c,sp,g,time){
 }
 function rings(c,rx,ry,n,a){c.strokeStyle=`rgba(0,0,0,${a||.18})`;c.lineWidth=2;for(let i=1;i<=n;i++){const y=ry*(.05+i*.2);c.beginPath();c.moveTo(-rx,y-4);c.quadraticCurveTo(0,y+6,rx,y-4);c.stroke()}}
 function pattern(c,sp,rx,ry){
+  if(sp.creature==='centipede'){rings(c,rx,ry,7,.4);return}
   switch(sp.look||sp.id){
     case 'dragon':c.fillStyle='#243e70';for(let y=-ry+8;y<ry;y+=12)c.fillRect(-rx,y,rx*2,3);break;
     case 'rhino':case 'stag':c.fillStyle='rgba(255,255,255,.22)';c.beginPath();c.ellipse(rx*.25,-ry*.35,rx*.28,ry*.3,-.3,0,TAU);c.fill();c.strokeStyle='rgba(0,0,0,.28)';c.lineWidth=2;c.beginPath();c.moveTo(-rx*.15,-ry);c.quadraticCurveTo(-rx*.35,0,-rx*.1,ry);c.stroke();break;
@@ -276,12 +290,15 @@ function head(c,sp,g,time,P){
   const hr=sp.hr,id=sp.id;
   c.save();c.translate(g.HD[0],g.HD[1]);c.rotate(g.t*.8);
   antennae(c,sp,time);
+  if(sp.creature==='bat'||sp.creature==='rat')for(const side of [-1,1]){
+    c.beginPath();if(sp.creature==='bat'){c.moveTo(side*7,-9);c.lineTo(side*17,-42);c.lineTo(side*25,-8);c.closePath()}else c.ellipse(side*15,-17,12,14,0,0,TAU);fs(c,sp.hc,2.5);
+  }
   if((sp.look||id)==='rhino'){
     c.beginPath();c.moveTo(hr*.5,-hr*.55);c.quadraticCurveTo(hr*2.0,-hr*.55,hr*2.05,-hr*2.5);c.quadraticCurveTo(hr*1.55,-hr*1.0,hr*.75,hr*.3);c.closePath();fs(c,'#3a1a0b',2.5);
     c.beginPath();c.moveTo(hr*1.92,-hr*2.15);c.lineTo(hr*2.5,-hr*2.55);c.lineTo(hr*2.12,-hr*1.95);c.closePath();fs(c,'#3a1a0b',2);
     c.beginPath();c.moveTo(-hr*.6,-hr*.7);c.quadraticCurveTo(-hr*.1,-hr*1.9,hr*.5,-hr*1.75);c.quadraticCurveTo(0,-hr*1.2,hr*.1,-hr*.7);c.closePath();fs(c,'#5a2a12',2);
   }
-  if(id==='stag')mandible(c,hr,true);
+  if(id==='stag'||id==='pine')mandible(c,hr,true);
   c.beginPath();
   if(sp.head==='tri'){c.moveTo(-hr*.95,-hr*.55);c.quadraticCurveTo(0,-hr*1.05,hr*1.05,-hr*.6);c.quadraticCurveTo(hr*.9,hr*.3,hr*.25,hr*1.0);c.quadraticCurveTo(-hr*.3,hr*.5,-hr*.95,-hr*.55);c.closePath()}
   else if(sp.head==='cone')c.ellipse(hr*.35,-hr*.35,hr*1.55,hr*.78,-.55,0,TAU);
@@ -290,11 +307,13 @@ function head(c,sp,g,time,P){
   fs(c,sp.hc,3);
   if(id==='fire'){c.beginPath();c.arc(-hr*.1,-hr*.15,hr*1.08,PI*.95,PI*1.95);c.closePath();fs(c,'#f59f00',2.6);c.fillStyle=pc('#e8590c');c.beginPath();c.arc(-hr*.15,-hr*.78,hr*.25,0,TAU);c.fill()}
   if(id==='lady'){c.fillStyle=pc('#f8f9fa');c.beginPath();c.arc(-hr*.4,-hr*.45,hr*.28,0,TAU);c.fill()}
+  if(sp.creature==='spider'&&!SIL){for(const px of [-12,-4,4,12]){c.fillStyle='#33251d';c.beginPath();c.arc(px,-12,2.2,0,TAU);c.fill()}}
+  if(sp.creature==='rat'&&!SIL){c.strokeStyle='#ddd8d0';c.lineWidth=1;for(let i=-1;i<=1;i++){c.beginPath();c.moveTo(10,7);c.lineTo(36,7+i*7);c.stroke()}}
   if(sp.hero&&!SIL){c.save();c.beginPath();c.ellipse(0,0,hr*1.25,hr*.92,0,0,TAU);c.clip();c.fillStyle='#e8403a';c.fillRect(-hr*1.4,-hr*.82,hr*2.8,hr*.3);c.restore();
     const wv=Math.sin(time*6)*3;c.strokeStyle='#e8403a';c.lineWidth=5;c.lineCap='round';c.beginPath();c.moveTo(-hr*1.15,-hr*.65);c.quadraticCurveTo(-hr*1.8,-hr*.9+wv,-hr*2.3,-hr*.4+wv);c.moveTo(-hr*1.15,-hr*.6);c.quadraticCurveTo(-hr*1.7,-hr*.2+wv,-hr*2.1,hr*.2+wv);c.stroke()}
   if(sp.noface&&!SIL){c.strokeStyle='#b8904f';c.lineWidth=2;for(let i=-2;i<=2;i++){c.beginPath();c.moveTo(i*4,-hr*.9);c.lineTo(i*7,-hr*1.5);c.stroke()}c.strokeStyle='rgba(120,85,40,.5)';c.beginPath();c.moveTo(hr*.2,hr*.35);c.lineTo(hr*.7,hr*.3);c.stroke()}
   if(!sp.noface)face(c,sp,P.ex,time);
-  if(id==='stag')mandible(c,hr,false);
+  if(id==='stag'||id==='pine')mandible(c,hr,false);
   c.restore();
 }
 function mandible(c,hr,back){
@@ -303,9 +322,30 @@ function mandible(c,hr,back){
   c.beginPath();c.moveTo(hr*1.45,-hr*.48);c.lineTo(hr*1.6,-hr*.08);c.lineTo(hr*1.78,-hr*.52);c.closePath();fs(c,back?'#2a170d':'#4e2f1b',1.8);
   c.restore();
 }
+function visitorDetails(c,sp,g,time){
+  if(!sp.creature)return;
+  c.save();c.translate(g.BC[0],g.BC[1]);c.rotate(g.t);
+  if(sp.creature==='spider'){
+    // Four extra walking limbs plus the two animated arms and legs = eight.
+    for(const side of [-1,1])for(let i=0;i<2;i++){
+      const y=-14+i*22,reach=sp.id==='huntsman'?68:51,w=Math.sin(time*3+i)*3;
+      limb(c,[[side*12,y],[side*reach,y-22+w],[side*(reach+9),y+17+w]],sp.lw*.7,sp.lc);
+      if(sp.id==='tarantula')for(let h=0;h<4;h++){c.strokeStyle=pc(sp.col);c.lineWidth=1.5;c.beginPath();c.moveTo(side*(25+h*6),y-6-h*3);c.lineTo(side*(28+h*6),y-15-h*3);c.stroke()}
+    }
+  }else if(sp.creature==='centipede'){
+    for(let i=0;i<7;i++)for(const side of [-1,1]){const y=-sp.ry+8+i*12,w=Math.sin(time*4+i)*3;limb(c,[[side*8,y],[side*27,y-6],[side*36,y+5+w]],3,sp.lc)}
+  }else if(sp.creature==='bat'){
+    // Membranes connect the animated arms to the torso; no extra arms.
+    for(const a of [g.ba,g.fa]){const sh=[a.sh[0]-g.BC[0],a.sh[1]-g.BC[1]],hd=[a.hd[0]-g.BC[0],a.hd[1]-g.BC[1]];c.beginPath();c.moveTo(...sh);c.lineTo(hd[0]-36,hd[1]-8);c.quadraticCurveTo(hd[0]-28,hd[1]+20,-18,26);c.quadraticCurveTo(-9,8,...sh);fs(c,'#57466d',2)}
+  }else if(sp.creature==='rat'){
+    c.strokeStyle=pc('#cb9298');c.lineWidth=5;c.beginPath();c.moveTo(-12,25);c.bezierCurveTo(-40,46,-76,5,-58,-16);c.stroke();
+  }
+  c.restore();
+}
 function drawBug(c,sp,P,time,sil){
   SIL=!!sil;const g=P.g||geo(sp,P),k=sp.s*(P.sc||1);
   c.save();c.translate(P.wx,P.wy);c.scale(P.f*k,k);c.rotate(P.rot);c.lineCap='round';c.lineJoin='round';
+  visitorDetails(c,sp,g,time);
   wings(c,sp,g,time);
   const dk=mixc(sp.lc,-.28);
   drawArm(c,sp,g.ba,dk);drawLeg(c,sp,g.bl,dk);midLegs(c,sp,g,time,dk);
