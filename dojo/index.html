@@ -141,7 +141,7 @@ section h2{font-family:var(--display);font-weight:400;font-size:28px;line-height
   </section>
 </div>
 
-<script src="./voice.js?v=eleven2"></script>
+<script src="./voice.js?v=playback3"></script>
 <script>
 (()=>{
 'use strict';
@@ -1394,7 +1394,7 @@ const voiceKey=p=>p.source==='eleven'?elKey():p.source==='cloud'?String(prefs.ck
 const UA=navigator.userAgent,ANDROID=/Android/i.test(UA),INCHROME=/Chrome\//.test(UA)&&!/SamsungBrowser|; wv\)|EdgA|OPR|Whale|NAVER|KAKAOTALK|Instagram|FBAN/i.test(UA);
 const IDB=(()=>{const mem=new Map();let dbp=null;
   function db(){if(!dbp)dbp=new Promise(res=>{try{const r=indexedDB.open('insect-dojo',1);r.onupgradeneeded=()=>r.result.createObjectStore('clips');r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)}catch(e){res(null)}});return dbp}
-  async function op(mode,fn,fb){const d=await db();if(!d)return fb();return new Promise(res=>{try{const tx=d.transaction('clips',mode);const q=fn(tx.objectStore('clips'));tx.oncomplete=()=>res(q&&'result' in q?q.result:true);tx.onerror=()=>res(fb())}catch(e){res(fb())}})}
+  async function op(mode,fn,fb){const d=await db();if(!d)return fb();return new Promise(res=>{try{const tx=d.transaction('clips',mode);const q=fn(tx.objectStore('clips'));tx.oncomplete=()=>res(q&&'result' in q?q.result:true);tx.onerror=tx.onabort=()=>res(fb())}catch(e){res(fb())}})}
   return{get:k=>op('readonly',s=>s.get(k),()=>mem.get(k)||null).then(v=>v||mem.get(k)||null),put:(k,v)=>{mem.set(k,v);return op('readwrite',s=>s.put(v,k),()=>true)}}})();
 
 const voiceClient=DojoSpeech.createClient(IDB);
@@ -1409,11 +1409,21 @@ function stopNarr(){
 function narrationFailed(me,err){
   if(NARR!==me)return;
   me.state='error';me.error=err;stop();setV(errCopy(err));voiceRetry.hidden=false;
+  bigt.textContent='↻ 같은 목소리로 다시 시도';big.hidden=false;
 }
 function resumeNarr(){
   const me=NARR;
   try{const p=AU.play();if(p&&p.catch)p.catch(()=>narrationFailed(me,{code:'playback'}))}
   catch(e){narrationFailed(me,{code:'playback'})}
+}
+function checkNarration(now){
+  const me=NARR;if(!PLAY||me.state!=='play')return;
+  if(AU.ended){me.state='done';showReady();return}
+  if(AU.currentTime!==me.audioTime){me.audioTime=AU.currentTime;me.progressAt=now;me.resumeTried=false;return}
+  // A paused/suspended audio element must not leave the scene waiting forever.
+  const stalled=now-(me.progressAt||now);
+  if(stalled>2000&&AU.paused&&!me.resumeTried){me.resumeTried=true;resumeNarr()}
+  if(stalled>15000)narrationFailed(me,{code:'playback'});
 }
 function startNarr(i){
   stopNarr();voiceRetry.hidden=true;
@@ -1428,7 +1438,7 @@ function speakText(text,i,preview=false){
     AUurl=URL.createObjectURL(new Blob([clip.buffer],{type:clip.mime}));
     AU.onended=()=>{if(NARR===me){me.state='done';showReady()}};
     AU.onerror=()=>narrationFailed(me,{code:'playback'});
-    AU.src=AUurl;me.state='play';showReady();if(PLAY||preview)resumeNarr();
+    AU.src=AUurl;me.state='play';me.audioTime=0;me.progressAt=performance.now();showReady();if(PLAY||preview)resumeNarr();
   }).catch(err=>narrationFailed(me,err));
 }
 const vstat=document.getElementById('vstat'),gvSel=document.getElementById('gv'),sourceSel=document.getElementById('voiceSource'),keyIn=document.getElementById('gkey'),ckeyRow=document.getElementById('ckey'),siteLink=document.getElementById('siteLink'),voiceRetry=document.getElementById('voiceRetry');
@@ -1548,6 +1558,7 @@ function render(){
 }
 function loop(now){
   const dt=Math.min(.05,last?(now-last)/1000:0);last=now;
+  checkNarration(now);
   if(PLAY){
     IDLE+=dt;DIRTY=true;
     if(NARR.state==='wait'){/* 음성이 준비될 때까지 현재 장면을 유지한다. */}
@@ -1564,7 +1575,7 @@ function loop(now){
 async function wake(){try{if(navigator.wakeLock)WL=await navigator.wakeLock.request('screen')}catch(e){WL=null}}
 function play(){
   if(gT>=TOTAL-.01){gT=0;cur=-1}
-  PLAY=true;const a=ac();if(a&&a.resume)a.resume().catch(()=>{});
+  PLAY=true;if(NARR.state==='play')NARR.progressAt=performance.now();const a=ac();if(a&&a.resume)a.resume().catch(()=>{});
   big.hidden=true;pp.textContent='❚❚';pp.setAttribute('aria-label','멈춤');
   if(cur>=0){if(NARR.beat!==cur||NARR.state==='error')startNarr(cur);else if(NARR.state==='play')resumeNarr()}wake();DIRTY=true;
 }
@@ -1575,7 +1586,7 @@ function stop(ended){
 }
 function jump(T){gT=Math.max(0,Math.min(TOTAL-.001,T));cur=-1;SEEK=true;hold=0;stopNarr();DIRTY=true}
 pp.onclick=()=>PLAY?stop():play();
-big.onclick=()=>play();
+big.onclick=()=>NARR.state==='error'?voiceRetry.click():play();
 seek.oninput=()=>{jump(seek.value/1000*TOTAL)};
 document.addEventListener('keydown',e=>{if(e.code==='Space'&&!/input|button/i.test(e.target.tagName)){e.preventDefault();PLAY?stop():play()}});
 const syncRd=()=>{rdBtn.setAttribute('aria-pressed',String(READ));rdBtn.textContent=READ?'목소리 켬':'목소리 끔'};syncRd();
