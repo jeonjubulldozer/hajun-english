@@ -84,15 +84,24 @@
   }
   function createClient(cache,options={}){
     const entries=new Map();let queue=Promise.resolve();
+    // Device storage is an optional cache, never a prerequisite for playback.
+    // Mobile IndexedDB can reject, abort, or remain pending while a tab is suspended.
+    function cached(work,fallback){
+      return new Promise(resolve=>{
+        const timer=setTimeout(()=>resolve(fallback),options.cacheTimeoutMs||3000);
+        Promise.resolve().then(work).then(v=>{clearTimeout(timer);resolve(v)},()=>{clearTimeout(timer);resolve(fallback)});
+      });
+    }
     function ensure(p,text,key){
       const k=cacheKey(p,text),old=entries.get(k);if(old&&old.state!=='fail')return old.promise;
       const e={state:'busy'};entries.set(k,e);
       e.promise=(async()=>{
-        const saved=await cache.get(k);
+        const saved=await cached(()=>cache.get(k),null);
         if(saved?.profile===profileKey(p)&&saved.buffer instanceof ArrayBuffer&&['audio/wav','audio/mpeg'].includes(saved.mime)){e.state='ready';return saved}
         // Serialize requests to avoid foreground + prefetch causing a quota burst.
         const work=queue.then(()=>synth(p,text,key,options));queue=work.catch(()=>{});
-        const clip={...await work,profile:profileKey(p)};await cache.put(k,clip);e.state='ready';return clip;
+        const clip={...await work,profile:profileKey(p)};
+        e.state='ready';cached(()=>cache.put(k,clip),false);return clip;
       })().catch(err=>{e.state='fail';throw err});
       return e.promise;
     }

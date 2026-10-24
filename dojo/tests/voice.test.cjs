@@ -92,3 +92,24 @@ test('warm narrator migration replaces old defaults once, preserving credentials
   const p=voice.profile('gemini',updated.gv);
   assert.notEqual(voice.cacheKey(p,'같이 해 보자.'),voice.cacheKey({...p,version:'ko-story-v2'},'같이 해 보자.'));
 });
+
+
+test('a hanging cache read cannot block synthesis and the next scene',async()=>{
+  let calls=0;
+  const client=voice.createClient({get:()=>new Promise(()=>{}),put:async()=>{}},{cacheTimeoutMs:10,fetch:async()=>{calls++;return ok()}});
+  await client.ensure(p,'첫 장면','test');
+  await client.ensure(p,'다음 장면','test');
+  assert.equal(calls,2);assert.ok(client.ready(p,'다음 장면'));
+});
+test('failed or pending cache writes do not stop playable audio',async()=>{
+  for(const put of [()=>new Promise(()=>{}),()=>Promise.reject(Error('quota')),()=>{throw Error('storage')}]){
+    const client=voice.createClient({get:async()=>null,put},{cacheTimeoutMs:10,fetch:async()=>ok()});
+    const result=await client.ensure(p,'계속 재생','test');
+    assert.equal(result.mime,'audio/wav');assert.ok(client.ready(p,'계속 재생'));
+  }
+});
+test('a rejected cache read still uses the selected voice',async()=>{
+  let name;
+  const client=voice.createClient({get:async()=>{throw Error('storage')},put:async()=>{}},{fetch:async(url,opts)=>{name=JSON.parse(opts.body).generationConfig.speechConfig.voiceConfig.voice;return ok()}});
+  await client.ensure(p,'고른 목소리','test');assert.equal(name,p.voice);
+});
