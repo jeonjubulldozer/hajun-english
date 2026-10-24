@@ -52,6 +52,7 @@ def main():
         print('PASS: ep13 all 27 clips finish, including hanging cache at 3:02, pending writes, missed ended event',flush=True)
         page.locator('#chap button').nth(14).click()
         page.wait_for_function('__test.state().narr==="play"')
+        page.wait_for_function('__recovery.audio().time>0 && !__recovery.audio().paused')
         page.evaluate('__recovery.paused()')
         page.wait_for_function('!__recovery.audio().paused')
         assert page.evaluate('__test.state().playing')
