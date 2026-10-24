@@ -125,6 +125,13 @@ select, input.text { width: 100%; appearance: none; background: var(--card); col
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bigbtn.hajun { color: #0d1016; } }
 .bigbtn.quiet { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
 .bigbtn:disabled { opacity: .45; }
+#bigBtn { min-height: 92px; }
+#bigBtn.send, #qListen.send { background: var(--accent); color: var(--accent-ink); }
+#bigBtn.nudge { animation: nudge 1.1s ease-in-out infinite; }
+@keyframes nudge { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+@media (prefers-reduced-motion: reduce) { #bigBtn.nudge { animation: none; outline: 4px solid var(--good); } }
+@media (min-width: 700px) { #bigBtn, #qListen.bigbtn { min-height: 128px; font-size: 2.1rem; border-radius: 24px; } .stage { min-height: 240px; } }
+#qListen.bigbtn { width: 100%; min-height: 84px; }
 .tools { display: flex; flex-wrap: wrap; gap: 8px; }
 .tools .ghost { font-size: 15px; }
 .helpcard { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -214,11 +221,12 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
     <h1>하준이 영어 도장</h1>
     <p class="lede">Miss Lily와 바로바로 말하고, 같이 책 읽어요.</p>
   </header>
+  <div class="banner" id="ipadTip" hidden>📱 아이패드: 위쪽 공유 버튼(네모에 위 화살표) → <b>홈 화면에 추가</b>를 하면 하준이가 아이콘 하나로 열어요. 처음 한 번은 설정에 Gemini 키를 넣어 주세요.</div>
   <div class="banner err" id="keyWarn" hidden>Gemini 키가 아직 없어요. 아래 <b>설정</b>에서 키를 넣어야 Lily가 말해요.</div>
   <button class="routine" id="goRoutine" type="button"><span class="t">▶ 오늘의 15분 시작</span><span class="d" id="routineLine">누르기만 하면 ① 듣기 → ② 따라 읽기 → ③ 퀴즈 → ④ Lily랑 이야기까지 자동으로 이어져요</span></button>
   <div class="doors">
     <button class="door wide" id="goBooks" type="button"><span class="ic">📚</span><span class="t">오늘의 책 읽기</span><span class="d" id="readToday">하준이가 소리 내어 읽으면 앱이 듣고 다음 문장으로 넘어가요</span><span class="goalbar"><span id="goalFill"></span></span><span class="d" id="nextBookLine"></span></button>
-    <button class="door" id="goTalk" type="button"><span class="ic">💬</span><span class="t">Lily랑 말하기</span><span class="d">말 끝나면 바로 대답해요 · 자유대화, 수업, 이야기 이어 만들기</span></button>
+    <button class="door" id="goTalk" type="button"><span class="ic">💬</span><span class="t">Lily랑 말하기</span><span class="d">🎤 누르고 말하고 ✋ 누르면 Lily가 대답해요 · 자유대화, 수업, 이야기 이어 만들기</span></button>
     <button class="door" id="goVideos" type="button"><span class="ic">📺</span><span class="t">영상 보기</span><span class="d">페파피그처럼 말 많은 만화 · 영어 자막 · 보고 나서 Lily한테 이야기</span></button>
   </div>
   <div class="stats" id="stats"></div>
@@ -247,13 +255,13 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
         <div class="field"><label for="accent">발음</label>
           <select id="accent"><option value="us">🇺🇸 미국</option><option value="gb">🇬🇧 영국</option></select></div>
         <div class="field"><label for="turn">대답 방식</label>
-          <select id="turn"><option value="auto">자동 — 말 끝나면 바로 (루라처럼)</option><option value="manual">버튼 — 눌러서 시작, 눌러서 끝</option></select></div>
+          <select id="turn"><option value="manual">버튼 — 🎤 누르고 말하기, ✋ 누르면 보내기 (추천)</option><option value="auto">자동 — 말이 끝나면 알아서 (조용한 곳에서)</option></select></div>
         <div class="field"><label for="silence">말 끝 기다림 (자동일 때)</label>
-          <select id="silence"><option value="600">0.6초 (빠르게)</option><option value="900">0.9초</option><option value="1200">1.2초 (추천)</option><option value="1500">1.5초</option><option value="2500">2.5초 (천천히 생각할 때)</option></select></div>
+          <select id="silence"><option value="1200">1.2초 (빠르게)</option><option value="2000">2초 (추천)</option><option value="3000">3초 (천천히 생각할 때)</option><option value="4500">4.5초 (아주 넉넉히)</option></select></div>
         <div class="field"><label for="talkPace">Lily 대화 속도</label>
           <select id="talkPace"><option value="slow">천천히 또박또박 (추천)</option><option value="normal">원어민 보통 속도</option></select></div>
         <div class="field"><label for="out">소리 나가는 곳</label>
-          <select id="out"><option value="phone">폰 스피커</option><option value="tv">TV (화면 미러링)</option></select></div>
+          <select id="out"><option value="phone">이 기기 스피커 (아이패드·폰)</option><option value="tv">TV (화면 미러링)</option></select></div>
         <div class="field"><label for="rate">책 읽는 속도</label>
           <select id="rate"><option value="0.7">🐢 느리게</option><option value="0.8">🙂 조금 천천히 (추천)</option><option value="0.9">보통</option><option value="1">빠르게</option></select></div>
         <div class="field"><label for="readEngine">책 읽기 목소리</label>
@@ -266,7 +274,7 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
           <select id="model"><option value="gemini-3.8-live">Gemini 3.8 Live (기본)</option><option value="gemini-3.1-flash-live-preview">Gemini 3.1 Flash Live (예비)</option></select></div>
       </div>
       <div class="row"><button class="ghost" id="testVoice" type="button">🔊 책 읽기 목소리 들어보기</button><span class="small muted" id="testNote"></span></div>
-      <p class="help small muted">선풍기·TV 소리가 있어도 Lily는 말소리만 들어요. 그래도 말이 안 끝난다고 느끼면 큰 버튼 <b>✋ 다 말했어</b>를 누르면 바로 넘어가요. TV로 소리를 보내면 Lily 목소리가 다시 마이크로 들어가지 않게 잠깐 기다렸다가 들어요.</p>
+      <p class="help small muted"><b>버튼 방식</b>은 하준이가 <b>🎤 말하기</b>를 누른 뒤 아무리 천천히 말해도 끊지 않고 기다려요. 다 말하고 <b>✋ 다 말했어</b>를 누르면 그때 Lily에게 보내요. 퀴즈 대답도 같은 방식이에요. 자동 방식은 말이 멈추고 위에서 고른 시간만큼 조용하면 끝난 걸로 봐요. TV로 소리를 보내면 Lily 목소리가 다시 마이크로 들어가지 않게 잠깐 기다렸다가 들어요.</p>
     </div>
   </details>
 </main>
@@ -302,7 +310,7 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
   <div class="field"><label for="talkLen">길이 (끝나면 오늘의 정리)</label>
     <select id="talkLen"><option value="7">7분</option><option value="10" selected>10분</option><option value="15">15분</option></select></div>
   <button class="go" id="startTalk" type="button">시작!</button>
-  <p class="small muted">폰을 TV에 미러링해서 쓰면 하준이는 TV 화면을 보고 폰에 대고 말하면 돼요.</p>
+  <p class="small muted">아이패드에서 열면 하준이가 화면을 보면서 직접 🎤 말하기 → ✋ 다 말했어를 눌러요. 폰은 안 만져도 돼요.</p>
 </main>
 
 <!-- ============ TALK ============ -->
@@ -453,7 +461,7 @@ details.log > summary { cursor: pointer; color: var(--muted); font-size: 14px; p
   <div class="heard" id="qHeard"></div>
   <div class="earbar" id="qBar" hidden><span id="qLv"></span></div>
   <div class="row" style="justify-content:center;flex-wrap:wrap">
-    <button class="ghost" id="qListen" type="button">🎤 말로 대답하기</button>
+    <button class="bigbtn hajun" id="qListen" type="button">🎤 말로 대답하기</button>
     <button class="ghost" id="qRepeat" type="button">🔊 다시 듣기</button>
     <button class="ghost" id="qSkip" type="button">모르겠어 →</button>
   </div>
@@ -480,9 +488,13 @@ function load(k) { try { return JSON.parse(localStorage.getItem(k) || "{}") || {
 function shared() { return load("dojo-live"); }
 function updShared(fn) { const cur = load("dojo-live"); fn(cur); try { localStorage.setItem("dojo-live", JSON.stringify(cur)); } catch {} }
 const st = load("lily2");
+const IPAD = /iPad/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const STANDALONE = navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
 function saveSt() { try { localStorage.setItem("lily2", JSON.stringify(st)); } catch {} }
-(() => { const s = shared(); const d = { voice: s.gVoice || "Sulafat", accent: s.accent || "us", turn: "auto", silence: "900", out: "tv", rate: "0.8", readEngine: s.voiceSource === "gemini" ? "gemini" : s.voiceSource === "phone" ? "phone" : "cloud", model: "gemini-3.8-live", talkMode: "free", talkLen: "10", goal: "30", readMode: "echo", minLevel: "3", talkPace: "slow" };
+(() => { const s = shared(); const d = { voice: s.gVoice || "Sulafat", accent: s.accent || "us", turn: "manual", silence: "2000", out: IPAD ? "phone" : "tv", rate: "0.8", readEngine: s.voiceSource === "gemini" ? "gemini" : s.voiceSource === "phone" ? "phone" : "cloud", model: "gemini-3.8-live", talkMode: "free", talkLen: "10", goal: "30", readMode: "echo", minLevel: "3", talkPace: "slow" };
   for (const k in d) if (st[k] == null) st[k] = d[k]; st.progress = st.progress || {}; st.myBooks = st.myBooks || []; st.wordKo = st.wordKo || {}; st.readDays = st.readDays || {};
+  if (st.turnFix !== 1) { st.turn = "manual"; if (IPAD) st.out = "phone"; st.turnFix = 1; }   // 2026-10-24: 하준이가 아이패드에서 🎤·✋ 버튼으로 (말 중간에 끊지 않게)
+  if (!["1200", "2000", "3000", "4500"].includes(String(st.silence))) st.silence = Number(st.silence) > 2000 ? "3000" : "2000";
   if (st.paceFix !== 1) { if (Number(st.rate) >= 0.9) st.rate = "0.8"; if (st.silence === "900" || st.silence === "600") st.silence = "1200"; st.paceFix = 1; }   // 2026-10-19: everyone one notch slower
   saveSt(); })();
 const readRate = () => Number(st.rate) || 0.8;
@@ -741,7 +753,7 @@ function earPcm(i16) {
     if (Ear.run >= 2) { Ear.speaking = true; Ear.buf = Ear.pre.slice(); Ear.pre = []; Ear.lastVoice = now; Ear.h.onStart && Ear.h.onStart(); }
     return;
   }
-  Ear.buf.push(i16); if (Ear.buf.length > 600) Ear.buf.shift();
+  Ear.buf.push(i16); if (Ear.buf.length > 1500) Ear.buf.shift();
   if (voiced) { Ear.lastVoice = now; Ear.speechMs += ms; Ear.needVoice = false; }
   if (!Ear.checking && !Ear.needVoice && now - Ear.lastVoice > (Ear.h.pauseMs || 700) && Ear.speechMs > 250) {
     Ear.checking = true; Ear.needVoice = true; const h = Ear.h;
@@ -770,23 +782,27 @@ If there is no speech from the boy, reply {"heard":"","read":[],"finished":false
   const done = !real.length || ratio >= 0.85 || ((!!r.finished || ok.has(last)) && ratio >= 0.6);
   return { ok, ratio, done, heard: String(r.heard || "") };
 }
-// one spoken answer (quiz): listen until he stops, then transcribe
-let earCancel = null;
-function earAnswer(question, onNote, maxMs = 10000) {
+// one spoken answer (quiz). Button way: listen until he taps ✋ (pauses never end it). Auto way: a long pause ends it.
+let earCancel = null, earDoneNow = null;
+function earAnswer(question, onNote, opt = {}) {
+  const manual = !!opt.manual, maxMs = opt.maxMs || (manual ? 60000 : 15000), pauseMs = opt.pauseMs || (Number(st.silence) || 2000);
   return new Promise(async (res) => {
-    let done = false; const fin = (v) => { if (done) return; done = true; clearTimeout(t); earStop(); earCancel = null; res(v); };
+    let done = false, busy = false; const fin = (v) => { if (done) return; done = true; clearTimeout(t); earStop(); earCancel = null; earDoneNow = null; res(v); };
+    const heardSome = () => Ear.speaking && Ear.speechMs > 250;
+    const transcribe = async (chunks) => {
+      if (done || busy) return; busy = true; earStop(); onNote("👂 …");
+      try { const r = await gem([{ inlineData: { mimeType: "audio/wav", data: u8ToB64(wavFromChunks(chunks)) } }, { text: `Transcribe exactly what the boy says. He is an 8-year-old Korean learner answering this quiz question: "${question}". He may speak English, Korean or both. Ignore background noise. Reply ONLY JSON: {"heard":"<transcript, or empty if he said nothing>"}` }], { models: FAST, max: 200, temp: 0 }); fin(String(r.heard || "")); }
+      catch { fin(""); }
+    };
     earCancel = () => fin(null);
-    const t = setTimeout(() => { if (!Ear.speaking || !Ear.checking) fin(Ear.speaking ? "" : null); }, maxMs);
+    earDoneNow = () => { if (done || busy) return; if (heardSome()) transcribe(Ear.buf.slice()); else fin(null); };   // ✋ 다 말했어
+    const t = setTimeout(() => { if (!done && !busy) { if (heardSome()) transcribe(Ear.buf.slice()); else fin(null); } }, maxMs);
     try { await Mic.open(); } catch { fin({ denied: true }); return; }
     if (done) return;
-    earStart({ pauseMs: 900,
+    earStart({ pauseMs,
       onLevel: (lv, v) => { const b = $("qLv"); if (b) { b.style.width = Math.min(100, lv * 900) + "%"; b.classList.toggle("on", v); } },
-      onStart: () => onNote("🎤 듣고 있어요…"),
-      onPause: async (chunks) => {
-        if (done) return; earStop(); onNote("👂 …");
-        try { const r = await gem([{ inlineData: { mimeType: "audio/wav", data: u8ToB64(wavFromChunks(chunks)) } }, { text: `Transcribe exactly what the boy says. He is an 8-year-old Korean learner answering this quiz question: "${question}". He may speak English, Korean or both. Ignore background noise. Reply ONLY JSON: {"heard":"<transcript, or empty if he said nothing>"}` }], { models: FAST, max: 200, temp: 0 }); fin(String(r.heard || "")); }
-        catch { fin(""); }
-      } });
+      onStart: () => onNote(manual ? "🎤 듣고 있어요… 천천히 해도 돼요. 다 하면 ✋" : "🎤 듣고 있어요…"),
+      onPause: manual ? () => {} : (chunks) => transcribe(chunks) });
   });
 }
 
@@ -802,6 +818,7 @@ async function keepAwake(on) { try { if (on && "wakeLock" in navigator && !wakeL
 const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 function renderHome() {
   const d = new Date(); $("today").textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일`;
+  $("ipadTip").hidden = !(IPAD && !STANDALONE);
   const kw = $("keyWarn"); kw.hidden = !!gkey() && !(ANDROID && !INCHROME); $("key").value = gkey();
   if (ANDROID && !INCHROME) { kw.innerHTML = ""; kw.append(mk("div", "", "이 앱은 크롬에서 열어야 마이크·읽기 따라가기·키가 제대로 돼요.")); const a = mk("a", "", "크롬으로 열기 ↗"); a.href = "intent://" + location.host + location.pathname + "#Intent;scheme=https;package=com.android.chrome;end"; a.style.fontWeight = "600"; kw.append(a); }
   const n = readToday(), goal = Number(st.goal) || 30;
@@ -1072,6 +1089,7 @@ function playPcm(b64, rate) {
   const bin = atob(b64); const n = bin.length >> 1; if (!n) return;
   const buf = Out.ctx.createBuffer(1, n, rate || 24000); const ch = buf.getChannelData(0);
   for (let i = 0; i < n; i++) { let v = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8); if (v >= 32768) v -= 65536; ch[i] = v / 32768; }
+  if (Out.ctx.state !== "running") Out.ctx.resume().catch(() => {});   // iPad: the speaker can pause when the microphone turns on
   const src = Out.ctx.createBufferSource(); src.buffer = buf; src.connect(Out.gain);
   const now = Out.ctx.currentTime; const t = Out.end > now ? Out.end : now + 0.08;
   src.start(t); Out.end = t + buf.duration; Out.srcs.add(src); src.onended = () => Out.srcs.delete(src);
@@ -1081,12 +1099,12 @@ const playingOut = () => !!Out.ctx && Out.end > Out.ctx.currentTime + 0.02;
 function u8ToB64(u8) { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
 
 const L = { ws: null, cfg: null, state: "off", manual: false, handle: null, variant: 0, closing: false, lilyActive: false, lilyText: "", curHajun: null, lastLily: "", pcm: [], pcmN: 0,
-  sentAt: 0, lastServerAt: 0, startAt: 0, endAt: 0, timeUp: false, byeSent: false, goAway: false, floor: 0, convo: [], stars: 0, speakMs: 0, nudgeT: null, clockT: null, wd: null, levelRaf: 0, reconnects: 0 };
+  sentAt: 0, lastServerAt: 0, startAt: 0, endAt: 0, recAt: 0, lastLoud: 0, timeUp: false, byeSent: false, goAway: false, floor: 0, convo: [], stars: 0, speakMs: 0, nudgeT: null, clockT: null, wd: null, levelRaf: 0, reconnects: 0 };
 function liveSetupMsg(v, cfg) {
   const s = { model: "models/" + v.model, generationConfig: { responseModalities: ["AUDIO"] }, systemInstruction: { parts: [{ text: talkSystem(cfg) }] } };
   if (v.voice) s.generationConfig.speechConfig = { voiceConfig: { prebuiltVoiceConfig: { voiceName: st.voice } } };
   if (v.vad) s.realtimeInputConfig = L.manual ? { automaticActivityDetection: { disabled: true } }
-    : { automaticActivityDetection: { disabled: false, startOfSpeechSensitivity: "START_SENSITIVITY_HIGH", endOfSpeechSensitivity: "END_SENSITIVITY_HIGH", prefixPaddingMs: 300, silenceDurationMs: Number(st.silence) || 900 } };
+    : { automaticActivityDetection: { disabled: false, startOfSpeechSensitivity: "START_SENSITIVITY_HIGH", endOfSpeechSensitivity: "END_SENSITIVITY_LOW", prefixPaddingMs: 300, silenceDurationMs: Number(st.silence) || 2000 } };
   if (v.vad && v.handling) s.realtimeInputConfig.activityHandling = "NO_INTERRUPTION";
   if (v.extras) { s.contextWindowCompression = { slidingWindow: {} }; s.sessionResumption = L.handle ? { handle: L.handle } : {}; }
   if (v.tx) { s.inputAudioTranscription = {}; s.outputAudioTranscription = {}; }
@@ -1152,7 +1170,9 @@ function sendJSON(o) { if (L.ws && L.ws.readyState === 1) L.ws.send(JSON.stringi
 function sendAudio(i16) { sendJSON({ realtimeInput: { audio: { data: u8ToB64(new Uint8Array(i16.buffer, i16.byteOffset, i16.byteLength)), mimeType: "audio/pcm;rate=16000" } } }); }
 function sendText(t) {
   const at = Date.now(); L.sentAt = at;
-  sendJSON({ realtimeInput: { text: t } });
+  // button way: the server only answers a turn the client closes, so a text turn gets its own start/end marks
+  if (L.manual) { sendJSON({ realtimeInput: { activityStart: {} } }); sendJSON({ realtimeInput: { text: t } }); sendJSON({ realtimeInput: { activityEnd: {} } }); }
+  else sendJSON({ realtimeInput: { text: t } });
   clearTimeout(L.wd);
   L.wd = setTimeout(() => {   // Lily stayed quiet: give the turn to Hajun instead of waiting forever
     if (L.lastServerAt < at && !L.lilyActive && L.ws && L.state === "thinking") { setTalkState(L.manual ? "ready" : "listen"); toast("Lily가 조용하네요 — 하준이가 먼저 \"Hi, Lily!\" 해 봐요 🙂", 5000); }
@@ -1168,7 +1188,7 @@ function onPcm(i16) {
   if (micGate()) {
     L.pcm.push(i16); L.pcmN += i16.length;
     if (L.pcmN >= 1600) { const all = new Int16Array(L.pcmN); let o = 0; for (const c of L.pcm) { all.set(c, o); o += c.length; } L.pcm = []; L.pcmN = 0; sendAudio(all); }
-    if (loud) { L.speakMs += i16.length / 16; if (!L.manual && L.state === "listen") setTalkState("hearing"); else armNudge(); }
+    if (loud) { L.speakMs += i16.length / 16; L.lastLoud = Date.now(); if (!L.manual && L.state === "listen") setTalkState("hearing"); else armNudge(); }
   } else { L.pcm = []; L.pcmN = 0; }
 }
 function sendSilence(ms) { const n = Math.round(16 * ms); for (let k = 0; k < n; k += 1600) sendAudio(new Int16Array(Math.min(1600, n - k))); }
@@ -1178,7 +1198,7 @@ async function startTalk(cfg) {
   if (!gkey()) { toast("Gemini 키가 없어요. 처음 화면 → 설정에서 넣어 주세요.", 5000); show("home"); $("settingsBox").open = true; return; }
   Object.assign(L, { cfg, state: "off", manual: st.turn === "manual", handle: null, closing: false, lilyActive: false, lilyText: "", curHajun: null, lastLily: "", pcm: [], pcmN: 0, sentAt: 0, lastServerAt: 0, timeUp: false, byeSent: false, goAway: false, floor: 0, convo: [], stars: 0, speakMs: 0, reconnects: 0, startAt: 0 });
   show("talk"); keepAwake(true);
-  $("talkTitle").textContent = cfg.label || "Lily랑 말하기"; $("talkSub").textContent = L.manual ? "버튼 방식: 🎤 누르고 말하고, 다 하면 ✋" : "말이 끝나면 Lily가 바로 대답해요";
+  $("talkTitle").textContent = cfg.label || "Lily랑 말하기"; $("talkSub").textContent = L.manual ? "🎤 누르고 말하기 → 다 하면 ✋ · 천천히 말해도 기다려요" : "말이 끝나면 Lily가 대답해요";
   $("talkErr").hidden = true; $("capLily").textContent = ""; $("capHajun").textContent = ""; $("capFix").textContent = ""; $("log").innerHTML = ""; $("helpCard").hidden = true;
   $("tTopic").hidden = cfg.kind !== "free"; setTalkState("connecting");
   outInit(); unlockAudio();
@@ -1257,12 +1277,14 @@ function setTalkState(s) {
   const orb = $("orb"), big = $("bigBtn"), lab = $("stateLabel");
   orb.classList.toggle("hajun", s === "listen" || s === "hearing" || s === "rec");
   orb.classList.toggle("idle", s === "connecting" || s === "thinking" || s === "paused" || s === "off" || s === "ready");
-  lab.textContent = { connecting: "연결 중…", lily: "Lily가 말하는 중", listen: "하준이 차례 — 말해 봐!", hearing: "듣고 있어요…", thinking: "생각 중…", ready: "🎤 버튼을 누르고 말해요", rec: "듣고 있어요… 다 하면 ✋", paused: "잠깐 멈춤", off: "끝" }[s] || "";
-  big.disabled = s === "connecting" || s === "off" || s === "thinking";
-  big.className = "bigbtn" + ((s === "listen" || s === "hearing" || s === "rec" || s === "ready") ? " hajun" : s === "lily" ? " quiet" : "");
-  big.textContent = s === "lily" ? "⏸ 잠깐 멈춤" : s === "ready" ? "🎤 눌러서 말하기" : s === "rec" ? "✋ 다 말했어" : (s === "listen" || s === "hearing") ? "✋ 다 말했어" : s === "paused" ? "▶ 다시 하기" : s === "thinking" ? "생각 중…" : "연결 중…";
+  lab.textContent = { connecting: "연결 중…", lily: L.manual ? "Lily가 말하는 중 — 잘 들어요 👂" : "Lily가 말하는 중", listen: "하준이 차례 — 말해 봐!", hearing: "듣고 있어요…", thinking: "생각 중…", ready: "하준이 차례 — 🎤 누르고 말해요", rec: "듣고 있어요 · 천천히 해도 기다려요", paused: "잠깐 멈춤", off: "끝" }[s] || "";
+  if (s === "rec") { L.recAt = Date.now(); L.lastLoud = 0; }
+  // button way: while Lily talks the big button just waits (so a tap never pauses her by mistake); ⏸ 잠깐 stays available
+  big.disabled = s === "connecting" || s === "off" || s === "thinking" || (L.manual && s === "lily");
+  big.className = "bigbtn" + (s === "rec" ? " send" : (s === "listen" || s === "hearing" || s === "ready") ? " hajun" : s === "lily" ? " quiet" : "");
+  big.textContent = s === "lily" ? (L.manual ? "👂 Lily가 말하는 중…" : "⏸ 잠깐 멈춤") : s === "ready" ? "🎤 말하기" : s === "rec" ? "✋ 다 말했어" : (s === "listen" || s === "hearing") ? "✋ 다 말했어" : s === "paused" ? "▶ 다시 하기" : s === "thinking" ? "생각 중…" : "연결 중…";
   ["tHint", "tSlow", "tKo", "tTopic"].forEach(id => { $(id).disabled = !(s === "listen" || s === "hearing" || s === "ready" || s === "paused"); });
-  $("tPause").textContent = s === "paused" ? "▶ 계속" : "⏸ 잠깐"; $("tPause").hidden = s === "lily" || s === "paused";
+  $("tPause").textContent = s === "paused" ? "▶ 계속" : "⏸ 잠깐"; $("tPause").hidden = s === "paused" || (s === "lily" && !L.manual) || s === "rec";
   if (s === "listen" || s === "ready") armNudge();
 }
 function levelLoop() {
@@ -1273,6 +1295,12 @@ function levelLoop() {
     if (L.state === "lily" && Out.an) { Out.an.getByteTimeDomainData(Out.buf); let s = 0; for (let i = 0; i < Out.buf.length; i++) { const v = (Out.buf[i] - 128) / 128; s += v * v; } lv = Math.sqrt(s / Out.buf.length) * 3; }
     else if (micGate()) lv = Mic.level * 8;
     $("orb").style.setProperty("--s", String(0.78 + Math.min(0.3, lv)));
+    if (L.manual && L.state === "rec") {
+      const now = Date.now(), quietFor = now - (L.lastLoud || L.recAt);
+      $("bigBtn").classList.toggle("nudge", quietFor > 6000);
+      if (quietFor > 6000) $("stateLabel").textContent = L.lastLoud ? "다 말했으면 ✋ 눌러요 (더 말해도 돼요)" : "🎤 듣고 있어요 — 말해 봐!";
+      if (quietFor > 90000) $("bigBtn").click();
+    }
     L.levelRaf = requestAnimationFrame(tick);
   };
   L.levelRaf = requestAnimationFrame(tick);
@@ -1282,7 +1310,7 @@ $("bigBtn").addEventListener("click", () => {
   if (s === "lily") { stopPlayback(); setTalkState("paused"); return; }
   if (s === "paused") { setTalkState(L.manual ? "ready" : "listen"); return; }
   if (s === "ready") { stopSpeech(); sendJSON({ realtimeInput: { activityStart: {} } }); setTalkState("rec"); return; }
-  if (s === "rec") { if (L.pcmN) { const all = new Int16Array(L.pcmN); let o = 0; for (const c of L.pcm) { all.set(c, o); o += c.length; } L.pcm = []; L.pcmN = 0; sendAudio(all); } sendJSON({ realtimeInput: { activityEnd: {} } }); setTalkState("thinking"); watchReply(); return; }
+  if (s === "rec") { $("bigBtn").classList.remove("nudge"); if (L.pcmN) { const all = new Int16Array(L.pcmN); let o = 0; for (const c of L.pcm) { all.set(c, o); o += c.length; } L.pcm = []; L.pcmN = 0; sendAudio(all); } sendJSON({ realtimeInput: { activityEnd: {} } }); setTalkState("thinking"); watchReply(); return; }
   if (s === "listen" || s === "hearing") {   // "I'm done": push a moment of clean silence so the turn ends right now, fan or no fan
     setTalkState("thinking"); sendSilence(1600); sendJSON({ realtimeInput: { audioStreamEnd: true } }); watchReply(); return;
   }
@@ -1523,7 +1551,7 @@ function hajunReads(i, tok, a = 0, b = null) {
     const listen = () => {
       if (finished || tok !== R.tok) return;
       note(attempt === 1 ? "🎤 하준이 차례 — 소리 내어 읽어요" : "🎤 이번엔 하준이가 읽어요"); bar(true); listenAt = Date.now();
-      earStart({ pauseMs: 700,
+      earStart({ pauseMs: 900,
         onLevel: (lv, v) => { const b = $("earLv"); b.style.width = Math.min(100, lv * 900) + "%"; b.classList.toggle("on", v); },
         onStart: () => note("👂 듣고 있어요…"),
         onPause: async (chunks, speechMs) => {
@@ -1544,7 +1572,7 @@ function hajunReads(i, tok, a = 0, b = null) {
           if (quietTries >= 2) { clearInterval(timer); note("멈췄어요 — ▶ 누르면 이어서 해요"); const t = $("turnNote").textContent; readerStop(); $("turnNote").textContent = t; return; }
           if (await helpRead()) listen(); return;
         }
-        if (Ear.speaking && !Ear.checking && Ear.needVoice && now - Ear.lastVoice > 2800) {   // he stopped, sentence not complete
+        if (Ear.speaking && !Ear.checking && Ear.needVoice && now - Ear.lastVoice > Math.max(4500, Number(st.silence) || 0)) {   // he stopped for a long while, sentence not complete
           const ratio = best ? best.ratio : 0;
           if (ratio >= 0.5 || attempt >= 2) { success(best, ratio < 0.5); return; }
           attempt++; if (await helpRead()) listen();
@@ -1728,18 +1756,22 @@ function quizShow() {
   const it = Q.items[Q.i]; $("qNum").textContent = `${Q.i + 1} / ${Q.items.length}`; $("qHeard").textContent = "";
   $("qText").textContent = it.q; const box = $("qOpts"); box.innerHTML = "";
   (it.opts || []).forEach(o => { const b = mk("button", "opt"); b.type = "button"; if (o.e) b.append(mk("span", "em", o.e)); b.append(mk("span", "", o.text)); b.onclick = () => quizAnswer(o, b); o.el = b; box.append(b); });
-  $("qSkip").textContent = "모르겠어 →";
+  $("qSkip").textContent = "모르겠어 →"; qBtn(false);
   const tok = Q.tok; if (it.t === "word") return;
-  (async () => { await say(it.q.replace(/\.\.\./g, " blank."), { rate: readRate() + 0.05 }); if (tok === Q.tok) { await sleep(tvDelay()); if (tok === Q.tok) quizListen(); } })();
+  (async () => { await say(it.q.replace(/\.\.\./g, " blank."), { rate: readRate() + 0.05 }); if (tok !== Q.tok) return; await sleep(tvDelay()); if (tok !== Q.tok) return;
+    if (st.turn === "manual") $("qHeard").textContent = "🎤 말로 대답하기를 누르고 말해요 (눌러서 골라도 돼요)"; else quizListen(); })();
 }
+function qBtn(on) { const b = $("qListen"); b.textContent = on ? "✋ 다 말했어" : "🎤 말로 대답하기"; b.classList.toggle("send", on); b.classList.toggle("hajun", !on); }
 async function quizListen(again) {
   const it = Q.items[Q.i]; if (Q.answered) return; stopSpeech(); if (earCancel) earCancel();
-  $("qHeard").textContent = "🎤 하준이 차례 — 말로 대답해요"; $("qBar").hidden = false; const tok = Q.tok;
-  const t = await earAnswer(it.q, (x) => { if (tok === Q.tok) $("qHeard").textContent = x; }, 10000);
-  $("qBar").hidden = true;
+  const manual = st.turn === "manual";
+  $("qHeard").textContent = manual ? "🎤 하준이 차례 — 다 말하면 ✋ 눌러요" : "🎤 하준이 차례 — 말로 대답해요"; $("qBar").hidden = false; const tok = Q.tok; qBtn(true);
+  const t = await earAnswer(it.q, (x) => { if (tok === Q.tok) $("qHeard").textContent = x; }, { manual });
+  $("qBar").hidden = true; if (tok === Q.tok) qBtn(false);
   if (tok !== Q.tok || Q.answered) return;
   if (t && t.denied) { $("qHeard").textContent = "마이크를 못 열었어요 — 눌러서 골라요"; return; }
   if (!t) {
+    if (manual) { $("qHeard").textContent = "잘 안 들렸어요 — 🎤 다시 누르고 말해요 🙂"; return; }
     if (!again) { $("qHeard").textContent = "🎤 한 번 더 들을게요"; await say(it.opts ? "What do you think?" : "Your turn! Say it!", { rate: 0.95 }); if (tok === Q.tok) { await sleep(tvDelay()); if (tok === Q.tok) quizListen(true); } return; }
     $("qHeard").textContent = it.opts ? "눌러서 골라도 돼요 🙂" : "🎤 다시 듣기를 누르거나 모르겠어 →"; return;
   }
@@ -1750,7 +1782,8 @@ async function quizListen(again) {
     let best = null, bestScore = 0;
     it.opts.forEach(o => { const ws = normT(o.text).split(" ").map(normW).filter(w => w && !stop.has(w)); const sc = ws.filter(w => H.some(h => wordMatch(w, h))).length / Math.max(1, ws.length); if (sc > bestScore) { bestScore = sc; best = o; } });
     if (best && bestScore >= 0.5) quizAnswer(best, best.el);
-    else if (!again) { $("qHeard").textContent += "  — 한 번 더!"; setTimeout(() => { if (tok === Q.tok && !Q.answered) quizListen(true); }, 900); }
+    else if (!again && !manual) { $("qHeard").textContent += "  — 한 번 더!"; setTimeout(() => { if (tok === Q.tok && !Q.answered) quizListen(true); }, 900); }
+    else if (manual) $("qHeard").textContent += "  — 🎤 다시 말하거나 눌러서 골라요";
     else $("qHeard").textContent += "  — 눌러서 골라도 돼요";
     return;
   }
@@ -1783,7 +1816,7 @@ function quizEnd() {
   if (RT.on && RT.step === 3) { $("rtStep").textContent = "③ 퀴즈 끝!"; $("rtHint").textContent = " — 곧 Lily랑 이야기해요"; setTimeout(routineTalk, 3500); }
   recordStats("🧩 " + Q.book.title, Q.score, 0, 1);
 }
-$("qListen").addEventListener("click", () => quizListen(true));
+$("qListen").addEventListener("click", () => { if (earDoneNow) earDoneNow(); else quizListen(true); });
 $("qRepeat").addEventListener("click", () => { const it = Q.items[Q.i]; if (!it) return; if (earCancel) earCancel(); if (it.t === "word") { say(it.a[0], { rate: 0.8 }); return; } say(it.q.replace(/\.\.\./g, " blank."), { rate: 0.85 }); });
 $("qSkip").addEventListener("click", () => { const it = Q.items[Q.i]; if (!it || Q.answered) return; if (it.opts) quizAnswer({ right: false }, mk("button")); else quizSay(false, ""); });
 $("quizBack").addEventListener("click", () => { rtOff(); Q.tok++; if (earCancel) earCancel(); stopSpeech(); show("reader"); });
