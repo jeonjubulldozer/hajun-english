@@ -192,7 +192,19 @@ SP.kidrhino=Object.assign({},SP.rhino,{n:'꼬마뿔',k:'장수풍뎅이',tag:'�
   moves:'매일 밤 아빠랑 스파링',fact:'수컷만 큰 뿔이 있어요.',id:'kidrhino',ph:25.9,ep:4,scene:'kidrhino'});
 SP.dadcicada=Object.assign({},SP.cicada,{n:'아빠',k:'매미',tag:'맴맴이 아빠',arts:['judo','wr','bjj'],s:1.22,col:'#343d24',hc:'#3f4a2c',hero:0,look:'cicada',
   moves:'맴맴이랑 스파링',fact:'수컷 매미만 맴맴 노래해요.',id:'dadcicada',ph:27.1,ep:4,scene:'mmdad'});
-const ORDER=['rhino','stag','mantis','hop','lady','butter','katy','fire','bee','bang','cicada','grass','dung','ant','cricket','kidrhino','dadcicada','dragon'];
+// Visitors and story antagonists. Species are not inherently villains.
+SP.pine={...SP.stag,id:'pine',n:'청솔이',k:'사슴벌레',tag:'솔숲 유도관',arts:['judo'],s:.96,col:'#39716b',hc:'#315a52',look:'stag',ph:31,ep:12,scene:'visitors12',moves:'반대잡기 · 빗당겨치기 · 되치기',fact:'큰 턱은 먹이를 씹는 턱이 변한 것이에요.'};
+SP.amber={...SP.lady,id:'amber',n:'호박이',k:'무당벌레',tag:'솔숲 유도관',arts:['judo'],col:'#efaa34',look:'lady',ph:32,ep:12,scene:'visitors12',moves:'발기술 · 모두걸기',fact:'무당벌레는 종류에 따라 색과 무늬가 달라요.'};
+const visitors=[
+ ['tarantula','털보','타란튤라','spider','#78503e',29,38,9],
+ ['huntsman','넓적이','농발거미','spider','#ad8752',26,33,6],
+ ['bat','밤날개','박쥐','bat','#79658e',22,33,7],
+ ['rat','잽쥐','쥐','rat','#899296',23,34,7],
+ ['centipede','마디왕','지네','centipede','#bb6845',15,49,6]
+];
+for(const [i,n,k,creature,col,rx,ry,lw] of visitors){SP[i]={id:i,n,k,creature,col,hc:col,lc:mixVisitorColor(creature),rx,ry,lw,s:1,L:LL({th:33,sn:33}),hr:19,ant:'none',arts:[],ph:35+visitors.findIndex(v=>v[0]===i),tag:'그늘패',ep:13,scene:'arrival13',moves:'힘자랑 대신 함께 배우는 법을 찾는 중',fact:creature==='spider'?'거미는 다리가 여덟 개이고 곤충이 아니에요.':creature==='bat'?'박쥐는 날 수 있는 포유류예요.':creature==='rat'?'쥐는 수염으로 주변의 좁은 틈을 느껴요.':'지네는 몸의 여러 마디마다 다리가 한 쌍씩 있어요.'};}
+function mixVisitorColor(kind){return kind==='spider'?'#624b38':kind==='centipede'?'#8a4532':'#554b63'}
+const ORDER=['rhino','stag','mantis','hop','lady','butter','katy','fire','bee','bang','cicada','grass','dung','ant','cricket','kidrhino','dadcicada','dragon','pine','amber','tarantula','huntsman','bat','rat','centipede'];
 const UNLOCK={lady:5,butter:10,katy:15,fire:25,bee:35,bang:50};
 
 /* ---------- 하준이 미션 앱 연동 (같은 사이트에 올렸을 때만) ---------- */
@@ -311,6 +323,7 @@ function drawArm(c,sp,A,col){
   }else{c.beginPath();c.arc(A.hd[0],A.hd[1],sp.lw*.72,0,TAU);fs(c,col,2.2)}
 }
 function midLegs(c,sp,g,time,col){
+  if(sp.creature)return;
   if(sp.noface)return;const b=g.BC,w=Math.sin(time*3+sp.ph)*.15;
   for(const s of [1,-1]){const a1=s>0?.9+w:-.6-w,p0=[b[0]+s*4,b[1]-4],d1=DR(a1),p1=[p0[0]+d1[0]*16,p0[1]+d1[1]*16],d2=DR(a1*.3),p2=[p1[0]+d2[0]*14,p1[1]+d2[1]*14];limb(c,[p0,p1,p2],sp.lw*.55,col)}
 }
@@ -350,6 +363,7 @@ function wings(c,sp,g,time){
 }
 function rings(c,rx,ry,n,a){c.strokeStyle=`rgba(0,0,0,${a||.18})`;c.lineWidth=2;for(let i=1;i<=n;i++){const y=ry*(.05+i*.2);c.beginPath();c.moveTo(-rx,y-4);c.quadraticCurveTo(0,y+6,rx,y-4);c.stroke()}}
 function pattern(c,sp,rx,ry){
+  if(sp.creature==='centipede'){rings(c,rx,ry,7,.4);return}
   switch(sp.look||sp.id){
     case 'dragon':c.fillStyle='#243e70';for(let y=-ry+8;y<ry;y+=12)c.fillRect(-rx,y,rx*2,3);break;
     case 'rhino':case 'stag':c.fillStyle='rgba(255,255,255,.22)';c.beginPath();c.ellipse(rx*.25,-ry*.35,rx*.28,ry*.3,-.3,0,TAU);c.fill();c.strokeStyle='rgba(0,0,0,.28)';c.lineWidth=2;c.beginPath();c.moveTo(-rx*.15,-ry);c.quadraticCurveTo(-rx*.35,0,-rx*.1,ry);c.stroke();break;
@@ -433,12 +447,15 @@ function head(c,sp,g,time,P){
   const hr=sp.hr,id=sp.id;
   c.save();c.translate(g.HD[0],g.HD[1]);c.rotate(g.t*.8);
   antennae(c,sp,time);
+  if(sp.creature==='bat'||sp.creature==='rat')for(const side of [-1,1]){
+    c.beginPath();if(sp.creature==='bat'){c.moveTo(side*7,-9);c.lineTo(side*17,-42);c.lineTo(side*25,-8);c.closePath()}else c.ellipse(side*15,-17,12,14,0,0,TAU);fs(c,sp.hc,2.5);
+  }
   if((sp.look||id)==='rhino'){
     c.beginPath();c.moveTo(hr*.5,-hr*.55);c.quadraticCurveTo(hr*2.0,-hr*.55,hr*2.05,-hr*2.5);c.quadraticCurveTo(hr*1.55,-hr*1.0,hr*.75,hr*.3);c.closePath();fs(c,'#3a1a0b',2.5);
     c.beginPath();c.moveTo(hr*1.92,-hr*2.15);c.lineTo(hr*2.5,-hr*2.55);c.lineTo(hr*2.12,-hr*1.95);c.closePath();fs(c,'#3a1a0b',2);
     c.beginPath();c.moveTo(-hr*.6,-hr*.7);c.quadraticCurveTo(-hr*.1,-hr*1.9,hr*.5,-hr*1.75);c.quadraticCurveTo(0,-hr*1.2,hr*.1,-hr*.7);c.closePath();fs(c,'#5a2a12',2);
   }
-  if(id==='stag')mandible(c,hr,true);
+  if(id==='stag'||id==='pine')mandible(c,hr,true);
   c.beginPath();
   if(sp.head==='tri'){c.moveTo(-hr*.95,-hr*.55);c.quadraticCurveTo(0,-hr*1.05,hr*1.05,-hr*.6);c.quadraticCurveTo(hr*.9,hr*.3,hr*.25,hr*1.0);c.quadraticCurveTo(-hr*.3,hr*.5,-hr*.95,-hr*.55);c.closePath()}
   else if(sp.head==='cone')c.ellipse(hr*.35,-hr*.35,hr*1.55,hr*.78,-.55,0,TAU);
@@ -447,11 +464,13 @@ function head(c,sp,g,time,P){
   fs(c,sp.hc,3);
   if(id==='fire'){c.beginPath();c.arc(-hr*.1,-hr*.15,hr*1.08,PI*.95,PI*1.95);c.closePath();fs(c,'#f59f00',2.6);c.fillStyle=pc('#e8590c');c.beginPath();c.arc(-hr*.15,-hr*.78,hr*.25,0,TAU);c.fill()}
   if(id==='lady'){c.fillStyle=pc('#f8f9fa');c.beginPath();c.arc(-hr*.4,-hr*.45,hr*.28,0,TAU);c.fill()}
+  if(sp.creature==='spider'&&!SIL){for(const px of [-12,-4,4,12]){c.fillStyle='#33251d';c.beginPath();c.arc(px,-12,2.2,0,TAU);c.fill()}}
+  if(sp.creature==='rat'&&!SIL){c.strokeStyle='#ddd8d0';c.lineWidth=1;for(let i=-1;i<=1;i++){c.beginPath();c.moveTo(10,7);c.lineTo(36,7+i*7);c.stroke()}}
   if(sp.hero&&!SIL){c.save();c.beginPath();c.ellipse(0,0,hr*1.25,hr*.92,0,0,TAU);c.clip();c.fillStyle='#e8403a';c.fillRect(-hr*1.4,-hr*.82,hr*2.8,hr*.3);c.restore();
     const wv=Math.sin(time*6)*3;c.strokeStyle='#e8403a';c.lineWidth=5;c.lineCap='round';c.beginPath();c.moveTo(-hr*1.15,-hr*.65);c.quadraticCurveTo(-hr*1.8,-hr*.9+wv,-hr*2.3,-hr*.4+wv);c.moveTo(-hr*1.15,-hr*.6);c.quadraticCurveTo(-hr*1.7,-hr*.2+wv,-hr*2.1,hr*.2+wv);c.stroke()}
   if(sp.noface&&!SIL){c.strokeStyle='#b8904f';c.lineWidth=2;for(let i=-2;i<=2;i++){c.beginPath();c.moveTo(i*4,-hr*.9);c.lineTo(i*7,-hr*1.5);c.stroke()}c.strokeStyle='rgba(120,85,40,.5)';c.beginPath();c.moveTo(hr*.2,hr*.35);c.lineTo(hr*.7,hr*.3);c.stroke()}
   if(!sp.noface)face(c,sp,P.ex,time);
-  if(id==='stag')mandible(c,hr,false);
+  if(id==='stag'||id==='pine')mandible(c,hr,false);
   c.restore();
 }
 function mandible(c,hr,back){
@@ -460,9 +479,30 @@ function mandible(c,hr,back){
   c.beginPath();c.moveTo(hr*1.45,-hr*.48);c.lineTo(hr*1.6,-hr*.08);c.lineTo(hr*1.78,-hr*.52);c.closePath();fs(c,back?'#2a170d':'#4e2f1b',1.8);
   c.restore();
 }
+function visitorDetails(c,sp,g,time){
+  if(!sp.creature)return;
+  c.save();c.translate(g.BC[0],g.BC[1]);c.rotate(g.t);
+  if(sp.creature==='spider'){
+    // Four extra walking limbs plus the two animated arms and legs = eight.
+    for(const side of [-1,1])for(let i=0;i<2;i++){
+      const y=-14+i*22,reach=sp.id==='huntsman'?68:51,w=Math.sin(time*3+i)*3;
+      limb(c,[[side*12,y],[side*reach,y-22+w],[side*(reach+9),y+17+w]],sp.lw*.7,sp.lc);
+      if(sp.id==='tarantula')for(let h=0;h<4;h++){c.strokeStyle=pc(sp.col);c.lineWidth=1.5;c.beginPath();c.moveTo(side*(25+h*6),y-6-h*3);c.lineTo(side*(28+h*6),y-15-h*3);c.stroke()}
+    }
+  }else if(sp.creature==='centipede'){
+    for(let i=0;i<7;i++)for(const side of [-1,1]){const y=-sp.ry+8+i*12,w=Math.sin(time*4+i)*3;limb(c,[[side*8,y],[side*27,y-6],[side*36,y+5+w]],3,sp.lc)}
+  }else if(sp.creature==='bat'){
+    // Membranes connect the animated arms to the torso; no extra arms.
+    for(const a of [g.ba,g.fa]){const sh=[a.sh[0]-g.BC[0],a.sh[1]-g.BC[1]],hd=[a.hd[0]-g.BC[0],a.hd[1]-g.BC[1]];c.beginPath();c.moveTo(...sh);c.lineTo(hd[0]-36,hd[1]-8);c.quadraticCurveTo(hd[0]-28,hd[1]+20,-18,26);c.quadraticCurveTo(-9,8,...sh);fs(c,'#57466d',2)}
+  }else if(sp.creature==='rat'){
+    c.strokeStyle=pc('#cb9298');c.lineWidth=5;c.beginPath();c.moveTo(-12,25);c.bezierCurveTo(-40,46,-76,5,-58,-16);c.stroke();
+  }
+  c.restore();
+}
 function drawBug(c,sp,P,time,sil){
   SIL=!!sil;const g=P.g||geo(sp,P),k=sp.s*(P.sc||1);
   c.save();c.translate(P.wx,P.wy);c.scale(P.f*k,k);c.rotate(P.rot);c.lineCap='round';c.lineJoin='round';
+  visitorDetails(c,sp,g,time);
   wings(c,sp,g,time);
   const dk=mixc(sp.lc,-.28);
   drawArm(c,sp,g.ba,dk);drawLeg(c,sp,g.bl,dk);midLegs(c,sp,g,time,dk);
@@ -1201,11 +1241,93 @@ beat({"id":"promise11","dur":12,"nosign":1,"cap":"나도 저렇게 이어 보고
 beat({"id":"training11","dur":18,"nosign":1,"cap":"여러 날, 함께 흘린 땀","say":"그다음 날도, 또 그다음 날도.\n사범님께 묻고 친구와 해 봐요.\n막히면 다시, 넘어지면 다시.\n어느 날 맴맴이의 발과 손이 망설이지 않고 이어졌어요.",cam:camOf(480,1),actors:[ON('cicada',[[0,'lift',{x:350,f:1}],[3,'low'],[5,'shoot'],[7,'guard'],[9,'squat'],[11,'flat',{rot:-1.57,curl:.4}],[13,'sit',{rot:0,curl:0}],[15,'stand'],[17,'guard']]),ON('dragon',[[0,'lift',{x:650,f:-1}],[3,'low'],[5,'sprawl'],[7,'guard'],[9,'squat'],[11,'flat',{rot:-1.57,curl:.4}],[13,'sit',{rot:0,curl:0}],[15,'stand'],[17,'guard']])],fx:()=>{orbitBag(.2,3,350,G-180);orbitBag(.2,3,650,G-180);chip(.2,17.8,null,'여러 날의 연습이 쌓였어요')}});
 beat({"id":"awaken11","dur":16,"nosign":1,"cap":"네 빛의 맴맴이, 깨어나다!","say":"맴맴이의 둘레에 네 가지 빛이 번지는 것 같았어요.\n한 번에 얻은 마법이 아니에요.\n친구에게 배운 움직임들이 드디어 이어진 거예요.\n\n“나는 아직 더 배울 수 있어!”",cam:camOf(480,1),actors:[ON('cicada',[[0,'low',{x:480,f:1}],[3,'guard'],[6,'grip'],[9,'low'],[12,'cheer'],[15,'stand',{ex:3}]])],props:()=>sagaAura(LT,480),fx:()=>{const colors=['#ff6b6b','#4dabf7','#20c997','#845ef7'];colors.forEach((c,i)=>floaty(1,15,260+i*145,170,'✦',c));chip(.2,15.8,null,'네 빛의 맴맴이 · 배움이 이어지는 순간')}});
 beat({"id":"bow11","dur":10,"nosign":1,"cap":"숲의 호걸들, 함께 인사!","say":"단단이도 동글이도 굴리도 씽씽이도 함께 빛나요.\n혼자만 강해진 게 아니었어요.\n서로의 장기를 나눈 친구들이 다 같이 인사해요.\n\n“고맙습니다!”",cam:camOf(480,1),actors:[ON("ant",[[0,'stand',{x:160,f:1,sc:.72}],[3,'bow'],[7,'stand',{ex:3}]]),ON("lady",[[0,'stand',{x:320,f:1,sc:.72}],[3,'bow'],[7,'stand',{ex:3}]]),ON("cicada",[[0,'stand',{x:480,f:1,sc:.72}],[3,'bow'],[7,'stand',{ex:3}]]),ON("dragon",[[0,'stand',{x:640,f:-1,sc:.72}],[3,'bow'],[7,'stand',{ex:3}]]),ON("dung",[[0,'stand',{x:800,f:-1,sc:.72}],[3,'bow'],[7,'stand',{ex:3}]])]});
-beat({"id":"end11","dur":10,"nosign":1,"cap":"다음 화 · 바위손의 새로운 도전","say":"하준아, 호걸들에게 배운 것 중 도장에서 사범님과 다시 해 보고 싶은 건 뭐야?\n다음에는 단단이가 새로운 길을 찾아요.",cam:camOf(480,1),actors:[ON("ant",[[0,'stand',{x:330,f:1,sc:1}],[2,'guard'],[5,'stand'],[7,'bow'],[9,'stand']]),ON("cicada",[[0,'stand',{x:650,f:-1,sc:1}],[2,'guard'],[5,'stand'],[7,'bow'],[9,'stand']])],over:lt=>endCard(lt)});
+beat({"id":"end11","dur":10,"nosign":1,"cap":"다음 화 · 솔숲 유도관의 고수들","say":"하준아, 호걸들에게 배운 것 중 도장에서 사범님과 다시 해 보고 싶은 건 뭐야?\n다음에는 단단이가 새로운 길을 찾아요.",cam:camOf(480,1),actors:[ON("ant",[[0,'stand',{x:330,f:1,sc:1}],[2,'guard'],[5,'stand'],[7,'bow'],[9,'stand']]),ON("cicada",[[0,'stand',{x:650,f:-1,sc:1}],[2,'guard'],[5,'stand'],[7,'bow'],[9,'stand']])],over:lt=>endCard(lt)});
 const EP12=SC;
 
 
 
+
+function villageSquare(){
+ X.save();for(const [x,col] of [[180,'#d98558'],[780,'#b391da']]){X.fillStyle='#f7e6b1';X.fillRect(x-48,210,96,100);X.fillStyle=col;X.beginPath();X.moveTo(x-65,210);X.lineTo(x,160);X.lineTo(x+65,210);X.closePath();X.fill();X.fillStyle='#725539';X.fillRect(x-13,270,26,40)}
+ X.strokeStyle='#715b3b';X.lineWidth=2;X.beginPath();X.moveTo(130,140);X.quadraticCurveTo(480,210,830,140);X.stroke();for(let i=0;i<9;i++){const x=170+i*77;X.fillStyle=['#ffb454','#75b9e6','#b7d86c'][i%3];X.beginPath();X.moveTo(x,155);X.lineTo(x+25,155);X.lineTo(x+12,180);X.closePath();X.fill()}X.restore();
+}
+
+SC=[];
+beat({id:"t12",dur:14,nosign:1,cap:"12화 · 솔숲 유도관의 고수들",say:"바위손 단단이가 유도 대회에 왔어요.\n오늘은 유도를 오래 배운 솔숲 친구들과 만나요.\n맴맴이도 응원하러 왔어요.",cam:camOf(480,1),actors:[ON("ant",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("pine",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])],over:lt=>titleCard(lt)});
+beat({id:"visitors12",dur:14,nosign:1,cap:"청솔이와 호박이의 초대",say:"청솔이는 깃을 잡는 손이 침착해요.\n호박이는 발걸음이 가벼워요.\n\n“우리도 매일 넘어지고 다시 일어났어.”",cam:camOf(480,1),actors:[ON("pine",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("amber",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])]});
+beat({id:"rules12",dur:14,nosign:1,cap:"오늘은 유도 대회!",say:"심판이 두 도장을 불렀어요.\n\n“이번 대회는 메치기와 누르기로 겨뤄요.”\n\n단단이는 손을 내려다봤어요.\n오늘은 레슬링처럼 다리를 잡지 않아요.",cam:camOf(480,1),actors:[ON("stag",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("ant",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])]});
+sagaBout("judo-ant-pine","ant","pine",[
+{"id":"grips12","dur":14,"cap":"익숙한 손이 잡히지 않아","say":"단단이가 깃으로 손을 뻗어요.\n청솔이가 소매를 먼저 잡았어요.\n단단이가 손을 빼고 다시 다가가요.","art":"judo","a":[[0,"grip",{"x":425,"f":1}],[3,"grip",{"x":475}],[6,"low",{"x":450}],[10,"grip",{"x":470}],[14,"grip",{}]],"b":[[0,"grip",{"x":545,"f":-1}],[4,"grip",{"x":550}],[7,"grip",{"x":530}],[14,"grip",{}]],rig:(a,b,t)=>sagaGrip(a,b,t,1,10)},
+{"id":"opposite12","dur":14,"cap":"내 앞발과 네 앞발","say":"단단이는 오른발을, 청솔이는 왼발을 내밀어요.\n서로 다른 쪽이 앞이에요.\n단단이가 밀자 청솔이는 비스듬히 길을 내요.","art":"judo","a":[[2,"grip",{"x":480,"flh":0.5,"blh":-0.4}],[5,"grip",{"x":510}],[9,"grip",{"x":500}],[14,"grip",{}]],"b":[[2,"grip",{"x":550,"flh":-0.4,"blh":0.5}],[5,"grip",{"x":575}],[9,"grip",{"x":555}],[14,"grip",{}]],rig:(a,b,t)=>sagaGrip(a,b,t,1,10)},
+{"id":"tai12","dur":14,"cap":"앞으로 따라간 순간, 빗당겨치기","say":"단단이가 다시 앞으로 나왔어요.\n청솔이가 몸을 틀며 손으로 이끌어요.\n단단이의 앞쪽 길에 발이 놓였어요!","art":"judo","a":[[2,"grip",{"x":510}],[4,"grip",{"x":535,"tl":0.5}],[7,"tuck",{"x":540,"rot":1.5,"y":-50}],[10,"flat",{"x":600,"rot":1.57,"y":0}],[14,"flat",{}]],"b":[[2,"grip",{"x":555}],[4,"turn",{"x":520,"f":1,"flh":1.1,"flk":0.15,"blh":-0.4}],[7,"finish",{"x":530}],[10,"finish",{}],[14,"stand",{}]],rig:(a,b,t)=>sagaGrip(b,a,t,1,8)},
+{"id":"landing12","dur":14,"cap":"손바닥으로 착!","say":"단단이가 몸을 둥글게 하고 떨어졌어요.\n심판이 손을 들었어요.\n\n“한판!”\n\n청솔이는 손을 내밀어요.","art":"judo","a":[[2,"flat",{}],[4,"sit",{"rot":0,"x":610}],[8,"stand",{}],[11,"bow",{}],[14,"stand",{}]],"b":[[3,"stand",{"x":500}],[6,"grip",{}],[10,"bow",{}],[14,"stand",{}]]},
+{"id":"ask12","dur":14,"cap":"힘을 더 줬는데, 왜 넘어졌지?","say":"“나는 더 세게 밀었는데!”\n“응. 네가 앞으로 오는 걸 기다렸어.”\n\n단단이가 자기 발을 살펴봐요.\n다음 판에는 서두르지 않겠대요.","art":"judo","a":[[2,"low",{}],[5,"stand",{}],[8,"grip",{}],[11,"stand",{}],[14,"bow",{}]],"b":[[2,"grip",{}],[5,"stand",{}],[8,"grip",{}],[11,"stand",{}],[14,"bow",{}]]},
+]);
+sagaBout("judo-dragon-pine","dragon","pine",[
+{"id":"challenge12","dur":14,"cap":"씽씽이도 한 판!","say":"이번에는 씽씽이예요.\n빠른 손이 청솔이의 깃을 잡았어요.\n청솔이도 소매를 놓지 않아요.","art":"judo","a":[[0,"grip",{"x":430,"f":1}],[3,"grip",{"x":485}],[7,"grip",{"x":470}],[11,"grip",{"x":490}],[14,"grip",{}]],"b":[[0,"grip",{"x":565,"f":-1}],[4,"grip",{"x":550}],[8,"low",{}],[14,"grip",{}]],rig:(a,b,t)=>sagaGrip(a,b,t,1,10)},
+{"id":"turn12","dur":14,"cap":"허리껴치기를 노리는 씽씽이","say":"씽씽이가 한 팔로 허리를 감싸며 돌아서요.\n청솔이는 바로 따라오지 않아요.\n허리를 뒤로 빼고, 옆으로 한 발!","art":"judo","a":[[2,"grip",{"x":490}],[5,"turn",{"x":520,"f":-1}],[8,"turn",{"tl":0.7}],[11,"grip",{"tl":0.3}],[14,"grip",{}]],"b":[[2,"grip",{"x":550}],[5,"low",{"x":585}],[8,"low",{"x":580}],[11,"grip",{"x":570}],[14,"grip",{}]],rig:(a,b,t)=>{const w=gripWeight(t,1,10);contact(a,'fa',b,'BC',[0,8],1,w);contact(a,'ba',b,'fa.hd',[0,0],-1,w);}},
+{"id":"rear12","dur":14,"cap":"앞으로 가던 길이 막혔어","say":"씽씽이가 다시 바로 서려 해요.\n몸무게가 뒤꿈치 쪽으로 옮겨졌어요.\n청솔이가 그 순간을 놓치지 않아요.","art":"judo","a":[[2,"stand",{"x":520,"f":-1}],[5,"guard",{"tl":-0.15}],[9,"guard",{"x":535,"rot":-0.2}],[14,"guard",{"rot":-0.25}]],"b":[[2,"low",{"x":580,"f":-1}],[5,"grip",{"x":560}],[9,"low",{"x":555}],[14,"low",{}]],rig:(a,b,t)=>sagaGrip(b,a,t,1,13)},
+{"id":"tani12","dur":14,"cap":"뒤쪽 빈자리로, 오금대떨어뜨리기","say":"청솔이가 발을 뒤쪽으로 길게 보내요.\n무릎을 누르지 않고 옆으로 내려앉아요.\n씽씽이는 뒤로 기울며 낙법해요.","art":"judo","a":[[2,"guard",{"x":535,"rot":-0.3}],[5,"tuck",{"x":570,"rot":-1,"y":-25}],[8,"flat",{"x":625,"rot":-1.57,"y":0}],[11,"flat",{}],[14,"flat",{}]],"b":[[2,"low",{"x":555,"blh":-1.2,"blk":0.1}],[5,"sit",{"x":565,"rot":-0.5,"blh":-1.1,"blk":0.1,"flh":1.3,"flk":1.8}],[8,"flat",{"x":520,"rot":-1.3}],[11,"sit",{"rot":0}],[14,"sit",{}]],rig:(a,b,t)=>sagaGrip(b,a,t,1,7)},
+{"id":"respect12","dur":14,"cap":"잘하는 친구에게 배운 한 판","say":"“내가 다시 서는 순간을 봤구나.”\n“응. 너도 깃을 정말 빨리 잡더라.”\n\n둘은 웃으며 인사해요.\n도장 밖에도 멋진 고수가 많아요.","art":"judo","a":[[3,"sit",{"rot":0,"x":625}],[6,"stand",{}],[10,"bow",{}],[14,"stand",{}]],"b":[[3,"sit",{"x":470}],[6,"stand",{}],[10,"bow",{}],[14,"stand",{}]]},
+]);
+beat({id:"watch12",dur:14,nosign:1,cap:"동글이가 발걸음을 보고 있었어",say:"동글이는 두 판을 조용히 봤어요.\n\n“힘만 더 주지 말자. 움직이는 때를 보자.”\n\n호박이가 맞은편에 섰어요.",cam:camOf(480,1),actors:[ON("lady",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("amber",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])]});
+sagaBout("judo-lady-amber","lady","amber",[
+{"id":"step12","dur":14,"cap":"같이 옆으로, 하나 둘","say":"둘은 깃과 소매를 잡았어요.\n호박이가 옆으로 움직여요.\n동글이도 발을 맞추며 따라가요.","art":"judo","a":[[0,"grip",{"x":420,"f":1}],[3,"grip",{"x":450}],[6,"grip",{"x":430}],[10,"grip",{"x":465}],[14,"grip",{}]],"b":[[0,"grip",{"x":530,"f":-1}],[3,"grip",{"x":560}],[6,"grip",{"x":540}],[10,"grip",{"x":575}],[14,"grip",{}]],rig:(a,b,t)=>sagaGrip(a,b,t,1,10)},
+{"id":"miss12","dur":14,"cap":"첫 발기술은 헛발!","say":"동글이가 발을 쓸었어요.\n호박이가 재빨리 발을 들었어요.\n동글이는 억지로 밀지 않고 다시 따라가요.","art":"judo","a":[[2,"grip",{"x":480}],[4,"grip",{"flh":1,"flk":0.1}],[7,"grip",{"flh":0.2}],[10,"grip",{"x":455}],[14,"grip",{}]],"b":[[2,"grip",{"x":570}],[4,"chamber",{}],[7,"grip",{}],[10,"grip",{"x":545}],[14,"grip",{}]],rig:(a,b,t)=>sagaGrip(a,b,t,1,10)},
+{"id":"gather12","dur":14,"cap":"발이 다시 모이는 순간","say":"호박이가 옆으로 빠져나가요.\n동글이는 따라가다가 속도를 바꿨어요.\n호박이의 두 발이 가까워졌어요.","art":"judo","a":[[2,"grip",{"x":460}],[5,"grip",{"x":485}],[8,"grip",{"x":510}],[12,"grip",{"x":500}],[14,"grip",{}]],"b":[[2,"grip",{"x":550}],[5,"grip",{"x":575}],[8,"grip",{"x":600}],[12,"stand",{"x":585,"flh":0.06,"blh":-0.06}],[14,"stand",{}]],rig:(a,b,t)=>sagaGrip(a,b,t,1,10)},
+{"id":"okuri12","dur":14,"cap":"붉은 바람의 모두걸기!","say":"동글이의 발이 호박이의 발을 따라 쭉!\n두 발이 함께 떠올랐어요.\n\n“한판!”\n\n동글이는 소매를 잡아 낙법을 도와요.","art":"judo","a":[[2,"grip",{"x":510}],[4,"grip",{"flh":1.2,"flk":0.1}],[7,"finish",{}],[10,"stand",{}],[14,"stand",{}]],"b":[[2,"stand",{"x":585}],[4,"tuck",{"rot":-0.7,"y":-35}],[7,"flat",{"x":620,"rot":-1.57,"y":0}],[10,"sit",{"rot":0}],[14,"stand",{}]],rig:(a,b,t)=>{sagaGrip(a,b,t,1,8);sagaLegContact(a,'fl',b,'bl.ft',[0,0],-1,gripWeight(t,2,4));}},
+]);
+beat({id:"home12",dur:14,nosign:1,cap:"돌아온 바위손, 다시 매트로",say:"며칠 뒤, 단단이가 번쩍이 사범님께 갔어요.\n\n“막혔을 때 멈추지 않고, 다음을 보고 싶어요.”\n\n이번에는 도복을 잡지 않는 레슬링 연습이에요.",cam:camOf(480,1),actors:[ON("ant",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("rhino",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])]});
+sagaBout("wrestle-review","ant","cicada",[
+{"id":"drag12","dur":14,"cap":"팔을 끌자, 다시 돌아온다","say":"단단이가 맴맴이의 팔을 끌고 옆으로 가요.\n맴맴이가 발을 옮겨 다시 마주 봐요.\n단단이는 다음 길을 찾아요.","art":"wr","a":[[0,"grip",{"x":430,"f":1}],[3,"grip",{"x":465}],[6,"low",{"x":510}],[9,"low",{"x":480}],[14,"grip",{"x":470}]],"b":[[0,"grip",{"x":550,"f":-1}],[3,"grip",{"x":540}],[6,"turn",{"x":560}],[9,"low",{"x":550}],[14,"grip",{}]],rig:(a,b,t)=>{const w=gripWeight(t,1,9);contact(a,'fa',b,'fa.hd',[0,0],1,w);contact(a,'ba',b,'fa.el',[0,0],-1,w);}},
+{"id":"throwby12","dur":14,"cap":"몸을 세운 순간, 스로우바이","say":"단단이의 겨드랑이 밑 팔을 맴맴이가 눌러요.\n둘이 돌다가 맴맴이가 몸을 세웠어요.\n단단이가 팔을 흘리고 옆으로 빠져요!","art":"wr","a":[[2,"grip",{"x":475}],[5,"low",{"x":500}],[8,"grip",{"x":580,"f":-1}],[11,"grip",{"x":585}],[14,"low",{"x":560}]],"b":[[2,"grip",{"x":550}],[5,"stand",{}],[8,"turn",{"x":520,"f":-1}],[11,"low",{"x":525}],[14,"low",{"x":520}]],rig:(a,b,t)=>{contact(a,'fa',b,'SO',[0,5],1,gripWeight(t,1,6));contact(a,'ba',b,'SO',[-6,10],-1,gripWeight(t,6,11));}},
+{"id":"front12","dur":14,"cap":"돌아오는 맴맴이, 낮아지는 단단이","say":"맴맴이가 몸을 돌려 다리를 노려요.\n단단이는 다리를 빼고 멈춰 세워요.\n맴맴이가 무릎을 앞으로 가져와 버텨요.","art":"wr","a":[[2,"sprawl",{"x":550,"f":-1}],[5,"sprawl",{}],[8,"top",{"x":535}],[14,"top",{}]],"b":[[2,"shoot",{"x":495,"f":1}],[5,"top",{"tl":1.3}],[8,"top",{"x":490}],[14,"top",{}]],rig:(a,b,t)=>contact(a,'fa',b,'SO',[0,4],1,gripWeight(t,2,13))},
+{"id":"kneepick12","dur":14,"cap":"버티러 나온 무릎, 니픽!","say":"앞으로 나온 무릎에 단단이의 손이 닿아요.\n단단이가 옆으로 돌아가자 맴맴이도 기울어요.\n둘은 천천히 넘어가고 다시 웃어요.","art":"wr","a":[[2,"top",{"x":535}],[5,"shoot",{"x":520}],[8,"top",{"x":525}],[11,"sit",{"x":590}],[14,"sit",{}]],"b":[[2,"top",{"x":490}],[5,"tuck",{"rot":-0.7}],[8,"flat",{"x":470,"rot":-1.57}],[11,"sit",{"rot":0,"x":420}],[14,"sit",{}]],rig:(a,b,t)=>{const w=gripWeight(t,1,8);contact(a,'fa',b,'fl.kn',[0,0],1,w);contact(a,'ba',b,'SO',[0,4],-1,w);}},
+{"id":"roll12","dur":14,"cap":"앞목굴리기, 옆으로 이어지는 길","say":"다시 낮은 자리에서 시작해요.\n단단이가 팔과 머리 둘레를 잡고 옆으로 돌아요.\n맴맴이와 함께 천천히 한 바퀴.\n사범님이 바로 곁에서 봐 주세요.","art":"wr","a":[[2,"top",{"x":530,"f":-1}],[4,"top",{}],[6,"tuck",{"rot":-1.4,"x":510,"y":-30}],[8,"tuck",{"rot":-3.5,"x":490,"y":-30}],[10,"top",{"rot":-6.28,"y":0,"x":475}],[14,"sit",{"x":560}]],"b":[[2,"top",{"x":465,"f":1}],[4,"top",{}],[6,"tuck",{"rot":1.4,"x":475,"y":-30}],[8,"tuck",{"rot":3.5,"x":480,"y":-30}],[10,"flat",{"rot":4.71,"y":0,"x":470}],[14,"sit",{"rot":6.28,"x":400}]],rig:(a,b,t)=>{const w=gripWeight(t,2,9);contact(a,'fa',b,'SO',[0,0],1,w);contact(a,'ba',b,'fa.el',[0,0],-1,w);}},
+]);
+beat({id:"bow12",dur:14,nosign:1,cap:"새 친구가 늘어난 날",say:"청솔이와 호박이도 다음 연습에 오기로 했어요.\n\n“너희 레슬링도 배워 보고 싶어!”\n“우리는 너희 발기술!”\n\n“고맙습니다!”",cam:camOf(480,1),actors:[ON("ant",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("pine",[[0,"stand",{"x":400.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("lady",[[0,"stand",{"x":560.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("amber",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])]});
+beat({id:"end12",dur:14,nosign:1,cap:"다음 화 · 마을을 지킨 땀방울",say:"숲 너머에서 낯선 발소리가 들려요.\n하준아, 오늘 매트에서 배운 것이 언제 힘이 되어 줄까?",cam:camOf(480,1),actors:[ON("cicada",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("ant",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])],over:lt=>endCard(lt)});
+const EP13=SC;
+SC=[];
+beat({id:"t13",dur:14,nosign:1,cap:"13화 · 마을을 지킨 땀방울",say:"곤충 마을에 축제가 열렸어요.\n넓은 광장에는 푹신한 매트가 깔렸어요.\n친구들이 함께 준비한 날이에요.",cam:camOf(480,1),actors:[ON("cicada",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("ant",[[0,"stand",{"x":480.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("lady",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])],props:()=>villageSquare(),over:lt=>titleCard(lt)});
+beat({id:"arrival13",dur:14,nosign:1,cap:"그늘패가 나타났다!",say:"털보 타란튤라, 농발거미 넓적이!\n박쥐 밤날개와 잽쥐, 지네 마디왕까지 왔어요.\n\n“이 광장은 이제 우리 거야!”",cam:camOf(480,1),actors:[ON("tarantula",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("huntsman",[[0,"stand",{"x":360.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("bat",[[0,"stand",{"x":480.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("rat",[[0,"stand",{"x":600.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("centipede",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])],props:()=>villageSquare()});
+beat({id:"fear13",dur:14,nosign:1,cap:"무서워도, 친구를 혼자 두지 않아",say:"친구들이 뒤로 물러났어요.\n사범님들이 어린 친구들을 안전한 곳으로 데려가요.\n맴맴이는 떨리는 손을 꼭 쥐었어요.",cam:camOf(480,1),actors:[ON("cicada",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("grass",[[0,"stand",{"x":480.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("rhino",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])],props:()=>villageSquare()});
+beat({id:"memory13",dur:14,nosign:1,cap:"매트에서 흘렸던 땀",say:"맴맴이도 연습이 싫은 날이 있었어요.\n\n“오늘은 그만할까?”\n\n그래도 쉬었다가 돌아와, 사범님과 한 번 더 해 봤어요.\n그날들이 떠올라요.",cam:camOf(480,1),actors:[ON("cicada",[[0,"sit",{"x":360,"f":1}],[4,"stand",{}],[7,"low",{}],[10,"sprawl",{}],[14,"low",{}]]),ON("rhino",[[0,"stand",{"x":640,"f":-1}],[4,"bow",{}],[7,"low",{}],[10,"shoot",{}],[14,"low",{}]])]});
+beat({id:"line13",dur:14,nosign:1,cap:"“그만! 친구들이 지나가야 해.”",say:"그늘패는 서로 배우기보다 힘자랑만 해 왔어요.\n하지만 친구들은 함께 움직여요.\n청솔이와 호박이도 마을을 도우러 왔어요.",cam:camOf(480,1),actors:[ON("pine",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("amber",[[0,"stand",{"x":400.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("ant",[[0,"stand",{"x":560.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("lady",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])],props:()=>villageSquare()});
+sagaBout("ant-rat-defense","ant","rat",[
+{"id":"ratdrag13","dur":14,"cap":"잡으러 온 팔을 따라, 옆으로!","say":"잽쥐가 단단이를 붙잡으러 달려와요.\n단단이는 팔을 끌며 옆으로 비켜요.\n잽쥐가 다시 돌아와 버텨요.","art":"wr","a":[[2,"grip",{"x":525}],[4,"low",{"x":510}],[6,"low",{"x":440,"f":1}],[8,"low",{"x":430}],[11,"low",{"x":450}],[14,"low",{"x":450}]],"b":[[2,"grip",{"x":450}],[4,"grip",{"x":475,"tl":0.35}],[6,"low",{"x":500,"f":-1}],[8,"low",{"x":505}],[11,"guard",{"x":550}],[14,"guard",{"x":550}]],rig:(b,a,t)=>{const w=gripWeight(t,1,7);contact(b,'fa',a,'fa.hd',[0,0],1,w);contact(b,'ba',a,'fa.el',[0,0],-1,w);b.P.deferFrontArm=true;}},
+{"id":"ratthrow13","dur":14,"cap":"바위손의 스로우바이","say":"잽쥐가 팔을 누르며 맞서요.\n단단이는 함께 돌다가 몸을 세우는 순간을 봤어요.\n팔을 흘리며 뒤쪽 자리를 잡아요.","art":"wr","a":[[2,"grip",{"x":470,"f":1}],[5,"low",{"x":490}],[8,"grip",{"x":580,"f":-1}],[11,"low",{"x":565}],[14,"low",{}]],"b":[[2,"grip",{"x":545,"f":-1}],[5,"stand",{}],[8,"turn",{"x":520}],[11,"low",{}],[14,"low",{}]],rig:(a,b,t)=>contact(a,'fa',b,'SO',[0,8],1,gripWeight(t,1,10))},
+{"id":"ratstop13","dur":14,"cap":"넘어뜨린 뒤에는, 멈춰!","say":"잽쥐가 다시 돌아서다 무릎을 짚었어요.\n단단이는 옆에서 움직임을 막아요.\n\n“그만할게!”\n\n단단이가 놓자 잽쥐는 물러나요.","art":"wr","a":[[2,"top",{"x":550}],[5,"top",{"x":530}],[8,"sit",{"x":590}],[11,"stand",{}],[14,"stand",{}]],"b":[[2,"top",{"x":490}],[5,"flat",{"rot":-1.57}],[8,"sit",{"rot":0,"x":390}],[11,"stand",{}],[14,"stand",{}]],"tapAt":7,rig:(a,b,t)=>contact(a,'fa',b,'SO',[0,8],1,gripWeight(t,1,7))},
+]);
+sagaBout("lady-centipede-defense","lady","centipede",[
+{"id":"manyfeet13","dur":14,"cap":"마디왕의 빠른 발","say":"마디왕이 앞을 가로막아요.\n동글이는 밀어붙이지 않고 옆으로 옮겨요.\n마디왕도 따라오며 발을 모아요.","art":"judo","a":[[0,"grip",{"x":420,"f":1}],[4,"grip",{"x":450}],[8,"grip",{"x":480}],[14,"grip",{"x":495}]],"b":[[0,"grip",{"x":530,"f":-1}],[4,"grip",{"x":560}],[8,"grip",{"x":590}],[14,"stand",{"x":585}]],rig:(a,b,t)=>sagaGrip(a,b,t,1,10)},
+{"id":"sweep13","dur":14,"cap":"붉은 바람, 모두걸기!","say":"대회에서 봤던 그 순간이에요!\n동글이가 움직이는 발을 따라 쓸어요.\n마디왕이 매트 위에 데굴!","art":"judo","a":[[2,"grip",{"x":510}],[4,"grip",{"flh":1.2,"flk":0.1}],[7,"finish",{}],[11,"stand",{}],[14,"stand",{}]],"b":[[2,"stand",{"x":585}],[4,"tuck",{"rot":-0.7,"y":-35}],[7,"flat",{"x":620,"rot":-1.57,"y":0}],[11,"sit",{"rot":0}],[14,"sit",{}]],rig:(a,b,t)=>{sagaGrip(a,b,t,1,7);sagaLegContact(a,'fl',b,'bl.ft',[0,0],-1,gripWeight(t,2,4));}},
+{"id":"path13","dur":14,"cap":"다시 일어나도, 길은 내줘야지","say":"동글이는 더 달려들지 않아요.\n\n“친구들 길을 막지 마.”\n\n마디왕이 비켜서자 친구들이 지나가요.","art":"judo","a":[[2,"stand",{}],[5,"guard",{"x":480}],[8,"stand",{}],[14,"stand",{}]],"b":[[2,"sit",{}],[5,"stand",{"x":650}],[8,"stand",{"x":720}],[14,"stand",{}]]},
+]);
+sagaBout("pine-bat-defense","pine","bat",[
+{"id":"batland13","dur":14,"cap":"날개를 접고 달려온 밤날개","say":"밤날개가 내려와 청솔이의 옷을 잡아요.\n청솔이는 바로 당기지 않아요.\n상대가 앞으로 오는 걸 느껴요.","art":"judo","a":[[0,"grip",{"x":440,"f":1}],[4,"grip",{"x":460}],[8,"grip",{"x":480}],[14,"grip",{}]],"b":[[0,"cheer",{"x":650,"f":-1,"y":-70}],[4,"grip",{"x":590,"y":0}],[8,"grip",{"x":570}],[14,"grip",{}]],rig:(a,b,t)=>sagaGrip(a,b,t,1,10)},
+{"id":"battai13","dur":14,"cap":"청솔이의 빗당겨치기","say":"밤날개가 더 세게 밀어 와요.\n청솔이가 몸을 열며 비스듬히 당겨요.\n밤날개는 멈추려던 발 앞쪽으로 기울어요.","art":"judo","a":[[2,"grip",{"x":485}],[4,"turn",{"x":510,"f":-1,"flh":1.1,"flk":0.15}],[7,"finish",{}],[10,"stand",{}],[14,"stand",{}]],"b":[[2,"grip",{"x":550}],[4,"grip",{"tl":0.5}],[7,"tuck",{"x":570,"rot":-1.1,"y":-30}],[10,"flat",{"x":625,"rot":-1.57,"y":0}],[14,"sit",{"rot":0}]],rig:(a,b,t)=>sagaGrip(a,b,t,1,10)},
+{"id":"batrest13","dur":14,"cap":"날개가 멀쩡해, 이제 그만","say":"밤날개가 매트에 앉아 날개를 접어요.\n\n“알았어. 더는 안 밀게.”\n\n청솔이는 붙잡은 옷을 놓고 한 발 물러나요.","art":"judo","a":[[2,"stand",{"x":490}],[5,"stand",{"x":440}],[9,"bow",{}],[14,"stand",{}]],"b":[[2,"sit",{"x":625}],[5,"stand",{}],[9,"bow",{}],[14,"stand",{}]]},
+]);
+sagaBout("cicada-huntsman-defense","cicada","huntsman",[
+{"id":"rush13","dur":14,"cap":"넓적이가 낮게 달려든다","say":"넓적이가 다리로 맴맴이를 감싸려 해요.\n맴맴이는 잡힌 팔만 당기다가 흔들렸어요.\n\n“팔만 쓰면 안 돼. 내 발도 움직이자.”","art":"wr","a":[[0,"grip",{"x":450,"f":1}],[3,"low",{"x":470}],[6,"low",{"x":450}],[10,"sprawl",{"x":460}],[14,"sprawl",{}]],"b":[[0,"low",{"x":590,"f":-1}],[3,"shoot",{"x":535}],[6,"shoot",{"x":520}],[10,"shoot",{"x":530}],[14,"shoot",{}]],rig:(a,b,t)=>sagaLegs(b,a,t,1,7)},
+{"id":"hips13","dur":14,"cap":"낮은 골반, 단단한 발","say":"맴맴이가 다리를 뒤로 보내고 골반을 낮춰요.\n넓적이의 돌진이 멈췄어요.\n매일 하던 스프롤이 몸에서 나왔어요!","art":"wr","a":[[2,"sprawl",{"x":460}],[5,"sprawl",{"x":485,"tl":1.4}],[8,"sprawl",{"x":490}],[11,"top",{"x":500}],[14,"top",{}]],"b":[[2,"shoot",{"x":540}],[5,"top",{"x":550,"tl":1.4}],[8,"top",{}],[11,"top",{}],[14,"top",{}]],rig:(a,b,t)=>contact(a,'fa',b,'SO',[0,10],1,gripWeight(t,1,13))},
+{"id":"shoulder13","dur":14,"cap":"어깨와 발이 함께 움직였어","say":"맴맴이가 옆으로 돌아 넓적이의 어깨 쪽을 눌러요.\n넓적이는 더는 앞으로 달릴 수 없어요.\n감싸던 다리들이 풀리고 길이 열려요.","art":"wr","a":[[2,"top",{"x":505}],[5,"top",{"x":540}],[8,"top",{"x":565,"f":-1}],[11,"top",{"x":560}],[14,"top",{}]],"b":[[2,"top",{"x":550}],[5,"top",{"tl":1.4}],[8,"flat",{"rot":-1.57,"x":520}],[11,"flat",{}],[14,"flat",{}]],rig:(a,b,t)=>{const w=gripWeight(t,1,13);contact(a,'fa',b,'SO',[0,10],1,w);contact(a,'ba',b,'fa.el',[0,0],-1,w);}},
+{"id":"release13","dur":14,"cap":"이기는 힘보다, 멈추는 힘","say":"“그만! 그만할게!”\n맴맴이가 바로 놓아요.\n넓적이의 다리 여덟 개는 모두 멀쩡해요.\n맴맴이는 친구들 쪽을 돌아봐요.","art":"wr","a":[[2,"top",{}],[4,"sit",{"x":620}],[8,"stand",{}],[11,"guard",{}],[14,"stand",{}]],"b":[[2,"flat",{}],[4,"sit",{"rot":0,"x":420}],[8,"stand",{}],[11,"stand",{"x":360}],[14,"stand",{}]],"tapAt":3,rig:(a,b,t)=>contact(a,'fa',b,'SO',[0,10],1,gripWeight(t,0,3))},
+]);
+sagaBout("dung-tarantula-defense","dung","tarantula",[
+{"id":"guard13","dur":14,"cap":"굴리가 길을 막아 섰어","say":"털보가 굴리를 밀고 들어와요.\n굴리는 넘어지며 다리를 사이에 넣어요.\n밑에 있어도, 바로 잡히지는 않아요.","art":"bjj","a":[[0,"grip",{"x":450,"f":1}],[3,"low",{}],[6,"back",{"rot":-1.5,"x":440}],[10,"back",{}],[14,"back",{}]],"b":[[0,"grip",{"x":580,"f":-1}],[3,"shoot",{"x":540}],[6,"top",{"x":525}],[10,"top",{}],[14,"top",{}]],rig:(a,b,t)=>sagaGuard(a,b,t,6,13)},
+{"id":"triangle13","dur":14,"cap":"한 팔이 밖에 남았어","say":"털보가 손을 짚으며 버텨요.\n굴리의 다리가 한 팔과 목 둘레로 천천히 와요.\n털보는 몸을 세워 삼각형을 막아요.","art":"bjj","a":[[2,"back",{"flh":1.9,"flk":1.8}],[5,"back",{"blh":1.5,"blk":1.8}],[9,"back",{}],[14,"back",{}]],"b":[[2,"top",{"bah":-0.5}],[5,"top",{"tl":1.2}],[9,"top",{"tl":0.6}],[14,"top",{"tl":0.4}]],rig:(a,b,t)=>sagaTriangle(a,b,t,1,12)},
+{"id":"arm13","dur":14,"cap":"삼각형에서, 남은 팔을 따라","say":"굴리는 억지로 조이지 않아요.\n남은 팔을 잡고 옆으로 돌아 다리를 넘겨요.\n\n“암바 자리네. 톡톡!”\n\n굴리는 바로 풀어요.","art":"bjj","a":[[2,"back",{}],[4,"back",{"x":455,"rot":-1.2}],[6,"sit",{"x":470,"rot":-0.3}],[8,"sit",{}],[8.3,"sit",{"x":385,"rot":0}],[11,"stand",{}],[14,"stand",{}]],"b":[[2,"top",{"tl":0.4}],[4,"top",{"fah":1.5}],[6,"flat",{"x":540,"rot":1.57}],[8,null,{"bah":1}],[8.2,null,{"bah":0.3}],[8.4,null,{"bah":1}],[10,"sit",{"rot":0,"x":640}],[14,"stand",{}]],"tapAt":8,rig:(a,b,t)=>{const w=gripWeight(t,1,8);contact(a,'fa',b,'fa.hd',[0,0],1,w);contact(a,'ba',b,'fa.hd',[3,0],-1,w);sagaLegContact(a,'fl',b,'HD',[0,8],-1,gripWeight(t,4,8));}},
+{"id":"tarantulaend13","dur":14,"cap":"털보도 더는 덤비지 않았어","say":"털보가 팔을 거두고 물러나요.\n굴리도 따라가서 괴롭히지 않아요.\n\n“광장은 모두의 것이야.”\n\n털보가 작게 고개를 끄덕여요.","art":"bjj","a":[[3,"stand",{"x":400}],[6,"guard",{}],[10,"stand",{}],[14,"stand",{}]],"b":[[3,"stand",{"x":660}],[6,"stand",{"x":710}],[10,"bow",{}],[14,"stand",{}]]},
+]);
+beat({id:"safe13",dur:14,nosign:1,cap:"마을을 지킨 건, 함께 흘린 땀",say:"그늘패가 물러나고 사범님들이 길을 살펴요.\n친구들이 다시 광장으로 모였어요.\n맴맴이의 다리는 아직 떨리지만, 친구들은 무사해요.",cam:camOf(480,1),actors:[ON("cicada",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("rhino",[[0,"stand",{"x":400.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("lady",[[0,"stand",{"x":560.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("ant",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])],props:()=>villageSquare()});
+beat({id:"regret13",dur:14,nosign:1,cap:"지나간 연습은 오늘 갑자기 생기지 않아",say:"띵가는 뒤로 물러났던 순간을 떠올려요.\n\n“미뤘던 연습이 생각났어. 당장 잘하고 싶었는데.”\n“오늘부터 같이 하자.”\n\n맴맴이가 손을 내밀어요.",cam:camOf(480,1),actors:[ON("grass",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("cicada",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])]});
+beat({id:"light13",dur:14,nosign:1,cap:"불평했던 날에도, 한 걸음씩",say:"맴맴이도 늘 씩씩했던 건 아니에요.\n투덜대다가 돌아온 날, 넘어진 뒤 다시 해 본 날.\n그 작은 날들이 친구를 지킬 힘으로 이어졌어요.",cam:camOf(480,1),actors:[ON("cicada",[[0,"low",{"x":480,"f":1}],[4,"grip",{}],[8,"sprawl",{}],[11,"cheer",{}],[14,"stand",{}]])],props:()=>sagaAura(LT,480)});
+beat({id:"bow13",dur:14,nosign:1,cap:"고맙습니다! 내일도 함께",say:"친구들은 다시 축제를 준비해요.\n청솔이와 호박이도 이제 마을의 친구예요.\n\n“오늘도 고맙습니다!”\n“내일 도장에서 만나!”",cam:camOf(480,1),actors:[ON("cicada",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("ant",[[0,"stand",{"x":360.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("lady",[[0,"stand",{"x":480.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("pine",[[0,"stand",{"x":600.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("dung",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])],props:()=>villageSquare()});
+beat({id:"end13",dur:14,nosign:1,cap:"다음 화 · 다시 온 그늘패",say:"그늘패는 다음에 어떤 마음으로 돌아올까요?\n하준아, 오늘 도장에서 한 번 더 해 보고 싶은 건 뭐야?",cam:camOf(480,1),actors:[ON("cicada",[[0,"stand",{"x":240.0,"f":1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]]),ON("dragon",[[0,"stand",{"x":720.0,"f":-1}],[3,"guard",{}],[7,"stand",{}],[10,"bow",{}],[14,"stand",{}]])],over:lt=>endCard(lt)});
+SC.filter(b=>b.bout).forEach(b=>{b.props=()=>villageSquare()});
+const EP14=SC;
 
 const EPS=[{name:'1화 · 네 가지를 배운 매미',next:'반딧불이의 밤 수련',beats:EP1,ch:CH1},
   {name:'2화 · 반딧불이의 밤 수련',next:'맴맴이의 첫 대회',beats:EP2,ch:[['처음','t2'],['베짱이','grass'],['밤 수련','night'],['한 달 뒤','month'],['깃 싸움','grip'],['선택','choice'],['인사','bow2']]},
@@ -1218,7 +1340,9 @@ const EPS=[{name:'1화 · 네 가지를 배운 매미',next:'반딧불이의 밤
   {name:'8화 · 다시 시작할 수 있어',tab:'8화',next:'작은 약속 한 가지',beats:EP9,ch:[["처음", "t8"], ["일주일 뒤", "week8"], ["속상한 패배", "loss8"], ["문 앞에서", "hide8"], ["자꾸 멀어져요", "drift8"], ["다른 선택", "choice8"], ["아빠와 연습", "dad8"], ["쌓이는 날들", "gap8"], ["어른이 된 꿈", "grown8"], ["꿈이었어!", "wake8"], ["다시 도장으로", "return8"], ["오늘 한 번", "bow8"], ["다음 화", "end8"]]},
   {name:'9화 · 탑의 맴맴이',tab:'9화',next:'2등 잠자리 씽씽이',beats:EP10,ch:[['처음','t9'],['먼저 앉는 친구들','pull9'],['밭다리후리기','osoto9'],['바로 탑으로','side9'],['기무라와 탭','kimura9'],['다시 일어서기','half9'],['태클과 낙법','fall9'],['델라히바 스윕','dlr9'],['어깨 조르기','triangle9'],['발뒤축걸기','kosoto9'],['모두걸기','deashi9'],['무릎에서 암바','arm9'],['함께 굴러 오모플라타','omo9'],['셋이 하나로','one9'],['친절과 인사','bow9'],['다음 화','end9']]},
   {name:'10화 · 2등 잠자리 씽씽이',tab:'10화',next:'숲의 호걸들',beats:EP11,ch:[["10화 · 2등 잠자리 씽씽이","t10"],["새 친구","arrival10"],["큰 눈의 승부사, 씽씽이","eyes10"],["잡았다! 어, 빠져나갔네?","grip10"],["동글이의 안다리, 씽씽이의 한 걸음","inside10"],["뒤로 피했더니, 앞으로 돌아온다!","harai10"],["넘어져도, 아직 끝나지 않았어","recover10"],["첫 판부터, 서로의 장기를 봤어","respect10"],["이번 상대는, 끈질긴 뚜리!","guard10"],["일어나 보자! 뚜리가 손을 짚었어","bump10"],["손을 짚은 사이, 긴 다리가 돌아왔어","triangle10"],["“다시! 이번엔 손을 멀리 안 짚을래.”","again10"],["이번에는, 옆으로 뒤집혔네!","scissor10"],["바위손 단단이가 기다리고 있었어","stone10"],["손을 따라갔더니, 옆에 있네?","drag10"],["돌아서는 순간, 더블렉!","double10"],["밑에서도, 씽씽이는 포기하지 않아","half10"],["조금씩 빠져나와, 다시 마주 섰어","stand10"],["바닥의 지략가, 굴리의 초대","gulli10"],["굴리가 흔들자, 씽씽이가 버텼어","post10"],["막은 줄 알았는데, 오모플라타!","omo10"],["다른 장기가 만나니, 이야기가 생겼어","friends10"],["1등과 2등","rank10"],["즐거운 라이벌","rivals10"],["번쩍이 사범님, 저도 배울래요!","learn10"],["아침 연습","morning10"],["인사","bow10"],["다음 화","end10"]]},
-  {name:'11화 · 숲의 호걸들, 네 빛의 맴맴이',tab:'11화',next:'바위손의 새로운 도전',beats:EP12,ch:[["11화 · 숲의 호걸들, 네 빛의 맴맴이","t11"],["바위손 · 붉은 바람 · 바닥의 지략가","heroes11"],["사범님 곁에서, 서로 다치지 않게","rules11"],["두팔한팔! 동글이가 손을 되찾았어","tie11"],["태클을 막았다! 그런데 또 돌아온다","sprawl11"],["일어나자마자, 붉은 바람이 불었어","sweepfoot11"],["굴리도 서서 맞섰어","osoto11"],["한 다리를 붙잡으니, 이야기가 이어져","halfsweep11"],["동글이는 일찍 탭하고, 비밀을 물었어","keylock11"],["드디어, 맴맴이와 씽씽이!","call11"],["큰 눈이 따라와도, 쉽게 잡히지 않아","distance11"],["뒤꿈치를 지켰더니, 허리가 돌아와","hook11"],["손이 풀린 순간, 아래로!","shot11"],["막혔어도, 발걸음은 멈추지 않아","circle11"],["일어난 맴맴이, 발을 놓치지 않는 씽씽이","dlr11"],["맴맴이가 다리를 거두자, 씽씽이가 따라와","pass11"],["틈을 만들고, 다시 마주 봤어","reguard11"],["막는 쪽을 보니, 다음 길이 보였어","hip11"],["삼각형을 막은 팔, 그 팔을 따라!","triomo11"],["씽씽이가 굴렀어! 맴맴이도 따라가","roll11"],["마지막까지, 친구의 신호를 먼저","arm11"],["승부 뒤에, 진짜 친구가 남았어","respect11"],["나도 저렇게 이어 보고 싶어","promise11"],["여러 날, 함께 흘린 땀","training11"],["네 빛의 맴맴이, 깨어나다!","awaken11"],["숲의 호걸들, 함께 인사!","bow11"],["다음 화 · 바위손의 새로운 도전","end11"]]}];
+  {name:'11화 · 숲의 호걸들, 네 빛의 맴맴이',tab:'11화',next:'솔숲 유도관의 고수들',beats:EP12,ch:[["11화 · 숲의 호걸들, 네 빛의 맴맴이","t11"],["바위손 · 붉은 바람 · 바닥의 지략가","heroes11"],["사범님 곁에서, 서로 다치지 않게","rules11"],["두팔한팔! 동글이가 손을 되찾았어","tie11"],["태클을 막았다! 그런데 또 돌아온다","sprawl11"],["일어나자마자, 붉은 바람이 불었어","sweepfoot11"],["굴리도 서서 맞섰어","osoto11"],["한 다리를 붙잡으니, 이야기가 이어져","halfsweep11"],["동글이는 일찍 탭하고, 비밀을 물었어","keylock11"],["드디어, 맴맴이와 씽씽이!","call11"],["큰 눈이 따라와도, 쉽게 잡히지 않아","distance11"],["뒤꿈치를 지켰더니, 허리가 돌아와","hook11"],["손이 풀린 순간, 아래로!","shot11"],["막혔어도, 발걸음은 멈추지 않아","circle11"],["일어난 맴맴이, 발을 놓치지 않는 씽씽이","dlr11"],["맴맴이가 다리를 거두자, 씽씽이가 따라와","pass11"],["틈을 만들고, 다시 마주 봤어","reguard11"],["막는 쪽을 보니, 다음 길이 보였어","hip11"],["삼각형을 막은 팔, 그 팔을 따라!","triomo11"],["씽씽이가 굴렀어! 맴맴이도 따라가","roll11"],["마지막까지, 친구의 신호를 먼저","arm11"],["승부 뒤에, 진짜 친구가 남았어","respect11"],["나도 저렇게 이어 보고 싶어","promise11"],["여러 날, 함께 흘린 땀","training11"],["네 빛의 맴맴이, 깨어나다!","awaken11"],["숲의 호걸들, 함께 인사!","bow11"],["다음 화 · 솔숲 유도관의 고수들","end11"]]},
+  {name:"12화 · 솔숲 유도관의 고수들",tab:"12화",next:"마을을 지킨 땀방울",beats:EP13,ch:[["12화 · 솔숲 유도관의 고수들","t12"],["청솔이와 호박이의 초대","visitors12"],["오늘은 유도 대회!","rules12"],["익숙한 손이 잡히지 않아","grips12"],["내 앞발과 네 앞발","opposite12"],["앞으로 따라간 순간, 빗당겨치기","tai12"],["손바닥으로 착!","landing12"],["힘을 더 줬는데, 왜 넘어졌지?","ask12"],["씽씽이도 한 판!","challenge12"],["허리껴치기를 노리는 씽씽이","turn12"],["앞으로 가던 길이 막혔어","rear12"],["뒤쪽 빈자리로, 오금대떨어뜨리기","tani12"],["잘하는 친구에게 배운 한 판","respect12"],["동글이가 발걸음을 보고 있었어","watch12"],["같이 옆으로, 하나 둘","step12"],["첫 발기술은 헛발!","miss12"],["발이 다시 모이는 순간","gather12"],["붉은 바람의 모두걸기!","okuri12"],["돌아온 바위손, 다시 매트로","home12"],["팔을 끌자, 다시 돌아온다","drag12"],["몸을 세운 순간, 스로우바이","throwby12"],["돌아오는 맴맴이, 낮아지는 단단이","front12"],["버티러 나온 무릎, 니픽!","kneepick12"],["앞목굴리기, 옆으로 이어지는 길","roll12"],["새 친구가 늘어난 날","bow12"],["다음 화 · 마을을 지킨 땀방울","end12"]]},
+  {name:"13화 · 마을을 지킨 땀방울",tab:"13화",next:"다시 온 그늘패",beats:EP14,ch:[["13화 · 마을을 지킨 땀방울","t13"],["그늘패가 나타났다!","arrival13"],["무서워도, 친구를 혼자 두지 않아","fear13"],["매트에서 흘렸던 땀","memory13"],["“그만! 친구들이 지나가야 해.”","line13"],["잡으러 온 팔을 따라, 옆으로!","ratdrag13"],["바위손의 스로우바이","ratthrow13"],["넘어뜨린 뒤에는, 멈춰!","ratstop13"],["마디왕의 빠른 발","manyfeet13"],["붉은 바람, 모두걸기!","sweep13"],["다시 일어나도, 길은 내줘야지","path13"],["날개를 접고 달려온 밤날개","batland13"],["청솔이의 빗당겨치기","battai13"],["날개가 멀쩡해, 이제 그만","batrest13"],["넓적이가 낮게 달려든다","rush13"],["낮은 골반, 단단한 발","hips13"],["어깨와 발이 함께 움직였어","shoulder13"],["이기는 힘보다, 멈추는 힘","release13"],["굴리가 길을 막아 섰어","guard13"],["한 팔이 밖에 남았어","triangle13"],["삼각형에서, 남은 팔을 따라","arm13"],["털보도 더는 덤비지 않았어","tarantulaend13"],["마을을 지킨 건, 함께 흘린 땀","safe13"],["지나간 연습은 오늘 갑자기 생기지 않아","regret13"],["불평했던 날에도, 한 걸음씩","light13"],["고맙습니다! 내일도 함께","bow13"],["다음 화 · 다시 온 그늘패","end13"]]}];
 EPS.forEach(e=>{let a=0;e.beats.forEach(b=>{b.start=a;a+=b.dur});e.total=a});
 let EPI=0,TOTAL=0,CH=[];
 function useEp(k){EPI=k;SC=EPS[k].beats;TOTAL=EPS[k].total;CH=EPS[k].ch}
