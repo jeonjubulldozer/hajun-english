@@ -978,6 +978,78 @@ beat({"id": "bow8", "dur": 8, "cap": "오늘은 내가, 다시 해 볼래요", "
 beat({"id": "end8", "dur": 8, "cap": "다음 화 · 작은 약속 한 가지", "say": "다음에는 작은 약속을 지키는 이야기가 찾아와요.\n하준아, 잘 안돼서 피하고 싶을 때 어떤 작은 것부터 다시 해 볼까?", "nosign": 1,cam:camOf(480,1),actors:[ON('grass',[[0,'cheer',{x:300,f:1}]]),ON('cicada',[[0,'cheer',{x:660,f:-1}]])],over:lt=>endCard(lt)});
 const EP9=SC;
 
+SC=[];
+/* ===== 9화 · 탑의 맴맴이 =====
+ * 각 짝 동작의 준비 → 접촉 → 결과를 이 화의 키프레임과 rig로만 정의한다.
+ * f=1 맴맴이의 앞다리(fl)는 오른다리, 뒷다리(bl)는 왼다리로 연출.
+ * 관절을 끝까지 펴지 않으며 탭 시작 시각에 접촉을 해제한다.
+ */
+beat({id:'t9',dur:7,nosign:1,cam:camOf(480,1),cap:'9화 · 탑의 맴맴이',
+ say:'하준아, 친구와 연습할 때 어디서 시작하니?\n오늘은 서기와 바닥이 이어지는 이야기야.',
+ actors:[ON('cicada',[[0,'stand',{x:350,f:1,ex:0}],[3,'guard',{ex:0}]]),ON('lady',[[0,'stand',{x:650,f:-1,ex:0}],[3,'bow']])],over:lt=>titleCard(lt)});
+beat({id:'pull9',dur:8,nosign:1,cam:camOf(480,1),cap:'어, 맴맴이는 안 앉네?',
+ say:'주짓수 연습이 시작되자 친구들은 먼저 앉으려 해요.\n\n“어, 맴맴이는 안 앉네?”\n\n오늘 동글이는 주짓수만 쓰는 역할이에요.',
+ actors:[ON('lady',[[0,'guard',{x:620,f:-1,ex:0}],[2,'sit',{ex:0}],[5,'squat',{ex:0}],[7,'stand',{ex:0}]]),ON('cricket',[[0,'stand',{x:820,f:-1,sc:.8}],[2.5,'sit',{ex:0}]]),ON('cicada',[[0,'guard',{x:350,f:1,ex:0}],[4,'grip',{x:400,ex:0}]])],fx:()=>{chip(.2,7.8,'bjj','가드 풀 · 먼저 앉기');bubble(2,5,660,170,'맴맴이는 서 있네?')}});
+beat({id:'osoto9',dur:12,nosign:1,cam:camOf(480,1),cap:'한 발에 싣고, 뒤에서 후리기',
+ say:'깃과 소매를 잡고 오른발 뒤꿈치 쪽으로 기울여요.\n왼발을 깊이 딛고 오른다리를 들어 뒤에서 후려요.\n한 발에 무게가 실린 순간 그 발을 쓸면 넘어가요.',
+ actors:[ON('lady',[[0,'grip',{x:540,f:-1,ex:0}],[2,'grip',{x:554,tl:-.2,blh:.55,blk:1.3,ex:0}],[4,'grip',{tl:-.32,ex:0}],[6,'flat',{x:620,rot:-1.57,ex:0,e:'in'}],[8,'flat',{ex:3}]]),ON('cicada',[[0,'grip',{x:430,f:1,ex:0}],[2,'grip',{x:450,ex:0}],[3.4,'grip',{x:477,blh:.72,blk:.2,ex:0}],[4.4,'grip',{flh:1.8,flk:.2,ex:0}],[5.2,'finish',{tl:.5,flh:-.8,flk:.15,ex:0}],[6,'top',{x:525,ex:0}],[12,'top',{ex:0}]])],
+ rig:(actors,t)=>{const a=actors.get('cicada'),b=actors.get('lady'),w=gripWeight(t,.5,12);contact(a,'fa',b,'SO',[0,8],1,w);contact(a,'ba',b,'fa.hd',[0,0],-1,w);contact(a,'bl',b,'fl.ft',[-16,0],1,gripWeight(t,3,4.5));contact(a,'fl',b,'fl.kn',[8,5],-1,gripWeight(t,4.7,5.6));a.P.deferFrontArm=true;},
+ fx:()=>{chip(.2,4.5,'judo','밭다리후리기 · 한 발에 무게');chip(4.6,11.8,'judo','밭다리후리기');burst(6,640,G-45,'쿵',null,'thud',.6)}});
+beat({id:'side9',dur:8,nosign:1,cam:camOf(480,1),cap:'넘긴 손을 놓지 않고, 옆으로',
+ say:'맴맴이는 잡은 손을 놓지 않고 다리 옆을 지나가요.\n무릎을 꿇고 가슴을 붙여 옆에서 눌러요.\n넘기고 바로 붙어야 상대가 다리를 못 올려요.',
+ actors:[ON('lady',[[0,'flat',{x:620,f:-1,rot:-1.57,ex:0}],[2,'back',{flh:.7,flk:.6,ex:0}],[4,'flat',{ex:0}]]),ON('cicada',[[0,'top',{x:525,f:1,ex:0}],[2,'top',{x:560,tl:1.1,ex:0}],[4,'top',{x:595,tl:1.4,y:-17,ex:0}],[8,'top',{ex:0}]])],
+ rig:(actors,t)=>{const a=actors.get('cicada'),b=actors.get('lady');contact(a,'fa',b,'fa.hd',[0,0],1,1);contact(a,'ba',b,'SO',[0,8],-1,gripWeight(t,1,8));a.P.deferFrontArm=true;},fx:()=>{chip(.2,3.6,'wr','압박 패스');chip(3.8,7.8,'bjj','사이드 컨트롤')}});
+beat({id:'kimura9',dur:12,nosign:1,cam:camOf(480,1),cap:'천천히 잡고, 톡톡이면 놓아요',
+ say:'밀어 오는 손목을 잡고 다른 팔을 뒤로 넣어 내 손목을 잡아요.\n팔꿈치를 ㄴ자로 두고 손을 등 쪽으로 조금 돌려요.\n어깨는 뒤로 많이 못 돌아가서 일찍 탭해요.\n맴맴이는 바로 놓고 둘 다 웃어요.',
+ actors:[ON('lady',[[0,'flat',{x:620,f:-1,rot:-1.57,ex:0}],[1.6,'flat',{fah:1.4,fae:1.57,ex:0}],[4,'flat',{fah:1.6,fae:1.57,ex:0}],[6.5,'flat',{fah:1.72,fae:1.57,ex:0}],...taps(7,4,'bah',.3,1.1),[8,'flat',{ex:3}],[10,'sit',{x:660,rot:0,ex:3}]]),ON('cicada',[[0,'top',{x:595,f:1,tl:1.4,y:-17,ex:0}],[2,'top',{x:570,tl:1.05,y:0,ex:0}],[4,'top',{fah:1.7,fae:1.6,bah:1.9,bae:1.4,ex:0}],[6.5,'top',{tl:1.1,ex:0}],[7,'top',{ex:0}],[7.3,'sit',{x:470,ex:3}],[10,'sit',{ex:3}]])],
+ rig:(actors,t)=>{const a=actors.get('cicada'),b=actors.get('lady'),w=gripWeight(t,1.4,7);contact(a,'fa',b,'fa.hd',[0,0],1,w);contact(a,'ba',a,'fa.hd',[0,0],-1,gripWeight(t,3,7));a.P.deferFrontArm=true;b.P.deferFrontArm=true;},
+ fx:()=>{chip(.2,6.8,'bjj','기무라 · 8자 손잡기');chip(7,11.8,null,'탭! 바로 놓아요');bubble(8,11.5,470,170,'넘기고 바로 위로 가네!')}});
+beat({id:'half9',dur:11,nosign:1,cam:camOf(480,1),cap:'밑에 깔려도, 다시 일어서요',
+ say:'유도를 배운 뚜리는 서서 잘 버텨요.\n밑에 깔린 맴맴이는 한 다리를 잡은 하프가드에서 무릎을 당겨요.\n상대가 앞으로 기울 때 손을 짚고 엉덩이를 빼면 일어날 자리가 생겨요.',
+ actors:[ON('cricket',[[0,'grip',{x:585,f:-1,ex:0}],[1.5,'top',{x:500,ex:0}],[3.5,'top',{tl:1.35,x:490,ex:0}],[6,'squat',{x:610,ex:0}],[8,'guard',{x:625,ex:0}]]),ON('cicada',[[0,'grip',{x:430,f:1,ex:0}],[1.5,'back',{x:410,rot:-1.2,ex:0}],[3,'back',{flh:1.2,flk:1.8,blh:1.7,blk:1.7,ex:0}],[4.5,'sit',{x:375,rot:-.25,bah:-.8,bae:.2,ex:0}],[6,'squat',{x:340,rot:0,blh:-.8,ex:0}],[8,'guard',{x:395,ex:0}]] )],
+ rig:(actors,t)=>{const a=actors.get('cicada'),b=actors.get('cricket'),w=gripWeight(t,1.5,4.2);contact(a,'fl',b,'fl.kn',[-8,5],1,w);contact(a,'bl',b,'fl.kn',[8,10],-1,w);contact(a,'fa',b,'fl.kn',[0,-4],1,w);reach(a,'ba',[a.P.x-35,G],-1,gripWeight(t,4,6.5));a.P.deferFrontLeg=true;a.P.deferFrontArm=true;},fx:()=>{chip(.2,4,'bjj','하프가드 · 무릎 당기기');chip(4.2,10.8,'wr','손 짚고 · 엉덩이 빼고 · 서기')}});
+beat({id:'fall9',dur:8,nosign:1,cam:camOf(480,1),cap:'넘어져도 괜찮아, 낙법!',
+ say:'다시 선 뚜리가 낮게 들어와 다리를 잡아요.\n낮은 곳에서 두 다리를 모아 밀면 중심이 흔들려요.\n맴맴이는 턱을 당기고 낙법해서 머리를 지켜요.',
+ actors:[ON('cicada',[[0,'guard',{x:590,f:-1,ex:0}],[3,'guard',{x:610,tl:-.2,ex:0}],[4.8,'flat',{x:655,rot:-1.57,curl:.5,ex:0,e:'in'}],[6,'back',{curl:0,ex:0}]]),ON('cricket',[[0,'guard',{x:380,f:1,ex:0}],[1.5,'low',{x:425,ex:0}],[2.8,'shoot',{x:510,ex:0}],[4.8,'top',{x:555,ex:0}],[6.5,'stand',{x:535,ex:0}]])],
+ rig:(actors,t)=>{const a=actors.get('cricket'),b=actors.get('cicada'),w=gripWeight(t,2.3,4.9);contact(a,'fa',b,'fl.kn',[0,-4],1,w);contact(a,'ba',b,'bl.kn',[0,-4],-1,w);a.P.deferFrontArm=true;},fx:()=>{chip(.2,4,'wr','낮은 태클');chip(4.2,7.8,'judo','낙법 · 머리 지키기');burst(4.8,680,G-35,'탁',null,'slap',.55)}});
+beat({id:'dlr9',dur:13,nosign:1,cam:camOf(480,1),cap:'바깥 갈고리로 묶고, 밀어요',
+ say:'맴맴이는 바깥으로 다리를 감아 발등을 허벅지 안쪽에 걸어요.\n같은 쪽 손으로 발목을 잡고 다른 발로 반대쪽 엉덩이를 밀어요.\n한 발을 갈고리로 묶고 밀면 발을 옮기기 어려워 넘어가요.\n흔들린 뚜리가 뒤로 눕자 맴맴이가 따라 올라가요.',
+ actors:[ON('cricket',[[0,'stand',{x:535,f:1,ex:0}],[2,'grip',{tl:.45,flh:.4,ex:0}],[5,'grip',{tl:.65,ex:0}],[6.5,'grip',{x:510,tl:-.25,ex:0}],[8,'flat',{x:480,rot:-1.57,ex:0}],[13,'flat',{ex:0}]]),ON('cicada',[[0,'back',{x:600,f:-1,rot:-1.57,ex:0}],[2,'back',{flh:2.1,flk:1.4,ex:0}],[4,'back',{blh:1.5,blk:.35,ex:0}],[6.5,'back',{blh:1.65,blk:.12,ex:0}],[8,'sit',{x:610,rot:0,ex:0}],[10,'top',{x:540,f:-1,tl:1.3,y:-15,ex:0}],[13,'top',{ex:0}]])],
+ rig:(actors,t)=>{const a=actors.get('cicada'),b=actors.get('cricket'),w=gripWeight(t,1.4,7);contact(a,'fl',b,'fl.kn',[-8,-16],-1,w);contact(a,'fa',b,'fl.ft',[0,-7],1,w);contact(a,'bl',b,'bl.hip',[0,-4],1,gripWeight(t,3,7));a.P.deferFrontLeg=true;a.P.deferFrontArm=true;},fx:()=>{chip(.2,7.5,'bjj','델라히바 · 갈고리와 밀기');chip(7.7,12.8,'bjj','스윕 · 밑에서 위로');burst(8,390,G-45,'쿵',null,'thud',.55)}});
+beat({id:'triangle9',dur:13,nosign:1,cam:camOf(480,1),cap:'팔을 목 옆으로, 탭하면 바로 풀기',
+ say:'다리 옆을 지나 가슴을 붙이고 상대 팔을 목 옆으로 올려요.\n머리로 팔을 고정하고 두 팔로 함께 감싸요.\n팔과 어깨가 목 양쪽을 누를 수 있어서 조이기 전에 탭해요.\n맴맴이가 바로 풀자 뚜리는 웃으며 다시 하자고 해요.',
+ actors:[ON('cricket',[[0,'flat',{x:480,f:1,rot:-1.57,ex:0}],[3,'flat',{fah:2.6,fae:1.2,ex:0}],[5,'flat',{fah:2.9,fae:1.3,ex:0}],...taps(8,4,'bah',.3,1.2),[9,'flat',{ex:3}],[11,'sit',{x:390,rot:0,ex:3}]]),ON('cicada',[[0,'top',{x:540,f:-1,tl:1.3,y:-15,ex:0}],[2,'top',{x:455,tl:1.35,y:-22,ex:0}],[4,'top',{x:430,tl:1.15,y:-24,ex:0}],[6,'top',{fah:2,fae:1.6,bah:2,bae:1.6,ex:0}],[8,'top',{ex:0}],[8.3,'sit',{x:590,y:0,tl:.2,ex:3}],[11,'sit',{ex:3}]])],
+ rig:(actors,t)=>{const a=actors.get('cicada'),b=actors.get('cricket'),w=gripWeight(t,3,8);contact(a,'fa',b,'SO',[0,-5],1,w);contact(a,'ba',a,'fa.hd',[0,0],-1,w);a.P.deferFrontArm=true;b.P.deferFrontArm=true;},fx:()=>{chip(.2,2.8,'wr','압박 패스 → 사이드');chip(3,7.8,'bjj','암 트라이앵글 · 모양만 천천히');chip(8,12.8,null,'톡톡! 바로 풀어요')}});
+beat({id:'kosoto9',dur:8,nosign:1,cam:camOf(480,1),cap:'버티는 뒤꿈치에 살짝 걸기',
+ say:'세 번째 판도 뚜리와 서서 시작해요.\n뒷발에 무게를 두자 발바닥으로 뒤꿈치를 뒤에서 걸어 당겨요.\n받치던 뒤꿈치가 움직이면 중심도 흔들려요.',
+ actors:[ON('cricket',[[0,'grip',{x:550,f:-1,ex:0}],[2,'grip',{tl:-.2,blh:-.55,blk:.18,ex:0}],[5,'grip',{x:565,tl:-.35,blh:.2,blk:.5,ex:0}],[7.5,'grip',{x:585,flh:.5,flk:.45,tl:.15,ex:0}]]),ON('cicada',[[0,'grip',{x:435,f:1,ex:0}],[2,'grip',{x:460,ex:0}],[3.5,'grip',{flh:.85,flk:1,ex:0}],[5,'grip',{flh:.2,flk:.8,tl:.22,ex:0}],[7.5,'grip',{x:480,ex:0}]])],
+ rig:(actors,t)=>{const a=actors.get('cicada'),b=actors.get('cricket'),w=gripWeight(t,.5,8);contact(a,'fa',b,'SO',[0,8],1,w);contact(a,'ba',b,'fa.hd',[0,0],-1,w);contact(a,'fl',b,'bl.ft',[8,-3],1,gripWeight(t,3,5.5));a.P.deferFrontArm=true;a.P.deferFrontLeg=true;},fx:()=>{chip(.2,7.8,'judo','발뒤축걸기 · 뒤꿈치 당기기')}});
+beat({id:'deashi9',dur:10,nosign:1,cam:camOf(480,1),cap:'발이 닿기 전에, 옆으로 쓱',
+ say:'뚜리는 균형을 잡으려고 앞으로 발을 내밀어요.\n맴맴이도 한 걸음 나가 그 발을 옆으로 쓸어요.\n발이 땅에 닿기 바로 전에 쓸면 힘이 거의 안 들어요.',
+ actors:[ON('cricket',[[0,'grip',{x:585,f:-1,flh:.5,flk:.45,tl:.15,ex:0}],[2,'grip',{x:575,flh:.85,flk:.7,y:-3,ex:0}],[3.5,'tuck',{x:570,rot:-.6,y:-18,ex:0}],[5,'flat',{x:625,rot:-1.57,y:0,ex:0,e:'in'}],[10,'flat',{ex:0}]]),ON('cicada',[[0,'grip',{x:480,f:1,ex:0}],[2,'grip',{x:490,blh:.6,blk:.2,ex:0}],[3.5,'grip',{flh:1.1,flk:.25,tl:.3,ex:0}],[5,'top',{x:530,ex:0}],[8,'top',{x:560,ex:0}]])],
+ rig:(actors,t)=>{const a=actors.get('cicada'),b=actors.get('cricket'),w=gripWeight(t,0,5.2);contact(a,'fa',b,'SO',[0,8],1,w);contact(a,'ba',b,'fa.hd',[0,0],-1,w);contact(a,'fl',b,'fl.ft',[-8,-2],-1,gripWeight(t,2,3.7));a.P.deferFrontArm=true;a.P.deferFrontLeg=true;},fx:()=>{chip(.2,9.8,'judo','모두걸기 · 내딛는 순간');burst(5,650,G-45,'쿵',null,'thud',.55)}});
+beat({id:'arm9',dur:12,nosign:1,cam:camOf(480,1),cap:'무릎 올리기에서, 팔 잡고 앉기',
+ say:'배 위에 무릎을 가볍게 얹고 다른 다리를 넓게 벌려 균형을 잡아요.\n밀어 오는 팔을 잡고 머리 쪽으로 다리를 넘겨 앉아요.\n엄지를 위로 둔 팔이 다리 사이에 있으면 팔꿈치가 펴질 수 있어요.\n그래서 엉덩이를 들지 않고 멈춰요.',
+ actors:[ON('cricket',[[0,'flat',{x:625,f:-1,rot:-1.57,ex:0}],[3,'flat',{fah:1.4,fae:1,ex:0}],[6,'flat',{fah:1.5,fae:1,ex:0}],[12,'flat',{ex:0}]]),ON('cicada',[[0,'top',{x:560,f:1,ex:0}],[2,'top',{x:600,flh:.9,flk:1.8,blh:-.9,blk:.25,ex:0}],[4,'top',{fah:1.5,fae:1.2,ex:0}],[6,'squat',{x:665,flh:2.1,flk:1.2,ex:0}],[8,'sit',{x:680,f:-1,rot:-.25,ex:0}],[12,'sit',{ex:0}]])],
+ rig:(actors,t)=>{const a=actors.get('cicada'),b=actors.get('cricket'),w=gripWeight(t,3,12);contact(a,'fa',b,'fa.hd',[0,0],1,w);contact(a,'ba',b,'fa.hd',[3,0],-1,w);contact(a,'fl',b,'SO',[18,8],-1,gripWeight(t,6,12));contact(a,'bl',b,'HD',[-14,8],1,gripWeight(t,7,12));a.P.deferFrontArm=true;a.P.deferFrontLeg=true;b.P.deferFrontArm=true;},fx:()=>{chip(.2,3.5,'bjj','니온밸리 · 무릎은 가볍게');chip(3.7,11.8,'bjj','암바 · 꺾기 전에 멈추기')}});
+beat({id:'omo9',dur:14,nosign:1,cam:camOf(480,1),cap:'함께 굴러, 다음 기술로',
+ say:'뚜리가 굴러 빠지려 할 때 같이 구르면 다음 기술로 이어져요.\n맴맴이는 다리로 팔을 감은 채 어깨 옆에 앉아요.\n어깨는 뒤로 많이 못 돌아가서 조금 움직이기 전에 탭해요.\n바로 놓아 주니 둘 다 웃으며 다시 하자고 해요.',
+ actors:[ON('cricket',[[0,'flat',{x:625,f:-1,rot:-1.57,fah:1.5,fae:1,ex:0}],[2,'tuck',{x:590,rot:0,curl:.8,y:-10,ex:0}],[3.5,'tuck',{x:540,rot:2.1,curl:.9,y:-28,ex:0}],[5,'top',{x:475,rot:6.28,curl:0,y:0,ex:0}],[7,'top',{tl:1.3,fah:.3,fae:1.57,ex:0}],...taps(9.5,4,'bah',.3,1.1),[11,'sit',{x:400,rot:6.28,ex:3}]]),ON('cicada',[[0,'sit',{x:680,f:-1,rot:-.25,ex:0}],[2,'tuck',{x:665,rot:.8,curl:.8,y:-20,ex:0}],[3.5,'tuck',{x:625,rot:3,curl:.9,y:-32,ex:0}],[5,'sit',{x:575,rot:6.28,curl:0,y:0,ex:0}],[7,'sit',{x:565,flh:1.8,flk:1.8,tl:.3,ex:0}],[9,'sit',{tl:.38,ex:0}],[9.5,'sit',{ex:0}],[9.8,'sit',{x:650,tl:.2,ex:3}],[12,'sit',{ex:3}]])],
+ rig:(actors,t)=>{const a=actors.get('cicada'),b=actors.get('cricket'),w=gripWeight(t,0,9.5);contact(a,'fl',b,'fa.el',[0,0],-1,w);contact(a,'bl',b,'fa.hd',[0,0],1,w);contact(a,'fa',b,'fa.hd',[0,0],1,gripWeight(t,0,2));a.P.deferFrontLeg=true;b.P.deferFrontArm=true;},fx:()=>{chip(.2,4.8,'bjj','빠져나가면 · 함께 앞구르기');chip(5,9.3,'bjj','오모플라타 · 어깨 옆에 앉기');chip(9.5,13.8,null,'탭! 바로 놓고 웃어요')}});
+beat({id:'one9',dur:14,nosign:1,cam:camOf(480,.9),cap:'유도 · 레슬링 · 주짓수는 이어져요',
+ say:'“왜 다들 앉을 때 서서 넘기고 위로 가?”\n\n집게는 “넘기는 건 유도”, 번쩍이는 “누르는 힘은 레슬링”, 꽉이는 “끝내는 건 주짓수”라고 말해요.\n셋이 손을 겹치며 말해요.\n\n“셋이 하나로 이어지면 위에서도 밑에서도 할 게 있어.”',
+ actors:[ON('lady',[[0,'sit',{x:155,f:1,sc:.75,ex:0}]]),ON('stag',[[0,'stand',{x:350,f:1,sc:.8,ex:0}],[3,'grip',{ex:0}],[9,'grip',{x:430,ex:0}]]),ON('rhino',[[0,'stand',{x:500,f:1,sc:.8,ex:0}],[5,'grip',{ex:0}],[9,'grip',{x:500,ex:0}]]),ON('mantis',[[0,'stand',{x:650,f:-1,sc:.8,ex:0}],[7,'grip',{ex:0}],[9,'grip',{x:570,ex:0}]]),ON('cicada',[[0,'sit',{x:810,f:-1,sc:.75,ex:3}]])],
+ rig:(actors,t)=>{const w=gripWeight(t,9,14);for(const id of ['stag','rhino','mantis']){const a=actors.get(id);reach(a,'fa',[510,300],1,w);a.P.deferFrontArm=true;}},fx:()=>{chip(.2,3,null,'왜 먼저 서서 넘겨요?');chip(3.2,5,'judo','넘기기');chip(5.2,7,'wr','누르는 힘');chip(7.2,9,'bjj','안전하게 끝내기');chip(9.2,13.8,null,'셋이 하나로 이어져요')}});
+beat({id:'bow9',dur:9,nosign:1,cam:camOf(480,1),cap:'친구를 일으키고, 함께 인사',
+ say:'맴맴이는 친구의 손을 잡아 일으켜 줘요.\n\n“같이 연습하자.”\n\n이긴 친구도 진 친구도 웃으며 인사해요.\n\n“고맙습니다!”',
+ actors:[ON('cricket',[[0,'sit',{x:520,f:-1,ex:3}],[2,'squat',{ex:3}],[3.5,'stand',{x:545,ex:3}],[6,'bow'],[8,'stand',{ex:3}]]),ON('cicada',[[0,'squat',{x:420,f:1,ex:3}],[2,'grip',{ex:3}],[3.5,'stand',{x:390,ex:3}],[6,'bow'],[8,'stand',{ex:3}]]),ON('lady',[[0,'stand',{x:200,f:1,sc:.85,ex:3}],[6,'bow'],[8,'stand',{ex:3}]]),ON('mantis',[[0,'stand',{x:780,f:-1,sc:.85,ex:3}],[6,'bow'],[8,'stand',{ex:3}]])],
+ rig:(actors,t)=>{const a=actors.get('cicada'),b=actors.get('cricket');contact(a,'fa',b,'fa.hd',[0,0],1,gripWeight(t,.2,3.5));a.P.deferFrontArm=true;},fx:()=>{chip(.2,4.5,null,'같이 연습하자');chip(5,8.8,null,'고맙습니다!')}});
+beat({id:'end9',dur:7,nosign:1,cam:camOf(480,1),cap:'다음 화 · 작은 약속 한 가지',
+ say:'다음에는 작은 약속을 함께 지켜 봐요.\n하준아, 오늘 기술 중에 도장에서 제일 먼저 해 보고 싶은 건 뭐야?',
+ actors:[ON('cicada',[[0,'cheer',{x:330,f:1,ex:3}]]),ON('cricket',[[0,'cheer',{x:630,f:-1,ex:3}]])],over:lt=>endCard(lt)});
+const EP10=SC;
+
+
 
 const EPS=[{name:'1화 · 네 가지를 배운 매미',next:'반딧불이의 밤 수련',beats:EP1,ch:CH1},
   {name:'2화 · 반딧불이의 밤 수련',next:'맴맴이의 첫 대회',beats:EP2,ch:[['처음','t2'],['베짱이','grass'],['밤 수련','night'],['한 달 뒤','month'],['깃 싸움','grip'],['선택','choice'],['인사','bow2']]},
@@ -987,7 +1059,8 @@ const EPS=[{name:'1화 · 네 가지를 배운 매미',next:'반딧불이의 밤
   {name:'5화 · 맴맴이의 첫 대회',tab:'5화',next:'단체반에서 한 번 더',beats:EP6,ch:[['처음','t5'],['천천히 숨 쉬기','breathe5'],['금메달','gold5'],['큰 형에게 도전','challenge5'],['서서 버티기','standing5'],['가드와 니컷','guard5'],['상대에게 집중','focus5'],['안전하게 탭','tap5'],['속상한 마음','upset5'],['용기와 배움','learn5'],['다음 연습','plan5'],['인사','bow5'],['다음 화','end5']]},
   {name:'6화 · 같은 출석, 다른 비밀',tab:'6화',next:'하준이의 챔피언 식당',beats:EP7,ch:[["처음","t6"],["같은 출석","same6"],["깜빡한 순서","forgot6"],["몇 주 뒤","gap6"],["비밀 작전","secret6"],["내 레슨 복기","review6"],["멤버십 강의","member6"],["더미 연습","dummy6"],["사범님 확인","check6"],["친구들의 비밀","different6"],["나도 시작","start6"],["다음 화","end6"]]},
   {name:'7화 · 하준이의 챔피언 식당',tab:'7화',next:'푹 쉬고 다시 씩씩하게',beats:EP8,ch:[["처음","t7"],["대수롭지 않게","dismiss7"],["뚜리에게 졌어요","loss7"],["숨은 비밀","mystery7"],["챔피언 식당","meal7"],["이제 알았어요","learn7"],["스스로 먹기","choose7"],["몇 달의 습관","months7"],["다시 대회","match7"],["챔피언","champion7"],["인사","bow7"],["다음 화","end7"]]},
-  {name:'8화 · 다시 시작할 수 있어',tab:'8화',next:'작은 약속 한 가지',beats:EP9,ch:[["처음", "t8"], ["일주일 뒤", "week8"], ["속상한 패배", "loss8"], ["문 앞에서", "hide8"], ["자꾸 멀어져요", "drift8"], ["다른 선택", "choice8"], ["아빠와 연습", "dad8"], ["쌓이는 날들", "gap8"], ["어른이 된 꿈", "grown8"], ["꿈이었어!", "wake8"], ["다시 도장으로", "return8"], ["오늘 한 번", "bow8"], ["다음 화", "end8"]]}];
+  {name:'8화 · 다시 시작할 수 있어',tab:'8화',next:'작은 약속 한 가지',beats:EP9,ch:[["처음", "t8"], ["일주일 뒤", "week8"], ["속상한 패배", "loss8"], ["문 앞에서", "hide8"], ["자꾸 멀어져요", "drift8"], ["다른 선택", "choice8"], ["아빠와 연습", "dad8"], ["쌓이는 날들", "gap8"], ["어른이 된 꿈", "grown8"], ["꿈이었어!", "wake8"], ["다시 도장으로", "return8"], ["오늘 한 번", "bow8"], ["다음 화", "end8"]]},
+  {name:'9화 · 탑의 맴맴이',tab:'9화',next:'작은 약속 한 가지',beats:EP10,ch:[['처음','t9'],['먼저 앉는 친구들','pull9'],['밭다리후리기','osoto9'],['바로 탑으로','side9'],['기무라와 탭','kimura9'],['다시 일어서기','half9'],['태클과 낙법','fall9'],['델라히바 스윕','dlr9'],['어깨 조르기','triangle9'],['발뒤축걸기','kosoto9'],['모두걸기','deashi9'],['무릎에서 암바','arm9'],['함께 굴러 오모플라타','omo9'],['셋이 하나로','one9'],['친절과 인사','bow9'],['다음 화','end9']]}];
 EPS.forEach(e=>{let a=0;e.beats.forEach(b=>{b.start=a;a+=b.dur});e.total=a});
 let EPI=0,TOTAL=0,CH=[];
 function useEp(k){EPI=k;SC=EPS[k].beats;TOTAL=EPS[k].total;CH=EPS[k].ch}
