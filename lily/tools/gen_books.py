@@ -256,7 +256,32 @@ B.append(book("ep8", 8, "8화", "Bug Dojo 8: A Chance to Start Again",
    {"t":"say", "q":"What would you like to try again? Start with: I want to try ...", "say":"I want to try my stance again.", "key":["try"], "free":True}],
   "#B8DDEB"))
 
-IDX = {"ep1": 0, "ep2": 1, "epsp": 2, "ep3": 3, "ep4": 4, "ep5": 5, "ep6": 6, "ep7": 7, "ep8": 8}   # position in dojo/index.html EPS
+# ---------------------------------------------------------------- 10화
+B.append(book("ep10", 10, "10화", "Bug Dojo 10: Zippy, the Number Two Dragonfly",
+  "10화 「2등 잠자리 씽씽이」를 영어로 — 빠른 깃 잡기, 안전한 탭, 서로 배우는 라이벌과 아침 연습.",
+  art(10, "arrival10"), [
+  P(10, "arrival10", ["A dragonfly hovered above the mat with four clear wings.", "Then he landed softly and introduced himself to his new friends.", "His name was Zippy, and he practiced judo and jiu-jitsu."], ch="Chapter 1 · Four Clear Wings"),
+  P(10, "eyes10", ["Two enormous eyes covered almost all of Zippy's small head.", "Real dragonflies can see almost all around them while they fly.", "Zippy quickly noticed which way his training partner was moving."]),
+  P(10, "grip10", ["Dot stepped onto the mat for their first practice match.", "Zippy caught her collar and sleeve before she could grab his.", "Getting a grip first helped him start his next move."]),
+  P(10, "harai10", ["Zippy turned and moved his hip in front of Dot.", "His sweeping leg helped her turn over in a hip throw.", "Dot landed with a breakfall and smiled at her new friend."], q=0.85),
+  P(10, "guard10", ["Next, Chirpy held the top position while Zippy lay underneath.", "Zippy lifted his long legs to make a guard.", "He still had something to try from the bottom position."], ch="Chapter 2 · A Tap Means Let Go"),
+  P(10, "triangle10", ["Zippy slowly made a triangle around Chirpy's neck and one arm.", "Chirpy kept his other arm outside and tapped before any squeezing.", "Zippy let go immediately, and both friends smiled with relief."], q=0.7),
+  P(10, "friends10", ["Everyone cheered because Zippy had shown them some skillful moves.", "He thanked Dot and Chirpy for practicing with him safely.", "Winning felt good, but learning together made the practice special."]),
+  P(10, "rank10", ["A wooden board showed Mem-Mem first and Zippy in second place.", "Their places did not decide how much each friend mattered.", "They wanted to discover what they could learn from each other."], ch="Chapter 3 · A New Thing to Learn", extra=[{"x":480,"y":160,"s":"1. Mem-Mem   2. Zippy"}]),
+  P(10, "rivals10", ["Zippy hoped they could have a friendly match one day.", "Mem-Mem smiled because he wanted to try that match, too.", "They respected each other and felt excited about learning together."]),
+  P(10, "learn10", ["The coaches said Mem-Mem also used wrestling and taekwondo together.", "He could tackle, press from above, and judge the distance.", "Zippy went to Coach Flash because he wanted to learn wrestling."]),
+  P(10, "morning10", ["The next morning, both friends practiced with their Bulgarian bags.", "They practiced breakfalls together and helped each other start again.", "Everyone bowed together, thankful for another chance to learn."], q=0.85),
+  ], {"zippy":"씽씽이 (잠자리)","dragonfly":"잠자리","hovered":"공중에 멈춰 있었다","collar":"깃","sleeve":"소매","hip throw":"허리로 넘기는 기술","breakfall":"낙법","triangle":"삼각형","immediately":"즉시","respected":"존중했다","judge the distance":"거리를 가늠하다"},
+  ["What helped Zippy notice his partner's movements?", "What must you do when a friend taps?", "Why did Zippy want to learn wrestling?", "Who might win their friendly match, and why?"],
+  [{"t":"choice","q":"Which arts did Zippy already practice?","a":["Judo and jiu-jitsu","Swimming and running","Only wrestling"],"e":["🥋","🏊","🤼"]},
+   {"t":"choice","q":"What did Zippy do when Chirpy tapped?","a":["He let go immediately","He squeezed harder","He ignored the tap"],"e":["🤝","🙅","🚫"]},
+   {"t":"choice","q":"Why did Zippy visit Coach Flash?","a":["He wanted to learn wrestling","He wanted to tease Mem-Mem","He wanted to hide"],"e":["🤼","🙅","🚪"]},
+   {"t":"word","q":"'잠자리'는 영어로?","a":["dragonfly","butterfly","firefly"]},
+   {"t":"say","q":"Say it! When my friend taps, I ...","say":"When my friend taps, I let go immediately.","key":["let","go"]},
+   {"t":"say","q":"What would you like to learn from a friend?","say":"I want to learn a new move from my friend.","key":["learn"],"free":True}],
+  "#A8DFE8"))
+
+IDX = {"ep1": 0, "ep2": 1, "epsp": 2, "ep3": 3, "ep4": 4, "ep5": 5, "ep6": 6, "ep7": 7, "ep8": 8, "ep10": 10}   # position in dojo/index.html EPS
 for b in B: b["dojoIdx"] = IDX[b["id"]]
 js = "// 곤충 무술 도장 영어책 — 애니메이션(dojo/) 각 화의 이야기를 영어 챕터북으로 옮긴 것. 그림은 애니메이션 장면의 자세를 그대로 가져왔어요.\n"
 js += "// 새 화가 생기면 scratchpad의 gen_books.py 방식대로 같은 형식으로 추가하면 돼요.\n"
