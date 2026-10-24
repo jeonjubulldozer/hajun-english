@@ -6752,7 +6752,7 @@ const BUGDOJO = [
   "dojoEp": "10화",
   "level": 3,
   "style": "곤충 무술 도장 · 10화",
-  "title": "Bug Dojo 10: Zippy, the Number Two Dragonfly",
+  "title": "Bug Dojo 10: Zippy Meets the Forest Heroes",
   "cover": {
    "e": "🥋",
    "bg": "#A8DFE8",
@@ -6791,7 +6791,7 @@ const BUGDOJO = [
     ]
    }
   },
-  "blurb": "10화 「2등 잠자리 씽씽이」를 영어로 — 빠른 깃 잡기, 안전한 탭, 서로 배우는 라이벌과 아침 연습.",
+  "blurb": "2등 잠자리 씽씽이의 긴 대련 — 서로 다른 장기를 만나는 하루.",
   "pages": [
    {
     "e": "🥋",
@@ -6830,12 +6830,11 @@ const BUGDOJO = [
      ]
     },
     "s": [
-     "A dragonfly hovered above the mat with four clear wings.",
-     "Then he landed softly and introduced himself to his new friends.",
-     "His name was Zippy, and he practiced judo and jiu-jitsu."
+     "Zippy hovered above the mat, then landed beside his new friends.",
+     "He practiced judo and jiu-jitsu, and he loved a good challenge."
     ],
     "beat": "arrival10",
-    "ch": "Chapter 1 · Four Clear Wings"
+    "ch": "Chapter 1 · A Visitor with Four Wings"
    },
    {
     "e": "🥋",
@@ -6843,84 +6842,39 @@ const BUGDOJO = [
      "actors": [
       {
        "id": "dragon",
-       "x": 480,
+       "x": 437,
        "f": 1,
-       "ex": 1,
-       "tl": 0.12,
-       "flh": 0.38,
-       "flk": 0.45,
-       "blh": -0.38,
-       "blk": 0.35,
-       "fah": 1.05,
-       "fae": 1.4,
-       "bah": 0.8,
-       "bae": 1.6
-      }
-     ]
-    },
-    "s": [
-     "Two enormous eyes covered almost all of Zippy's small head.",
-     "Real dragonflies can see almost all around them while they fly.",
-     "Zippy quickly noticed which way his training partner was moving."
-    ],
-    "beat": "eyes10"
-   },
-   {
-    "e": "🥋",
-    "art": {
-     "actors": [
+       "ex": 0,
+       "tl": 0.11,
+       "flh": 0.31,
+       "flk": 0.32,
+       "blh": -0.31,
+       "blk": 0.25,
+       "fah": 1.32,
+       "fae": 0.69,
+       "bah": 1.1,
+       "bae": 0.99
+      },
       {
        "id": "lady",
-       "x": 545,
-       "f": -1,
-       "ex": 1,
-       "tl": 0.1,
-       "flh": 0.28,
-       "flk": 0.25,
-       "blh": -0.28,
-       "blk": 0.2,
-       "fah": 1.45,
-       "fae": 0.35,
-       "bah": 1.25,
-       "bae": 0.7
-      },
-      {
-       "id": "dragon",
-       "x": 450,
-       "f": 1,
-       "ex": 1,
-       "tl": 0.1,
-       "flh": 0.28,
-       "flk": 0.25,
-       "blh": -0.28,
-       "blk": 0.2,
-       "fah": 1.45,
-       "fae": 0.35,
-       "bah": 1.25,
-       "bae": 0.7
-      },
-      {
-       "id": "stag",
-       "x": 780,
+       "x": 576,
        "f": -1,
        "ex": 0,
-       "tl": 0,
-       "flh": 0.06,
-       "flk": 0.06,
-       "blh": -0.06,
-       "blk": 0.06,
-       "fah": 0.25,
-       "fae": 0.35,
-       "bah": -0.15,
-       "bae": 0.35,
-       "sc": 0.75
+       "tl": 0.11,
+       "flh": 0.31,
+       "flk": 0.32,
+       "blh": -0.31,
+       "blk": 0.25,
+       "fah": 1.32,
+       "fae": 0.69,
+       "bah": 1.1,
+       "bae": 0.99
       }
      ]
     },
     "s": [
-     "Dot stepped onto the mat for their first practice match.",
-     "Zippy caught her collar and sleeve before she could grab his.",
-     "Getting a grip first helped him start his next move."
+     "Dot pulled her sleeve away before Zippy could keep his grip.",
+     "He followed her steps, but she would not stand still."
     ],
     "beat": "grip10"
    },
@@ -6929,58 +6883,41 @@ const BUGDOJO = [
     "art": {
      "actors": [
       {
-       "id": "lady",
-       "x": 630,
-       "f": -1,
-       "ex": 3,
-       "rot": 6.28,
-       "tl": 0,
-       "flh": 0.06,
-       "flk": 0.06,
-       "blh": -0.06,
-       "blk": 0.06,
-       "fah": 0.25,
-       "fae": 0.35,
-       "bah": -0.15,
-       "bae": 0.35
-      },
-      {
        "id": "dragon",
-       "x": 410,
-       "f": 1,
-       "ex": 3,
-       "tl": 0.75,
-       "flh": 0,
-       "flk": 0,
-       "blh": 0,
-       "blk": 0,
-       "fah": 0.12,
-       "fae": 0.1,
-       "bah": 0.08,
-       "bae": 0.1
-      },
-      {
-       "id": "stag",
-       "x": 790,
+       "x": 500,
        "f": -1,
        "ex": 0,
+       "tl": 1.24,
+       "flh": 0.53,
+       "flk": 0.59,
+       "blh": -0.65,
+       "blk": 0.3,
+       "fah": 0.9,
+       "fae": 0.3,
+       "bah": 0.6,
+       "bae": 0.4
+      },
+      {
+       "id": "lady",
+       "x": 629,
+       "f": -1,
+       "ex": 0,
+       "rot": 4.66,
        "tl": 0,
-       "flh": 0.06,
-       "flk": 0.06,
-       "blh": -0.06,
-       "blk": 0.06,
-       "fah": 0.25,
-       "fae": 0.35,
-       "bah": -0.15,
-       "bae": 0.35,
-       "sc": 0.75
+       "flh": 0.2,
+       "flk": 0.15,
+       "blh": 0.07,
+       "blk": 0.15,
+       "fah": 0.53,
+       "fae": 0.2,
+       "bah": 0.28,
+       "bae": 0.2
       }
      ]
     },
     "s": [
-     "Zippy turned and moved his hip in front of Dot.",
-     "His sweeping leg helped her turn over in a hip throw.",
-     "Dot landed with a breakfall and smiled at her new friend."
+     "When Dot came forward again, Zippy turned into a hip sweep.",
+     "Dot landed safely and quickly put her legs between them."
     ],
     "beat": "harai10"
    },
@@ -6990,14 +6927,101 @@ const BUGDOJO = [
      "actors": [
       {
        "id": "dragon",
+       "x": 533,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.53,
+       "flh": 0.8,
+       "flk": 1.68,
+       "blh": -0.0,
+       "blk": 1.3,
+       "fah": 1.68,
+       "fae": 0.48,
+       "bah": 1.55,
+       "bae": 0.55
+      },
+      {
+       "id": "lady",
+       "x": 626,
+       "f": -1,
+       "ex": 0,
+       "rot": 4.71,
+       "tl": 0.25,
+       "flh": 1.77,
+       "flk": 1.05,
+       "blh": 1.53,
+       "blk": 1.5,
+       "fah": 1.4,
+       "fae": 0.9,
+       "bah": 1.2,
+       "bae": 1.1
+      }
+     ]
+    },
+    "s": [
+     "Zippy tried going around, but Dot kept following his movement.",
+     "They smiled when the bell ended their lively first round."
+    ],
+    "beat": "recover10"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dragon",
+       "x": 425,
+       "f": 1,
+       "ex": 0,
+       "rot": -1.16,
+       "tl": 0.36,
+       "flh": 1.86,
+       "flk": 1.42,
+       "blh": 1.56,
+       "blk": 1.66,
+       "fah": 1.37,
+       "fae": 0.8,
+       "bah": 1.17,
+       "bae": 1
+      },
+      {
+       "id": "cricket",
+       "x": 513,
+       "f": -1,
+       "ex": 0,
+       "tl": 1.03,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 0.92,
+       "bae": 0.45
+      }
+     ]
+    },
+    "s": [
+     "Chirpy stayed on top while Zippy tried to sit up.",
+     "When Chirpy posted a hand, Zippy noticed a new opening."
+    ],
+    "beat": "bump10",
+    "ch": "Chapter 2 · Every Answer Opens a Door"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dragon",
        "x": 410,
        "f": 1,
-       "ex": 1,
+       "ex": 0,
        "rot": -1.57,
        "tl": 0.25,
-       "flh": 1.29,
-       "flk": 1.42,
-       "blh": 1.39,
+       "flh": 1.7,
+       "flk": 1.05,
+       "blh": 1.35,
        "blk": 1.5,
        "fah": 1.4,
        "fae": 0.9,
@@ -7006,101 +7030,24 @@ const BUGDOJO = [
       },
       {
        "id": "cricket",
-       "x": 465,
+       "x": 505,
        "f": -1,
-       "ex": 1,
-       "tl": 1.1,
+       "ex": 0,
+       "tl": 0.9,
        "flh": 0.5,
        "flk": 2.05,
        "blh": 0.1,
        "blk": 1.7,
        "fah": 1.85,
        "fae": 0.45,
-       "bah": 1.65,
+       "bah": 0.36,
        "bae": 0.45
-      },
-      {
-       "id": "mantis",
-       "x": 770,
-       "f": -1,
-       "ex": 0,
-       "tl": 0,
-       "flh": 0.06,
-       "flk": 0.06,
-       "blh": -0.06,
-       "blk": 0.06,
-       "fah": 0.25,
-       "fae": 0.35,
-       "bah": -0.15,
-       "bae": 0.35,
-       "sc": 0.75
       }
      ]
     },
     "s": [
-     "Next, Chirpy held the top position while Zippy lay underneath.",
-     "Zippy lifted his long legs to make a guard.",
-     "He still had something to try from the bottom position."
-    ],
-    "beat": "guard10",
-    "ch": "Chapter 2 · A Tap Means Let Go"
-   },
-   {
-    "e": "🥋",
-    "art": {
-     "actors": [
-      {
-       "id": "dragon",
-       "x": 330,
-       "f": 1,
-       "ex": 3,
-       "tl": 0.64,
-       "flh": 0.43,
-       "flk": 0.43,
-       "blh": 0.39,
-       "blk": 0.39,
-       "fah": 0.35,
-       "fae": 0.2,
-       "bah": 0.28,
-       "bae": 0.24
-      },
-      {
-       "id": "cricket",
-       "x": 580,
-       "f": -1,
-       "ex": 3,
-       "tl": 0.64,
-       "flh": 0.43,
-       "flk": 0.43,
-       "blh": 0.39,
-       "blk": 0.39,
-       "fah": 0.35,
-       "fae": 0.2,
-       "bah": 0.28,
-       "bae": 0.24
-      },
-      {
-       "id": "mantis",
-       "x": 770,
-       "f": -1,
-       "ex": 0,
-       "tl": 0,
-       "flh": 0.06,
-       "flk": 0.06,
-       "blh": -0.06,
-       "blk": 0.06,
-       "fah": 0.25,
-       "fae": 0.35,
-       "bah": -0.15,
-       "bae": 0.35,
-       "sc": 0.75
-      }
-     ]
-    },
-    "s": [
-     "Zippy slowly made a triangle around Chirpy's neck and one arm.",
-     "Chirpy kept his other arm outside and tapped before any squeezing.",
-     "Zippy let go immediately, and both friends smiled with relief."
+     "Zippy slowly brought his legs around one arm and the neck.",
+     "Chirpy tapped before any squeezing, and Zippy let go immediately."
     ],
     "beat": "triangle10"
    },
@@ -7109,109 +7056,43 @@ const BUGDOJO = [
     "art": {
      "actors": [
       {
-       "id": "lady",
-       "x": 240,
-       "f": 1,
-       "ex": 3,
-       "tl": -0.05,
-       "flh": 0.1,
-       "flk": 0.1,
-       "blh": -0.1,
-       "blk": 0.1,
-       "fah": 2.7,
-       "fae": 0.5,
-       "bah": 2.5,
-       "bae": 0.5
-      },
-      {
        "id": "dragon",
-       "x": 480,
+       "x": 489,
        "f": 1,
-       "ex": 3,
-       "tl": -0.05,
-       "flh": 0.1,
-       "flk": 0.1,
-       "blh": -0.1,
-       "blk": 0.1,
-       "fah": 2.7,
-       "fae": 0.5,
-       "bah": 2.5,
-       "bae": 0.5
+       "ex": 0,
+       "tl": 0.89,
+       "flh": 0.52,
+       "flk": 2.05,
+       "blh": 0.13,
+       "blk": 1.7,
+       "fah": 1.84,
+       "fae": 0.45,
+       "bah": 1.64,
+       "bae": 0.45
       },
       {
        "id": "cricket",
-       "x": 740,
+       "x": 585,
        "f": -1,
-       "ex": 3,
-       "tl": -0.05,
-       "flh": 0.1,
-       "flk": 0.1,
-       "blh": -0.1,
-       "blk": 0.1,
-       "fah": 2.7,
-       "fae": 0.5,
-       "bah": 2.5,
-       "bae": 0.5
+       "ex": 0,
+       "rot": -1.57,
+       "tl": 0.25,
+       "flh": 1.68,
+       "flk": 1.04,
+       "blh": 1.33,
+       "blk": 1.48,
+       "fah": 1.39,
+       "fae": 0.89,
+       "bah": 1.19,
+       "bae": 1.09
       }
      ]
     },
     "s": [
-     "Everyone cheered because Zippy had shown them some skillful moves.",
-     "He thanked Dot and Chirpy for practicing with him safely.",
-     "Winning felt good, but learning together made the practice special."
+     "Chirpy asked for another try and kept his arms close.",
+     "This time, Zippy moved sideways and swept him onto his back."
     ],
-    "beat": "friends10"
-   },
-   {
-    "e": "🥋",
-    "art": {
-     "actors": [
-      {
-       "id": "cicada",
-       "x": 230,
-       "f": 1,
-       "ex": 3,
-       "tl": 0.75,
-       "flh": 0,
-       "flk": 0,
-       "blh": 0,
-       "blk": 0,
-       "fah": 0.12,
-       "fae": 0.1,
-       "bah": 0.08,
-       "bae": 0.1
-      },
-      {
-       "id": "dragon",
-       "x": 730,
-       "f": -1,
-       "ex": 3,
-       "tl": 0.75,
-       "flh": 0,
-       "flk": 0,
-       "blh": 0,
-       "blk": 0,
-       "fah": 0.12,
-       "fae": 0.1,
-       "bah": 0.08,
-       "bae": 0.1
-      }
-     ],
-     "text": [
-      {
-       "x": 480,
-       "y": 160,
-       "s": "1. Mem-Mem   2. Zippy"
-      }
-     ]
-    },
-    "s": [
-     "A wooden board showed Mem-Mem first and Zippy in second place.",
-     "Their places did not decide how much each friend mattered.",
-     "They wanted to discover what they could learn from each other."
-    ],
-    "beat": "rank10",
-    "ch": "Chapter 3 · A New Thing to Learn"
+    "beat": "scissor10"
    },
    {
     "e": "🥋",
@@ -7219,102 +7100,127 @@ const BUGDOJO = [
      "actors": [
       {
        "id": "dragon",
-       "x": 320,
-       "f": 1,
-       "ex": 3,
-       "tl": 0.64,
-       "flh": 0.05,
-       "flk": 0.04,
-       "blh": -0.05,
-       "blk": 0.03,
-       "fah": 0.35,
-       "fae": 0.14,
-       "bah": 0.28,
-       "bae": 0.2
+       "x": 620,
+       "f": -1,
+       "ex": 0,
+       "rot": -1.57,
+       "tl": 0.25,
+       "flh": 1.68,
+       "flk": 1.04,
+       "blh": 1.33,
+       "blk": 1.48,
+       "fah": 1.39,
+       "fae": 0.89,
+       "bah": 1.19,
+       "bae": 1.09
       },
       {
-       "id": "cicada",
-       "x": 650,
-       "f": -1,
-       "ex": 3,
-       "tl": 0.04,
-       "flh": 0.09,
-       "flk": 0.09,
-       "blh": -0.09,
-       "blk": 0.09,
-       "fah": 2.42,
-       "fae": 0.46,
-       "bah": 2.24,
-       "bae": 0.46
-      }
-     ]
-    },
-    "s": [
-     "Zippy hoped they could have a friendly match one day.",
-     "Mem-Mem smiled because he wanted to try that match, too.",
-     "They respected each other and felt excited about learning together."
-    ],
-    "beat": "rivals10"
-   },
-   {
-    "e": "🥋",
-    "art": {
-     "actors": [
-      {
-       "id": "stag",
-       "x": 190,
+       "id": "ant",
+       "x": 555,
        "f": 1,
        "ex": 0,
-       "tl": 0,
-       "flh": 0.06,
-       "flk": 0.06,
-       "blh": -0.06,
-       "blk": 0.06,
-       "fah": 0.25,
-       "fae": 0.35,
-       "bah": -0.15,
-       "bae": 0.35,
-       "sc": 0.8
-      },
-      {
-       "id": "dragon",
-       "x": 570,
-       "f": 1,
-       "ex": 0,
-       "tl": 0.01,
-       "flh": 0.06,
-       "flk": 0.06,
-       "blh": -0.06,
-       "blk": 0.06,
-       "fah": 0.25,
-       "fae": 0.35,
-       "bah": -0.15,
-       "bae": 0.35
-      },
-      {
-       "id": "rhino",
-       "x": 760,
-       "f": -1,
-       "ex": 3,
-       "tl": 0.73,
-       "flh": 0,
-       "flk": 0,
-       "blh": -0.0,
-       "blk": 0,
-       "fah": 0.12,
-       "fae": 0.11,
-       "bah": 0.08,
-       "bae": 0.11,
-       "sc": 0.85
+       "tl": 0.9,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
       }
      ]
     },
     "s": [
-     "The coaches said Mem-Mem also used wrestling and taekwondo together.",
-     "He could tackle, press from above, and judge the distance.",
-     "Zippy went to Coach Flash because he wanted to learn wrestling."
+     "Rocky pulled an arm, then changed his attack as Zippy turned.",
+     "His double-leg takedown brought the surprised dragonfly down to the mat."
     ],
-    "beat": "learn10"
+    "beat": "double10",
+    "ch": "Chapter 3 · Something New to Learn"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dragon",
+       "x": 610,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.55,
+       "flh": 0.75,
+       "flk": 1.15,
+       "blh": -0.3,
+       "blk": 0.95,
+       "fah": 1.25,
+       "fae": 0.6,
+       "bah": 1.05,
+       "bae": 0.85
+      },
+      {
+       "id": "ant",
+       "x": 500,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.55,
+       "flh": 0.75,
+       "flk": 1.15,
+       "blh": -0.3,
+       "blk": 0.95,
+       "fah": 1.25,
+       "fae": 0.6,
+       "bah": 1.05,
+       "bae": 0.85
+      }
+     ]
+    },
+    "s": [
+     "Zippy protected himself underneath and found enough room to stand again.",
+     "Rocky had shown him something he wanted to practice next."
+    ],
+    "beat": "stand10"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "dragon",
+       "x": 520,
+       "f": 1,
+       "ex": 0,
+       "tl": 1.2,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.54,
+       "bae": 0.45
+      },
+      {
+       "id": "dung",
+       "x": 590,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.28,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      }
+     ]
+    },
+    "s": [
+     "Rolly tried a sweep, and Zippy posted his hand to stay up.",
+     "Rolly followed that arm into an omoplata position, then released on the tap."
+    ],
+    "beat": "omo10"
    },
    {
     "e": "🥋",
@@ -7324,38 +7230,40 @@ const BUGDOJO = [
        "id": "dragon",
        "x": 300,
        "f": 1,
-       "ex": 0,
-       "tl": 0.03,
-       "flh": 0.43,
-       "flk": 0.43,
-       "blh": 0.29,
-       "blk": 0.39,
-       "fah": 0.43,
-       "fae": 0.39,
-       "bah": 0.06,
-       "bae": 0.43
+       "ex": 2,
+       "rot": -1.26,
+       "tl": 0.07,
+       "flh": 0.33,
+       "flk": 0.39,
+       "blh": 0.04,
+       "blk": 0.31,
+       "fah": 0.72,
+       "fae": 0.26,
+       "bah": 0.5,
+       "bae": 0.28
       },
       {
        "id": "cicada",
        "x": 650,
        "f": 1,
-       "ex": 0,
-       "tl": 0.03,
-       "flh": 0.43,
-       "flk": 0.43,
-       "blh": 0.29,
-       "blk": 0.39,
-       "fah": 0.43,
-       "fae": 0.39,
-       "bah": 0.06,
-       "bae": 0.43
+       "ex": 2,
+       "rot": -1.26,
+       "tl": 0.07,
+       "flh": 0.33,
+       "flk": 0.39,
+       "blh": 0.04,
+       "blk": 0.31,
+       "fah": 0.72,
+       "fae": 0.26,
+       "bah": 0.5,
+       "bae": 0.28
       }
      ]
     },
     "s": [
-     "The next morning, both friends practiced with their Bulgarian bags.",
-     "They practiced breakfalls together and helped each other start again.",
-     "Everyone bowed together, thankful for another chance to learn."
+     "First-place Mem-Mem and second-place Zippy respected what each friend could teach.",
+     "Zippy asked Coach Flash for wrestling lessons and returned the next morning.",
+     "They practiced together, excited for the friendly match still to come."
     ],
     "beat": "morning10"
    }
@@ -7364,7 +7272,7 @@ const BUGDOJO = [
    "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
    "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
    "pinch": "집게 (사슴벌레 · 유도 사범님)",
-   "grip": "꽉이 (사마귀 · 주짓수 사범님) / 꽉 잡다",
+   "grip": "잡기",
    "pop": "팡이 (메뚜기 · 태권도 사범님)",
    "dot": "동글이 (무당벌레)",
    "flutter": "팔랑이 (나비)",
@@ -7379,44 +7287,32 @@ const BUGDOJO = [
    "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
    "zippy": "씽씽이 (잠자리)",
    "dragonfly": "잠자리",
-   "hovered": "공중에 멈춰 있었다",
-   "collar": "깃",
-   "sleeve": "소매",
-   "hip throw": "허리로 넘기는 기술",
-   "breakfall": "낙법",
-   "triangle": "삼각형",
-   "immediately": "즉시",
+   "posted": "손을 짚었다",
+   "sweep": "뒤집기",
+   "released": "놓아주었다",
    "respected": "존중했다",
-   "judge the distance": "거리를 가늠하다"
+   "opening": "빈틈",
+   "circled": "돌아갔다",
+   "underneath": "아래에서",
+   "immediately": "즉시",
+   "practice": "연습",
+   "connected": "이어졌다",
+   "heroes": "호걸들"
   },
   "talk": [
-   "What helped Zippy notice his partner's movements?",
-   "What must you do when a friend taps?",
-   "Why did Zippy want to learn wrestling?",
-   "Who might win their friendly match, and why?"
+   "What did the friends do when their first attack was stopped?",
+   "How did they keep each other safe?",
+   "What would you like to practice with your coach?",
+   "Which forest hero would you like to learn from, and why?"
   ],
   "quiz": [
    {
     "t": "choice",
-    "q": "Which arts did Zippy already practice?",
+    "q": "What did a tap mean?",
     "a": [
-     "Judo and jiu-jitsu",
-     "Swimming and running",
-     "Only wrestling"
-    ],
-    "e": [
-     "🥋",
-     "🏊",
-     "🤼"
-    ]
-   },
-   {
-    "t": "choice",
-    "q": "What did Zippy do when Chirpy tapped?",
-    "a": [
-     "He let go immediately",
-     "He squeezed harder",
-     "He ignored the tap"
+     "Let go immediately",
+     "Squeeze harder",
+     "Keep going"
     ],
     "e": [
      "🤝",
@@ -7426,47 +7322,758 @@ const BUGDOJO = [
    },
    {
     "t": "choice",
-    "q": "Why did Zippy visit Coach Flash?",
+    "q": "What happened when an attack was stopped?",
     "a": [
-     "He wanted to learn wrestling",
-     "He wanted to tease Mem-Mem",
-     "He wanted to hide"
+     "They looked for another opening",
+     "They always gave up",
+     "They got angry"
     ],
     "e": [
-     "🤼",
-     "🙅",
-     "🚪"
+     "👀",
+     "🏳️",
+     "😠"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What helped the friends improve?",
+    "a": [
+     "Practice and learning together",
+     "A sudden magic power",
+     "Being mean"
+    ],
+    "e": [
+     "🥋",
+     "✨",
+     "🙅"
     ]
    },
    {
     "t": "word",
-    "q": "'잠자리'는 영어로?",
+    "q": "'빈틈'은 영어로?",
     "a": [
-     "dragonfly",
-     "butterfly",
-     "firefly"
+     "opening",
+     "ceiling",
+     "forest"
     ]
    },
    {
     "t": "say",
-    "q": "Say it! When my friend taps, I ...",
-    "say": "When my friend taps, I let go immediately.",
+    "q": "Say it! I can keep ...",
+    "say": "I can keep learning from my friends.",
     "key": [
-     "let",
-     "go"
+     "learning",
+     "friends"
     ]
    },
    {
     "t": "say",
-    "q": "What would you like to learn from a friend?",
-    "say": "I want to learn a new move from my friend.",
+    "q": "What would you like to practice with your coach?",
+    "say": "I want to practice my guard with my coach.",
     "key": [
-     "learn"
+     "practice"
     ],
     "free": true
    }
   ],
   "dojoIdx": 10
+ },
+ {
+  "id": "ep11",
+  "ep": 11,
+  "dojoEp": "11화",
+  "level": 3,
+  "style": "곤충 무술 도장 · 11화",
+  "title": "Bug Dojo 11: The Forest Heroes and Four Lights",
+  "cover": {
+   "e": "🥋",
+   "bg": "#A8DFE8",
+   "art": {
+    "actors": [
+     {
+      "id": "ant",
+      "x": 250,
+      "f": 1,
+      "ex": 3,
+      "tl": 0.62,
+      "flh": 0.01,
+      "flk": 0.01,
+      "blh": -0.01,
+      "blk": 0.01,
+      "fah": 0.14,
+      "fae": 0.14,
+      "bah": 0.04,
+      "bae": 0.14,
+      "sc": 1
+     },
+     {
+      "id": "lady",
+      "x": 480,
+      "f": 1,
+      "ex": 3,
+      "tl": 0.62,
+      "flh": 0.01,
+      "flk": 0.01,
+      "blh": -0.01,
+      "blk": 0.01,
+      "fah": 0.14,
+      "fae": 0.14,
+      "bah": 0.04,
+      "bae": 0.14,
+      "sc": 1
+     },
+     {
+      "id": "dung",
+      "x": 710,
+      "f": -1,
+      "ex": 3,
+      "tl": 0.62,
+      "flh": 0.01,
+      "flk": 0.01,
+      "blh": -0.01,
+      "blk": 0.01,
+      "fah": 0.14,
+      "fae": 0.14,
+      "bah": 0.04,
+      "bae": 0.14,
+      "sc": 1
+     }
+    ]
+   }
+  },
+  "blurb": "숲의 호걸들이 맞붙고, 맴맴이와 씽씽이가 배움을 이어 가는 긴 한 판.",
+  "pages": [
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 250,
+       "f": 1,
+       "ex": 3,
+       "tl": 0.62,
+       "flh": 0.01,
+       "flk": 0.01,
+       "blh": -0.01,
+       "blk": 0.01,
+       "fah": 0.14,
+       "fae": 0.14,
+       "bah": 0.04,
+       "bae": 0.14,
+       "sc": 1
+      },
+      {
+       "id": "lady",
+       "x": 480,
+       "f": 1,
+       "ex": 3,
+       "tl": 0.62,
+       "flh": 0.01,
+       "flk": 0.01,
+       "blh": -0.01,
+       "blk": 0.01,
+       "fah": 0.14,
+       "fae": 0.14,
+       "bah": 0.04,
+       "bae": 0.14,
+       "sc": 1
+      },
+      {
+       "id": "dung",
+       "x": 710,
+       "f": -1,
+       "ex": 3,
+       "tl": 0.62,
+       "flh": 0.01,
+       "flk": 0.01,
+       "blh": -0.01,
+       "blk": 0.01,
+       "fah": 0.14,
+       "fae": 0.14,
+       "bah": 0.04,
+       "bae": 0.14,
+       "sc": 1
+      }
+     ]
+    },
+    "s": [
+     "Rocky, Dot, and Rolly gathered beneath the great old tree.",
+     "Each friend had a special strength and something new to learn."
+    ],
+    "beat": "heroes11",
+    "ch": "Chapter 1 · Heroes Under the Great Tree"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 460,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.11,
+       "flh": 0.29,
+       "flk": 0.26,
+       "blh": -0.28,
+       "blk": 0.21,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      },
+      {
+       "id": "lady",
+       "x": 550,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.11,
+       "flh": 0.29,
+       "flk": 0.26,
+       "blh": -0.28,
+       "blk": 0.21,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      }
+     ]
+    },
+    "s": [
+     "Rocky controlled one arm, but Dot turned to face him again.",
+     "Neither friend would give away an easy path to the back."
+    ],
+    "beat": "tie11"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "ant",
+       "x": 461,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.9,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      },
+      {
+       "id": "lady",
+       "x": 550,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.91,
+       "flh": 0.49,
+       "flk": 2.03,
+       "blh": 0.09,
+       "blk": 1.68,
+       "fah": 1.84,
+       "fae": 0.45,
+       "bah": 1.64,
+       "bae": 0.46
+      }
+     ]
+    },
+    "s": [
+     "Dot stopped a takedown, and Rocky kept circling on the mat.",
+     "She followed him, keeping her back away from his reaching hands."
+    ],
+    "beat": "sprawl11"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "lady",
+       "x": 499,
+       "f": 1,
+       "ex": 0,
+       "rot": -1.56,
+       "tl": 0,
+       "flh": 0.2,
+       "flk": 0.14,
+       "blh": 0.08,
+       "blk": 0.14,
+       "fah": 1.5,
+       "fae": 1.56,
+       "bah": 0.21,
+       "bae": 0.2
+      },
+      {
+       "id": "dung",
+       "x": 610,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      }
+     ]
+    },
+    "s": [
+     "Later, Rolly reversed Dot from underneath and caught her wrist.",
+     "Dot tapped early, and he released before turning the shoulder."
+    ],
+    "beat": "keylock11"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 371,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.12,
+       "flh": 0.38,
+       "flk": 0.45,
+       "blh": -0.38,
+       "blk": 0.35,
+       "fah": 1.05,
+       "fae": 1.4,
+       "bah": 0.8,
+       "bae": 1.6
+      },
+      {
+       "id": "dragon",
+       "x": 540,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.1,
+       "flh": 0.28,
+       "flk": 0.25,
+       "blh": -0.28,
+       "blk": 0.2,
+       "fah": 1.45,
+       "fae": 0.35,
+       "bah": 1.25,
+       "bae": 0.7
+      }
+     ]
+    },
+    "s": [
+     "At last, Mem-Mem faced Zippy while their friends watched closely.",
+     "Zippy reached for a grip, but Mem-Mem kept changing the distance."
+    ],
+    "beat": "distance11",
+    "ch": "Chapter 2 · The Match They Had Waited For"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 490,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.9,
+       "flh": 0.51,
+       "flk": 2.05,
+       "blh": 0.09,
+       "blk": 1.68,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      },
+      {
+       "id": "dragon",
+       "x": 575,
+       "f": -1,
+       "ex": 0,
+       "tl": 0.91,
+       "flh": 0.49,
+       "flk": 2.03,
+       "blh": 0.09,
+       "blk": 1.68,
+       "fah": 1.84,
+       "fae": 0.45,
+       "bah": 1.64,
+       "bae": 0.46
+      }
+     ]
+    },
+    "s": [
+     "When the grips came loose, Mem-Mem tried a double-leg takedown.",
+     "Zippy moved his legs back, remembering his recent wrestling practice."
+    ],
+    "beat": "shot11"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 579,
+       "f": -1,
+       "ex": 0,
+       "rot": -1.55,
+       "tl": -0.0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.51,
+       "fae": 0.2,
+       "bah": 0.26,
+       "bae": 0.21
+      },
+      {
+       "id": "dragon",
+       "x": 470,
+       "f": 1,
+       "ex": 0,
+       "rot": -0.02,
+       "tl": 0.2,
+       "flh": 2.19,
+       "flk": 2.18,
+       "blh": 2,
+       "blk": 1.99,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem stood up, and Zippy caught his ankle from below.",
+     "Zippy kept the outside hook and followed the sweep onto the top."
+    ],
+    "beat": "dlr11"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 610,
+       "f": -1,
+       "ex": 0,
+       "rot": -1.3,
+       "tl": 0.25,
+       "flh": 1.7,
+       "flk": 1.05,
+       "blh": 1.35,
+       "blk": 1.5,
+       "fah": 1.7,
+       "fae": 1.59,
+       "bah": 1.2,
+       "bae": 1.1
+      },
+      {
+       "id": "dragon",
+       "x": 550,
+       "f": 1,
+       "ex": 0,
+       "tl": 0.9,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.83,
+       "fae": 0.46,
+       "bah": 1.65,
+       "bae": 0.45
+      }
+     ]
+    },
+    "s": [
+     "Mem-Mem recovered his guard and tried to sit up again.",
+     "Zippy drove forward, then protected his arm when Mem-Mem reached for it."
+    ],
+    "beat": "hip11"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 625,
+       "f": -1,
+       "ex": 0,
+       "rot": -0.31,
+       "tl": 0.2,
+       "flh": 2.19,
+       "flk": 2.18,
+       "blh": 1.99,
+       "blk": 1.99,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      },
+      {
+       "id": "dragon",
+       "x": 535,
+       "f": 1,
+       "ex": 0,
+       "tl": 1.1,
+       "flh": 0.5,
+       "flk": 2.05,
+       "blh": 0.1,
+       "blk": 1.7,
+       "fah": 1.85,
+       "fae": 0.45,
+       "bah": 1.65,
+       "bae": 0.45
+      }
+     ]
+    },
+    "s": [
+     "Zippy blocked the triangle, so Mem-Mem followed the arm sideways.",
+     "The attack changed into an omoplata position as both friends kept moving."
+    ],
+    "beat": "triomo11",
+    "ch": "Chapter 3 · The Lights of Practice"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 505,
+       "f": -1,
+       "ex": 0,
+       "rot": 6.03,
+       "tl": 0.2,
+       "flh": 2.2,
+       "flk": 2.2,
+       "blh": 2,
+       "blk": 2,
+       "fah": 1.3,
+       "fae": 0.6,
+       "bah": 1.1,
+       "bae": 0.8
+      },
+      {
+       "id": "dragon",
+       "x": 430,
+       "f": 1,
+       "ex": 0,
+       "rot": 4.71,
+       "tl": 0,
+       "flh": 0.18,
+       "flk": 0.12,
+       "blh": 0.06,
+       "blk": 0.12,
+       "fah": 0.5,
+       "fae": 0.2,
+       "bah": 0.99,
+       "bae": 0.2
+      }
+     ]
+    },
+    "s": [
+     "Zippy rolled safely, and Mem-Mem followed him to the side.",
+     "When Zippy pushed to escape, Mem-Mem caught an armbar position.",
+     "Zippy tapped, and Mem-Mem released immediately before they smiled together."
+    ],
+    "beat": "arm11"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 350,
+       "f": 1,
+       "ex": 1,
+       "rot": -0.57,
+       "tl": 0.22,
+       "flh": 0.67,
+       "flk": 1,
+       "blh": -0.01,
+       "blk": 0.74,
+       "fah": 1.2,
+       "fae": 0.39,
+       "bah": 1.04,
+       "bae": 0.45
+      },
+      {
+       "id": "dragon",
+       "x": 650,
+       "f": -1,
+       "ex": 1,
+       "rot": -0.57,
+       "tl": 0.22,
+       "flh": 0.67,
+       "flk": 1,
+       "blh": -0.01,
+       "blk": 0.74,
+       "fah": 1.2,
+       "fae": 0.39,
+       "bah": 1.04,
+       "bae": 0.45
+      }
+     ]
+    },
+    "s": [
+     "Over many mornings, the friends asked questions and practiced together again.",
+     "Their movements became smoother as they learned from each difficult moment."
+    ],
+    "beat": "training11"
+   },
+   {
+    "e": "🥋",
+    "art": {
+     "actors": [
+      {
+       "id": "cicada",
+       "x": 480,
+       "f": 1,
+       "ex": 1,
+       "tl": 0.55,
+       "flh": 0.75,
+       "flk": 1.15,
+       "blh": -0.3,
+       "blk": 0.95,
+       "fah": 1.25,
+       "fae": 0.6,
+       "bah": 1.05,
+       "bae": 0.85
+      }
+     ]
+    },
+    "s": [
+     "Four warm lights seemed to shine around Mem-Mem on the mat.",
+     "It was the feeling of practice connecting, not a sudden magic power.",
+     "All the forest heroes bowed, ready to keep learning together."
+    ],
+    "beat": "awaken11"
+   }
+  ],
+  "words": {
+   "mem-mem": "맴맴이 (매미 · 네 가지 다 배우는 주인공)",
+   "flash": "번쩍이 (장수풍뎅이 · 레슬링 사범님)",
+   "pinch": "집게 (사슴벌레 · 유도 사범님)",
+   "grip": "잡기",
+   "pop": "팡이 (메뚜기 · 태권도 사범님)",
+   "dot": "동글이 (무당벌레)",
+   "flutter": "팔랑이 (나비)",
+   "longlegs": "긴다리 (여치)",
+   "sparkle": "반짝이 (반딧불이)",
+   "buzz": "윙윙이 (꿀벌)",
+   "bob": "콩콩이 (방아깨비)",
+   "strum": "띵가 (베짱이)",
+   "rolly": "굴리 (쇠똥구리)",
+   "rocky": "단단이 (개미)",
+   "chirpy": "뚜리 (귀뚜라미)",
+   "little horn": "꼬마뿔 (번쩍이 사범님 아들)",
+   "zippy": "씽씽이 (잠자리)",
+   "dragonfly": "잠자리",
+   "posted": "손을 짚었다",
+   "sweep": "뒤집기",
+   "released": "놓아주었다",
+   "respected": "존중했다",
+   "opening": "빈틈",
+   "circled": "돌아갔다",
+   "underneath": "아래에서",
+   "immediately": "즉시",
+   "practice": "연습",
+   "connected": "이어졌다",
+   "heroes": "호걸들"
+  },
+  "talk": [
+   "What did the friends do when their first attack was stopped?",
+   "How did they keep each other safe?",
+   "What would you like to practice with your coach?",
+   "Which forest hero would you like to learn from, and why?"
+  ],
+  "quiz": [
+   {
+    "t": "choice",
+    "q": "What did a tap mean?",
+    "a": [
+     "Let go immediately",
+     "Squeeze harder",
+     "Keep going"
+    ],
+    "e": [
+     "🤝",
+     "🙅",
+     "🚫"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What happened when an attack was stopped?",
+    "a": [
+     "They looked for another opening",
+     "They always gave up",
+     "They got angry"
+    ],
+    "e": [
+     "👀",
+     "🏳️",
+     "😠"
+    ]
+   },
+   {
+    "t": "choice",
+    "q": "What helped the friends improve?",
+    "a": [
+     "Practice and learning together",
+     "A sudden magic power",
+     "Being mean"
+    ],
+    "e": [
+     "🥋",
+     "✨",
+     "🙅"
+    ]
+   },
+   {
+    "t": "word",
+    "q": "'빈틈'은 영어로?",
+    "a": [
+     "opening",
+     "ceiling",
+     "forest"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "Say it! I can keep ...",
+    "say": "I can keep learning from my friends.",
+    "key": [
+     "learning",
+     "friends"
+    ]
+   },
+   {
+    "t": "say",
+    "q": "What would you like to practice with your coach?",
+    "say": "I want to practice my guard with my coach.",
+    "key": [
+     "practice"
+    ],
+    "free": true
+   }
+  ],
+  "dojoIdx": 11
  }
 ];
 window.LILY_BOOKS = BUGDOJO.concat(window.LILY_BOOKS || []);
