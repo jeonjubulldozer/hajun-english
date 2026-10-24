@@ -180,6 +180,8 @@ const SP={
 Object.keys(SP).forEach((k,i)=>{SP[k].id=k;SP[k].ph=i*1.37});
 SP.grass={n:'띵가',k:'베짱이',tag:'개인 레슨만',arts:['judo','wr'],s:1.0,L:LL({th:38,sn:38}),rx:22,ry:38,hr:19,col:'#a6c75c',lc:'#86a641',hc:'#b4d46a',lw:7,tw:1.8,ant:'long',
   moves:'기술 이름 외우기 · 기타 치며 노래',fact:'날개를 비벼서 베짱베짱 하고 울어요.',id:'grass',ph:17.3,ep:1,scene:'grass'};
+SP.dragon={n:'씽씽이',k:'잠자리',tag:'두 가지',arts:['judo','bjj'],s:1.0,L:LL({th:42,sn:42,bc:38,so:76,hd:108}),rx:9,ry:51,hr:21,col:'#5bc9de',lc:'#239caa',hc:'#68d7d3',lw:5,ant:'short',head:'wide',wing:'dragon',
+  moves:'빠른 깃 잡기 · 허리후리기 · 삼각조르기 연결',fact:'눈이 머리를 거의 다 덮어서 사방을 다 봐요. 날면서 먹이를 잡는 사냥 성공률이 아주 높아요.',id:'dragon',ph:29.3,ep:10,scene:'arrival10'};
 SP.dung={n:'굴리',k:'쇠똥구리',tag:'주짓수만',arts:['bjj'],s:1.0,L:LL(),rx:28,ry:36,hr:18,col:'#2f2f3a',lc:'#1b1b22',hc:'#383844',lw:9,ant:'short',dark:1,look:'stag',
   moves:'바닥에서 데굴데굴 굴리기',fact:'똥 경단을 자기 몸보다 크게 굴려서 옮겨요.',id:'dung',ph:19.1,ep:3,scene:'gulli'};
 SP.ant={n:'단단이',k:'개미',tag:'숨은 특훈',arts:['wr','judo'],s:.9,L:LL({th:30,sn:30}),rx:20,ry:30,hr:21,col:'#5a3322',lc:'#2c1810',hc:'#6a3d28',lw:7,ant:'elbow',dark:1,
@@ -190,7 +192,7 @@ SP.kidrhino=Object.assign({},SP.rhino,{n:'꼬마뿔',k:'장수풍뎅이',tag:'�
   moves:'매일 밤 아빠랑 스파링',fact:'수컷만 큰 뿔이 있어요.',id:'kidrhino',ph:25.9,ep:4,scene:'kidrhino'});
 SP.dadcicada=Object.assign({},SP.cicada,{n:'아빠',k:'매미',tag:'맴맴이 아빠',arts:['judo','wr','bjj'],s:1.22,col:'#343d24',hc:'#3f4a2c',hero:0,look:'cicada',
   moves:'맴맴이랑 스파링',fact:'수컷 매미만 맴맴 노래해요.',id:'dadcicada',ph:27.1,ep:4,scene:'mmdad'});
-const ORDER=['rhino','stag','mantis','hop','lady','butter','katy','fire','bee','bang','cicada','grass','dung','ant','cricket','kidrhino','dadcicada'];
+const ORDER=['rhino','stag','mantis','hop','lady','butter','katy','fire','bee','bang','cicada','grass','dung','ant','cricket','kidrhino','dadcicada','dragon'];
 const UNLOCK={lady:5,butter:10,katy:15,fire:25,bee:35,bang:50};
 
 /* ---------- 하준이 미션 앱 연동 (같은 사이트에 올렸을 때만) ---------- */
@@ -316,7 +318,20 @@ function wings(c,sp,g,time){
   const w=sp.wing||(['hop','katy','bang','mantis','grass','cricket'].includes(sp.id)?'fold':null);if(!w)return;
   const rx=sp.rx,ry=sp.ry,off=sp.L.so-sp.L.bc;
   c.save();c.translate(g.SO[0],g.SO[1]);c.rotate(g.t);
-  if(w==='butter'){
+  if(w==='dragon'){
+    // 앞날개 두 장 + 조금 넓은 뒷날개 두 장. 양옆으로 펼친 투명한 날개.
+    for(const side of [-1,1])for(const rear of [0,1]){
+      c.save();c.scale(side,1);c.translate(0,rear*20);
+      const flutter=Math.sin(time*24+rear)*2;
+      c.beginPath();c.moveTo(0,0);c.bezierCurveTo(36,-16+flutter,100,-15+flutter,113,-4+flutter);
+      c.bezierCurveTo(121,7+flutter,50,rear?24:13,0,5);c.closePath();
+      c.fillStyle=SIL?'rgba(14,26,19,.7)':'rgba(222,250,255,.48)';c.fill();c.strokeStyle=pc('#497d91');c.lineWidth=1.6;c.stroke();
+      if(!SIL){c.save();c.clip();c.strokeStyle='rgba(48,112,134,.5)';c.lineWidth=.8;
+        c.beginPath();c.moveTo(3,2);c.lineTo(110,-2+flutter);
+        for(let x=20;x<105;x+=15){c.moveTo(x,1);c.lineTo(x+9,-15);c.moveTo(x,1);c.lineTo(x+12,22)}c.stroke();c.restore()}
+      c.restore();
+    }
+  }else if(w==='butter'){
     const fl=.55+.45*Math.abs(Math.cos(time*4.5+sp.ph));c.scale(fl,1);
     c.beginPath();c.moveTo(-2,-2);c.bezierCurveTo(-40,-72,-104,-62,-98,-12);c.bezierCurveTo(-92,14,-40,18,-4,10);c.closePath();fs(c,'#ffd43b');
     if(!SIL){c.save();c.clip();c.fillStyle='#1f1f1f';[-30,-56].forEach(x=>c.fillRect(x,-80,8,100));c.beginPath();c.moveTo(-110,-70);c.lineTo(-80,-70);c.lineTo(-90,24);c.lineTo(-120,24);c.fill();c.restore()}
@@ -336,6 +351,7 @@ function wings(c,sp,g,time){
 function rings(c,rx,ry,n,a){c.strokeStyle=`rgba(0,0,0,${a||.18})`;c.lineWidth=2;for(let i=1;i<=n;i++){const y=ry*(.05+i*.2);c.beginPath();c.moveTo(-rx,y-4);c.quadraticCurveTo(0,y+6,rx,y-4);c.stroke()}}
 function pattern(c,sp,rx,ry){
   switch(sp.look||sp.id){
+    case 'dragon':c.fillStyle='#243e70';for(let y=-ry+8;y<ry;y+=12)c.fillRect(-rx,y,rx*2,3);break;
     case 'rhino':case 'stag':c.fillStyle='rgba(255,255,255,.22)';c.beginPath();c.ellipse(rx*.25,-ry*.35,rx*.28,ry*.3,-.3,0,TAU);c.fill();c.strokeStyle='rgba(0,0,0,.28)';c.lineWidth=2;c.beginPath();c.moveTo(-rx*.15,-ry);c.quadraticCurveTo(-rx*.35,0,-rx*.1,ry);c.stroke();break;
     case 'mantis':case 'hop':case 'katy':case 'bang':case 'grass':case 'butter':rings(c,rx,ry,4);if(sp.id!=='butter'){c.fillStyle='rgba(0,0,0,.12)';c.fillRect(-rx,-ry,rx*.55,ry*2);c.fillStyle='rgba(255,255,255,.2)';c.fillRect(rx*.45,-ry,rx,ry*2)}break;
     case 'lady':c.fillStyle='#1c1c1c';for(const [a,b,r] of [[-.45,-.45,.26],[.25,-.15,.22],[-.15,.3,.26],[.5,.42,.18],[-.65,.05,.16]]){c.beginPath();c.arc(rx*a,ry*b,rx*r,0,TAU);c.fill()}c.fillStyle='rgba(255,255,255,.3)';c.beginPath();c.ellipse(rx*.3,-ry*.55,rx*.22,ry*.12,-.4,0,TAU);c.fill();break;
@@ -348,14 +364,14 @@ function pattern(c,sp,rx,ry){
 function body(c,sp,g,time,P){
   const rx=sp.rx,ry=sp.ry;
   c.save();c.translate(g.BC[0],g.BC[1]);c.rotate(g.t);
-  c.beginPath();c.ellipse(0,0,rx,ry,0,0,TAU);c.fillStyle=pc(sp.col);c.fill();
+  if(sp.id==='dragon')rr(c,-rx,-ry,rx*2,ry*2,rx);else{c.beginPath();c.ellipse(0,0,rx,ry,0,0,TAU);}c.fillStyle=pc(sp.col);c.fill();
   c.save();c.clip();
   if(!SIL)pattern(c,sp,rx,ry);
   const rust=P.rust||0,bc=a=>rust>0?tint(ART[a][1],'#8a7d6a',rust*.8):ART[a][1];
   if(rust>0&&!SIL){c.fillStyle=`rgba(156,82,32,${Math.min(.85,rust)})`;for(let i=0;i<16;i++){const x=((i*37)%(rx*2))-rx,y=((i*53)%(ry*2))-ry;c.beginPath();c.arc(x,y,2+(i*7)%4,0,TAU);c.fill()}}
   if(sp.arts.length){const by=ry*.36,n=sp.arts.length,w=rx*2+6;for(let i=0;i<n;i++){c.fillStyle=pc(bc(sp.arts[i]));c.fillRect(-rx-3+w*i/n,by,w/n+.6,10)}c.strokeStyle=pc(OUT);c.lineWidth=1.6;c.strokeRect(-rx-3,by,w,10)}
   c.restore();
-  c.beginPath();c.ellipse(0,0,rx,ry,0,0,TAU);c.strokeStyle=pc(OUT);c.lineWidth=3;c.stroke();
+  if(sp.id==='dragon')rr(c,-rx,-ry,rx*2,ry*2,rx);else{c.beginPath();c.ellipse(0,0,rx,ry,0,0,TAU);}c.strokeStyle=pc(OUT);c.lineWidth=3;c.stroke();
   if(sp.arts.length){
     const by=ry*.36+5,kx=Math.sqrt(Math.max(0,1-(by/ry)**2))*rx,a0=ART[sp.arts[0]][1],a1=ART[sp.arts[sp.arts.length-1]][1];
     c.lineCap='round';c.lineWidth=5;c.strokeStyle=pc(OUT);c.beginPath();c.moveTo(kx,by);c.lineTo(kx+8,by+14);c.moveTo(kx,by);c.lineTo(kx+2,by+17);c.stroke();
@@ -394,7 +410,19 @@ function eye1(c,x,y,r,ex,back,lid){
 }
 function face(c,sp,ex,time){
   const hr=sp.hr,E=sp.eye||[hr*.38,-hr*.12,hr*.44],blink=((time+sp.ph*3)%4.3)<.12,e=(blink&&ex!==3)?4:ex;
+  if(sp.id==='dragon'){
+    // 큰 겹눈 두 개: 각 눈 안의 작은 점들은 낱눈의 무늬.
+    for(const x of [-12,12]){
+      c.beginPath();c.ellipse(x,-3,13,18,0,0,TAU);fs(c,'#146979',1.8);
+      if(!SIL){c.save();c.clip();c.fillStyle='#76e5df';
+        for(let y=-17;y<15;y+=6)for(let dx=-10;dx<=10;dx+=6){c.beginPath();c.arc(x+dx,y,1.3,0,TAU);c.fill()}
+        c.fillStyle='#e8ffff';c.beginPath();c.ellipse(x+3,-11,4,6,.3,0,TAU);c.fill();c.restore();
+        if(e===3||e===4){c.strokeStyle=OUT;c.lineWidth=2.4;c.beginPath();c.moveTo(x-7,1);c.quadraticCurveTo(x,-5,x+7,1);c.stroke()}
+      }
+    }
+  }else{
   eye1(c,E[0]-E[2]*.95,E[1]-E[2]*.12,E[2]*.78,e,true,sp.hc);eye1(c,E[0],E[1],E[2],e,false,sp.hc);
+  }
   if(SIL)return;
   const m=sp.mouth||[hr*.62,hr*.42];c.strokeStyle=sp.dark?'#f3e7cf':OUT;c.lineWidth=2.4;c.lineCap='round';
   if(ex===2){c.fillStyle='#5a1f1a';c.beginPath();c.ellipse(m[0],m[1],hr*.1,hr*.14,0,0,TAU);c.fill();c.stroke()}
@@ -1044,10 +1072,64 @@ beat({id:'bow9',dur:9,nosign:1,cam:camOf(480,1),cap:'친구를 일으키고, 함
  say:'맴맴이는 친구의 손을 잡아 일으켜 줘요.\n\n“같이 연습하자.”\n\n이긴 친구도 진 친구도 웃으며 인사해요.\n\n“고맙습니다!”',
  actors:[ON('cricket',[[0,'sit',{x:520,f:-1,ex:3}],[2,'squat',{ex:3}],[3.5,'stand',{x:545,ex:3}],[6,'bow'],[8,'stand',{ex:3}]]),ON('cicada',[[0,'squat',{x:420,f:1,ex:3}],[2,'grip',{ex:3}],[3.5,'stand',{x:390,ex:3}],[6,'bow'],[8,'stand',{ex:3}]]),ON('lady',[[0,'stand',{x:200,f:1,sc:.85,ex:3}],[6,'bow'],[8,'stand',{ex:3}]]),ON('mantis',[[0,'stand',{x:780,f:-1,sc:.85,ex:3}],[6,'bow'],[8,'stand',{ex:3}]])],
  rig:(actors,t)=>{const a=actors.get('cicada'),b=actors.get('cricket');contact(a,'fa',b,'fa.hd',[0,0],1,gripWeight(t,.2,3.5));a.P.deferFrontArm=true;},fx:()=>{chip(.2,4.5,null,'같이 연습하자');chip(5,8.8,null,'고맙습니다!')}});
-beat({id:'end9',dur:7,nosign:1,cam:camOf(480,1),cap:'다음 화 · 작은 약속 한 가지',
- say:'다음에는 작은 약속을 함께 지켜 봐요.\n하준아, 오늘 기술 중에 도장에서 제일 먼저 해 보고 싶은 건 뭐야?',
+beat({id:'end9',dur:7,nosign:1,cam:camOf(480,1),cap:'다음 화 · 2등 잠자리 씽씽이',
+ say:'다음에는 잠자리 씽씽이가 찾아와요.\n하준아, 오늘 기술 중에 도장에서 제일 먼저 해 보고 싶은 건 뭐야?',
  actors:[ON('cicada',[[0,'cheer',{x:330,f:1,ex:3}]]),ON('cricket',[[0,'cheer',{x:630,f:-1,ex:3}]])],over:lt=>endCard(lt)});
 const EP10=SC;
+
+SC=[];
+/* ===== 10화 · 2등 잠자리 씽씽이 =====
+ * 하준이의 설정: 맴맴이 1등, 씽씽이 2등. 서로 배우는 친구들.
+ * 두 기술은 이 화의 키프레임/rig 안에만 정의한다. 삼각조르기는 조이지 않고 탭 즉시 해제.
+ */
+beat({id:'t10',dur:7,nosign:1,cam:camOf(480,1),cap:'10화 · 2등 잠자리 씽씽이',
+ say:'하준아, 잘하는 친구를 만나면 뭘 배우고 싶니?\n오늘 도장에 새 친구가 와요.',
+ actors:[ON('dragon',[[0,'stand',{x:330,f:1}]]),ON('cicada',[[0,'stand',{x:650,f:-1}]])],over:lt=>titleCard(lt)});
+beat({id:'arrival10',dur:11,nosign:1,cam:camOf(480,1),cap:'날개 네 장으로 사뿐히!',
+ say:'네 장의 날개로 날아온 잠자리가 공중에 멈췄어요.\n사뿐히 내려와 인사해요.\n\n“안녕, 나는 잠자리 씽씽이야.\n유도랑 주짓수를 해.”',
+ actors:[ON('dragon',[[0,'stand',{x:240,y:-90,f:1}],[2,'stand',{x:420,y:-90}],[4,'stand',{y:-90}],[6,'stand',{y:0}],[7,'bow'],[9,'stand']]),ON('cicada',[[0,'stand',{x:720,f:-1}],[7,'bow'],[9,'stand']])],fx:()=>{chip(.3,10.8,null,'잠자리 씽씽이 · 유도와 주짓수')}});
+beat({id:'eyes10',dur:14,nosign:1,cam:camOf(480,1),cap:'커다란 겹눈으로 사방을 살펴요',
+ say:'진짜 잠자리는 큰 눈이 머리를 거의 다 덮어요.\n앞과 옆, 뒤도 거의 다 보지요.\n날면서 먹이를 아주 잘 잡아요.\n씽씽이도 친구가 움직일 쪽을 재빨리 알아채요.',
+ actors:[ON('dragon',[[0,'stand',{x:480,f:1}],[5,'guard']])],fx:()=>{chip(.3,11.8,null,'큰 겹눈 두 개 · 넓게 보는 눈');floaty(1,10,290,210,'←', '#146979');floaty(1,10,680,210,'→','#146979')}});
+beat({id:'grip10',dur:9,nosign:1,cam:camOf(480,1),cap:'먼저 잡으면, 먼저 움직여요',
+ say:'동글이와 한 판!\n씽씽이가 먼저 깃과 소매를 잡아요.\n먼저 잡는 쪽이 먼저 움직일 수 있어요.\n사범님이 곁에서 지켜봐요.',
+ actors:[ON('lady',[[0,'guard',{x:545,f:-1}],[3,'grip']]),ON('dragon',[[0,'guard',{x:380,f:1}],[1.2,'grip',{x:450}],[9,'grip']]),ON('stag',[[0,'stand',{x:780,f:-1,sc:.75}]])],
+ rig:(a,t)=>{const d=a.get('dragon'),b=a.get('lady'),w=gripWeight(t,1,9);contact(d,'fa',b,'SO',[0,8],1,w);contact(d,'ba',b,'fa.hd',[0,0],-1,w);d.P.deferFrontArm=true;},fx:()=>{chip(.2,8.8,'judo','빠른 깃 잡기')}});
+beat({id:'harai10',dur:13,nosign:1,cam:camOf(480,1),cap:'허리를 넣고, 다리를 쓸어 올려요',
+ say:'씽씽이가 돌아서 엉덩이를 동글이 앞에 넣어요.\n한쪽 다리로 동글이 다리를 바깥에서 쓸어 올려요.\n허리후리기!\n동글이는 낙법하고 다시 웃어요.',
+ actors:[ON('lady',[[0,'grip',{x:545,f:-1}],[3,'grip',{x:530,tl:.35}],[5,'tuck',{x:540,y:-38,rot:1.2}],[7,'flat',{x:630,y:0,rot:4.71,curl:.3}],[9,'sit',{rot:6.28,curl:0}],[11,'stand',{ex:3}]]),ON('dragon',[[0,'grip',{x:450,f:1}],[2,'turn',{x:490,f:-1}],[3.5,'turn',{tl:.65}],[5,'finish',{tl:.85,flh:-1.4,flk:.18}],[7,'finish',{flh:-.6}],[9,'stand',{x:410,f:1}],[11,'bow']]),ON('stag',[[0,'stand',{x:790,f:-1,sc:.75}]])],
+ rig:(a,t)=>{const d=a.get('dragon'),b=a.get('lady'),w=gripWeight(t,0,7);contact(d,'fa',b,'SO',[0,8],1,w);contact(d,'ba',b,'fa.hd',[0,0],-1,w);contact(d,'fl',b,'bl.kn',[-8,0],-1,gripWeight(t,3.5,5.5));d.P.deferFrontArm=true;d.P.deferFrontLeg=true;},fx:()=>{chip(.2,6.8,'judo','허리후리기 · 하라이고시');chip(7,12.8,'judo','낙법하고 · 다시 웃어요');burst(7,660,G-35,'쿵',null,'thud',.5)}});
+beat({id:'guard10',dur:9,nosign:1,cam:camOf(480,1),cap:'밑에서도, 긴 다리로 가드',
+ say:'이번에는 뚜리가 위에서 눌러요.\n씽씽이는 밑에서 긴 다리를 올려 가드를 만들어요.\n\n“밑에서도 해 볼 게 있어!”',
+ actors:[ON('dragon',[[0,'flat',{x:410,f:1,rot:-1.57}],[3,'back'],[6,'back',{flh:1.2,flk:1.5,blh:1.4,blk:1.5}]]),ON('cricket',[[0,'top',{x:495,f:-1,tl:1}],[3,'top',{x:465,tl:1.1}]]),ON('mantis',[[0,'stand',{x:770,f:-1,sc:.75}]])],
+ rig:(a,t)=>{const d=a.get('dragon'),b=a.get('cricket'),w=gripWeight(t,2,9);contact(d,'fl',b,'SO',[14,10],1,w);contact(d,'bl',b,'SO',[-14,10],-1,w);d.P.deferFrontLeg=true;},fx:()=>{chip(.2,8.8,'bjj','가드 · 다리로 지키기')}});
+beat({id:'triangle10',dur:17,nosign:1,cam:camOf(480,1),cap:'삼각형은 천천히, 톡톡 하면 바로 풀어요',
+ say:'뚜리의 한 팔은 안에, 다른 팔은 밖에 둬요.\n긴 다리가 목과 한 팔을 삼각형으로 감싸요.\n다리는 팔보다 세서 감으면 빠져나오기 어려워요.\n조이기 전에 톡톡!\n씽씽이가 바로 풀어요.',
+ actors:[ON('dragon',[[0,'back',{x:410,f:1,rot:-1.57}],[3,'back',{flh:1.8,flk:1.8,blh:1.5,blk:1.8}],[8,'back'],[8.3,'flat'],[10,'sit',{x:330,rot:0}],[13,'bow',{ex:3}]]),ON('cricket',[[0,'top',{x:505,f:-1,tl:1.1}],[3,'top',{tl:1.25,fah:1.7,fae:1.4,bah:-.6,bae:.6}],[8,'top'],...taps(8,4,'bah',-.6,.2),[10,'sit',{x:580,tl:.2}],[13,'bow',{ex:3}]]),ON('mantis',[[0,'stand',{x:770,f:-1,sc:.75}]])],
+ rig:(a,t)=>{const d=a.get('dragon'),b=a.get('cricket'),w=gripWeight(t,1,8);contact(b,'fa',d,'SO',[0,8],1,w);contact(d,'fl',b,'HD',[12,-6],-1,w);contact(d,'bl',d,'fl.kn',[0,0],-1,w);d.P.deferFrontLeg=true;b.P.deferFrontArm=true;},fx:()=>{chip(.2,7.8,'bjj','삼각조르기 · 조이지 않고 모양만');chip(8,14.8,null,'톡톡! 즉시 놓아 줘요')}});
+beat({id:'friends10',dur:7,nosign:1,cam:camOf(480,1),cap:'잘한다! 같이 배우자!',
+ say:'“와, 씽씽이 진짜 잘한다!”\n\n“동글이, 뚜리, 같이 해 줘서 고마워.”\n\n친구들이 웃으며 손을 흔들어요.',
+ actors:[ON('lady',[[0,'cheer',{x:240,f:1}]]),ON('dragon',[[0,'bow',{x:480,f:1}],[3,'cheer']]),ON('cricket',[[0,'cheer',{x:740,f:-1}]])],fx:()=>{chip(.3,6.8,null,'서로 도와서 · 함께 자라요')}});
+beat({id:'rank10',dur:10,nosign:1,cam:camOf(480,1),cap:'1등 맴맴이 · 2등 씽씽이',
+ say:'나무 순위판에 이름이 걸렸어요.\n1등은 맴맴이, 2등은 씽씽이!\n높은 등수라고 더 소중한 친구는 아니에요.\n서로 배울 것을 찾아봐요.',
+ actors:[ON('cicada',[[0,'stand',{x:230,f:1}],[4,'bow']]),ON('dragon',[[0,'stand',{x:730,f:-1}],[4,'bow']])],props:()=>{X.save();rr(X,320,135,320,155,12);fs(X,'#b88046',4);X.textAlign='center';X.fillStyle='#fff0c9';X.font='24px Jua';X.fillText('함께 배우는 도장',480,168);X.font='30px Jua';X.fillText('1등  맴맴이',480,215);X.fillText('2등  씽씽이',480,260);X.restore()}});
+beat({id:'rivals10',dur:12,nosign:1,cam:camOf(480,1),cap:'언젠가, 즐겁게 한 판!',
+ say:'씽씽이가 맴맴이를 보고 말해요.\n\n“1등 맴맴이… 언젠가 한 판 해 보고 싶다.”\n\n“나도!”\n\n둘은 웃어요.\n서로에게 배울 게 많겠지요?',
+ actors:[ON('dragon',[[0,'stand',{x:320,f:1}],[4,'grip'],[8,'bow'],[10,'stand']]),ON('cicada',[[0,'stand',{x:650,f:-1}],[6,'cheer'],[8,'bow'],[10,'stand']])],fx:()=>{bubble(1,5,320,160,'언젠가 한 판!');bubble(5.3,8,650,160,'나도!')}});
+beat({id:'learn10',dur:15,nosign:1,cam:camOf(480,1),cap:'잘하는 친구도, 새로 배워요',
+ say:'“씽씽이는 유도와 주짓수를 참 잘해.\n맴맴이는 레슬링의 태클과 누르는 힘, 태권도의 거리 재기도 이어 쓰지.\n서서도, 위에서도, 밑에서도 할 게 많아.”\n\n“그럼 나도 레슬링 배워 볼래!”',
+ actors:[ON('stag',[[0,'stand',{x:190,f:1,sc:.8}]]),ON('dragon',[[0,'stand',{x:420,f:1}],[8,'stand',{x:570}],[10,'bow']],{walk:[6,8]}),ON('rhino',[[0,'stand',{x:760,f:-1,sc:.85}],[10,'bow']])],fx:()=>{chip(.2,5.5,null,'넘기기 · 가드에 새 배움을 더해요');chip(5.7,11.8,'wr','번쩍이 사범님, 저도 배울래요!')}});
+beat({id:'morning10',dur:9,nosign:1,cam:camOf(480,1),cap:'아침 연습도, 함께!',
+ say:'다음 날 아침, 둘이 함께 백을 돌리고 낙법해요.\n\n“같이 하니까 좋다!”\n\n새로 배우려는 마음이 참 멋져요.',
+ actors:['dragon','cicada'].map((id,i)=>ON(id,[[0,'lift',{x:300+i*350,f:1}],[3,'stand'],[4,'squat'],[5.5,'flat',{rot:-1.57,curl:.4}],[7,'sit',{rot:0,curl:0}],[8,'stand']])),fx:()=>{orbitBag(.2,3,300,G-180);orbitBag(.2,3,650,G-180);chip(.2,3,'wr','불가리안 백 · 함께 돌려요');chip(3.2,8.8,'judo','낙법 · 함께 다시 일어나요')}});
+beat({id:'bow10',dur:7,nosign:1,cam:camOf(480,1),cap:'고맙습니다!',
+ say:'1등도 2등도, 오늘 하나씩 배웠어요.\n도장 식구들이 다 같이 인사해요.\n\n“고맙습니다!”',
+ actors:['lady','cicada','dragon','cricket','rhino'].map((id,i)=>ON(id,[[0,'stand',{x:160+i*160,f:i<3?1:-1,sc:.72}],[2,'bow'],[5,'stand',{ex:3}]])),fx:()=>{chip(.2,6.8,null,'등수보다 멋진 · 배우려는 마음')}});
+beat({id:'end10',dur:10,nosign:1,cam:camOf(480,1),cap:'다음 화 · 1등과 2등의 한 판?',
+ say:'하준아, 맴맴이랑 씽씽이가 붙으면 누가 이길 것 같아? 왜?',
+ actors:[ON('cicada',[[0,'stand',{x:300,f:1}]]),ON('dragon',[[0,'stand',{x:660,f:-1}]])],over:lt=>endCard(lt)});
+const EP11=SC;
+
 
 
 
@@ -1060,7 +1142,8 @@ const EPS=[{name:'1화 · 네 가지를 배운 매미',next:'반딧불이의 밤
   {name:'6화 · 같은 출석, 다른 비밀',tab:'6화',next:'하준이의 챔피언 식당',beats:EP7,ch:[["처음","t6"],["같은 출석","same6"],["깜빡한 순서","forgot6"],["몇 주 뒤","gap6"],["비밀 작전","secret6"],["내 레슨 복기","review6"],["멤버십 강의","member6"],["더미 연습","dummy6"],["사범님 확인","check6"],["친구들의 비밀","different6"],["나도 시작","start6"],["다음 화","end6"]]},
   {name:'7화 · 하준이의 챔피언 식당',tab:'7화',next:'푹 쉬고 다시 씩씩하게',beats:EP8,ch:[["처음","t7"],["대수롭지 않게","dismiss7"],["뚜리에게 졌어요","loss7"],["숨은 비밀","mystery7"],["챔피언 식당","meal7"],["이제 알았어요","learn7"],["스스로 먹기","choose7"],["몇 달의 습관","months7"],["다시 대회","match7"],["챔피언","champion7"],["인사","bow7"],["다음 화","end7"]]},
   {name:'8화 · 다시 시작할 수 있어',tab:'8화',next:'작은 약속 한 가지',beats:EP9,ch:[["처음", "t8"], ["일주일 뒤", "week8"], ["속상한 패배", "loss8"], ["문 앞에서", "hide8"], ["자꾸 멀어져요", "drift8"], ["다른 선택", "choice8"], ["아빠와 연습", "dad8"], ["쌓이는 날들", "gap8"], ["어른이 된 꿈", "grown8"], ["꿈이었어!", "wake8"], ["다시 도장으로", "return8"], ["오늘 한 번", "bow8"], ["다음 화", "end8"]]},
-  {name:'9화 · 탑의 맴맴이',tab:'9화',next:'작은 약속 한 가지',beats:EP10,ch:[['처음','t9'],['먼저 앉는 친구들','pull9'],['밭다리후리기','osoto9'],['바로 탑으로','side9'],['기무라와 탭','kimura9'],['다시 일어서기','half9'],['태클과 낙법','fall9'],['델라히바 스윕','dlr9'],['어깨 조르기','triangle9'],['발뒤축걸기','kosoto9'],['모두걸기','deashi9'],['무릎에서 암바','arm9'],['함께 굴러 오모플라타','omo9'],['셋이 하나로','one9'],['친절과 인사','bow9'],['다음 화','end9']]}];
+  {name:'9화 · 탑의 맴맴이',tab:'9화',next:'2등 잠자리 씽씽이',beats:EP10,ch:[['처음','t9'],['먼저 앉는 친구들','pull9'],['밭다리후리기','osoto9'],['바로 탑으로','side9'],['기무라와 탭','kimura9'],['다시 일어서기','half9'],['태클과 낙법','fall9'],['델라히바 스윕','dlr9'],['어깨 조르기','triangle9'],['발뒤축걸기','kosoto9'],['모두걸기','deashi9'],['무릎에서 암바','arm9'],['함께 굴러 오모플라타','omo9'],['셋이 하나로','one9'],['친절과 인사','bow9'],['다음 화','end9']]},
+  {name:'10화 · 2등 잠자리 씽씽이',tab:'10화',next:'1등과 2등의 한 판?',beats:EP11,ch:[['처음','t10'],['새 친구','arrival10'],['큰 겹눈','eyes10'],['빠른 깃 잡기','grip10'],['허리후리기','harai10'],['긴 다리 가드','guard10'],['삼각형과 탭','triangle10'],['친구들의 응원','friends10'],['순위판','rank10'],['즐거운 라이벌','rivals10'],['새로 배우기','learn10'],['아침 연습','morning10'],['인사','bow10'],['다음 화','end10']]}];
 EPS.forEach(e=>{let a=0;e.beats.forEach(b=>{b.start=a;a+=b.dur});e.total=a});
 let EPI=0,TOTAL=0,CH=[];
 function useEp(k){EPI=k;SC=EPS[k].beats;TOTAL=EPS[k].total;CH=EPS[k].ch}

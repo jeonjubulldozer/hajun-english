@@ -37,6 +37,8 @@ const SP={
 Object.keys(SP).forEach((k,i)=>{SP[k].id=k;SP[k].ph=i*1.37});
 SP.grass={n:'띵가',k:'베짱이',tag:'개인 레슨만',arts:['judo','wr'],s:1.0,L:LL({th:38,sn:38}),rx:22,ry:38,hr:19,col:'#a6c75c',lc:'#86a641',hc:'#b4d46a',lw:7,tw:1.8,ant:'long',
   moves:'기술 이름 외우기 · 기타 치며 노래',fact:'날개를 비벼서 베짱베짱 하고 울어요.',id:'grass',ph:17.3,ep:1,scene:'grass'};
+SP.dragon={n:'씽씽이',k:'잠자리',tag:'두 가지',arts:['judo','bjj'],s:1.0,L:LL({th:42,sn:42,bc:38,so:76,hd:108}),rx:9,ry:51,hr:21,col:'#5bc9de',lc:'#239caa',hc:'#68d7d3',lw:5,ant:'short',head:'wide',wing:'dragon',
+  moves:'빠른 깃 잡기 · 허리후리기 · 삼각조르기 연결',fact:'눈이 머리를 거의 다 덮어서 사방을 다 봐요. 날면서 먹이를 잡는 사냥 성공률이 아주 높아요.',id:'dragon',ph:29.3,ep:10,scene:'arrival10'};
 SP.dung={n:'굴리',k:'쇠똥구리',tag:'주짓수만',arts:['bjj'],s:1.0,L:LL(),rx:28,ry:36,hr:18,col:'#2f2f3a',lc:'#1b1b22',hc:'#383844',lw:9,ant:'short',dark:1,look:'stag',
   moves:'바닥에서 데굴데굴 굴리기',fact:'똥 경단을 자기 몸보다 크게 굴려서 옮겨요.',id:'dung',ph:19.1,ep:3,scene:'gulli'};
 SP.ant={n:'단단이',k:'개미',tag:'숨은 특훈',arts:['wr','judo'],s:.9,L:LL({th:30,sn:30}),rx:20,ry:30,hr:21,col:'#5a3322',lc:'#2c1810',hc:'#6a3d28',lw:7,ant:'elbow',dark:1,
@@ -159,7 +161,20 @@ function wings(c,sp,g,time){
   const w=sp.wing||(['hop','katy','bang','mantis','grass','cricket'].includes(sp.id)?'fold':null);if(!w)return;
   const rx=sp.rx,ry=sp.ry,off=sp.L.so-sp.L.bc;
   c.save();c.translate(g.SO[0],g.SO[1]);c.rotate(g.t);
-  if(w==='butter'){
+  if(w==='dragon'){
+    // 앞날개 두 장 + 조금 넓은 뒷날개 두 장. 양옆으로 펼친 투명한 날개.
+    for(const side of [-1,1])for(const rear of [0,1]){
+      c.save();c.scale(side,1);c.translate(0,rear*20);
+      const flutter=Math.sin(time*24+rear)*2;
+      c.beginPath();c.moveTo(0,0);c.bezierCurveTo(36,-16+flutter,100,-15+flutter,113,-4+flutter);
+      c.bezierCurveTo(121,7+flutter,50,rear?24:13,0,5);c.closePath();
+      c.fillStyle=SIL?'rgba(14,26,19,.7)':'rgba(222,250,255,.48)';c.fill();c.strokeStyle=pc('#497d91');c.lineWidth=1.6;c.stroke();
+      if(!SIL){c.save();c.clip();c.strokeStyle='rgba(48,112,134,.5)';c.lineWidth=.8;
+        c.beginPath();c.moveTo(3,2);c.lineTo(110,-2+flutter);
+        for(let x=20;x<105;x+=15){c.moveTo(x,1);c.lineTo(x+9,-15);c.moveTo(x,1);c.lineTo(x+12,22)}c.stroke();c.restore()}
+      c.restore();
+    }
+  }else if(w==='butter'){
     const fl=.55+.45*Math.abs(Math.cos(time*4.5+sp.ph));c.scale(fl,1);
     c.beginPath();c.moveTo(-2,-2);c.bezierCurveTo(-40,-72,-104,-62,-98,-12);c.bezierCurveTo(-92,14,-40,18,-4,10);c.closePath();fs(c,'#ffd43b');
     if(!SIL){c.save();c.clip();c.fillStyle='#1f1f1f';[-30,-56].forEach(x=>c.fillRect(x,-80,8,100));c.beginPath();c.moveTo(-110,-70);c.lineTo(-80,-70);c.lineTo(-90,24);c.lineTo(-120,24);c.fill();c.restore()}
@@ -179,6 +194,7 @@ function wings(c,sp,g,time){
 function rings(c,rx,ry,n,a){c.strokeStyle=`rgba(0,0,0,${a||.18})`;c.lineWidth=2;for(let i=1;i<=n;i++){const y=ry*(.05+i*.2);c.beginPath();c.moveTo(-rx,y-4);c.quadraticCurveTo(0,y+6,rx,y-4);c.stroke()}}
 function pattern(c,sp,rx,ry){
   switch(sp.look||sp.id){
+    case 'dragon':c.fillStyle='#243e70';for(let y=-ry+8;y<ry;y+=12)c.fillRect(-rx,y,rx*2,3);break;
     case 'rhino':case 'stag':c.fillStyle='rgba(255,255,255,.22)';c.beginPath();c.ellipse(rx*.25,-ry*.35,rx*.28,ry*.3,-.3,0,TAU);c.fill();c.strokeStyle='rgba(0,0,0,.28)';c.lineWidth=2;c.beginPath();c.moveTo(-rx*.15,-ry);c.quadraticCurveTo(-rx*.35,0,-rx*.1,ry);c.stroke();break;
     case 'mantis':case 'hop':case 'katy':case 'bang':case 'grass':case 'butter':rings(c,rx,ry,4);if(sp.id!=='butter'){c.fillStyle='rgba(0,0,0,.12)';c.fillRect(-rx,-ry,rx*.55,ry*2);c.fillStyle='rgba(255,255,255,.2)';c.fillRect(rx*.45,-ry,rx,ry*2)}break;
     case 'lady':c.fillStyle='#1c1c1c';for(const [a,b,r] of [[-.45,-.45,.26],[.25,-.15,.22],[-.15,.3,.26],[.5,.42,.18],[-.65,.05,.16]]){c.beginPath();c.arc(rx*a,ry*b,rx*r,0,TAU);c.fill()}c.fillStyle='rgba(255,255,255,.3)';c.beginPath();c.ellipse(rx*.3,-ry*.55,rx*.22,ry*.12,-.4,0,TAU);c.fill();break;
@@ -191,14 +207,14 @@ function pattern(c,sp,rx,ry){
 function body(c,sp,g,time,P){
   const rx=sp.rx,ry=sp.ry;
   c.save();c.translate(g.BC[0],g.BC[1]);c.rotate(g.t);
-  c.beginPath();c.ellipse(0,0,rx,ry,0,0,TAU);c.fillStyle=pc(sp.col);c.fill();
+  if(sp.id==='dragon')rr(c,-rx,-ry,rx*2,ry*2,rx);else{c.beginPath();c.ellipse(0,0,rx,ry,0,0,TAU);}c.fillStyle=pc(sp.col);c.fill();
   c.save();c.clip();
   if(!SIL)pattern(c,sp,rx,ry);
   const rust=P.rust||0,bc=a=>rust>0?tint(ART[a][1],'#8a7d6a',rust*.8):ART[a][1];
   if(rust>0&&!SIL){c.fillStyle=`rgba(156,82,32,${Math.min(.85,rust)})`;for(let i=0;i<16;i++){const x=((i*37)%(rx*2))-rx,y=((i*53)%(ry*2))-ry;c.beginPath();c.arc(x,y,2+(i*7)%4,0,TAU);c.fill()}}
   if(sp.arts.length){const by=ry*.36,n=sp.arts.length,w=rx*2+6;for(let i=0;i<n;i++){c.fillStyle=pc(bc(sp.arts[i]));c.fillRect(-rx-3+w*i/n,by,w/n+.6,10)}c.strokeStyle=pc(OUT);c.lineWidth=1.6;c.strokeRect(-rx-3,by,w,10)}
   c.restore();
-  c.beginPath();c.ellipse(0,0,rx,ry,0,0,TAU);c.strokeStyle=pc(OUT);c.lineWidth=3;c.stroke();
+  if(sp.id==='dragon')rr(c,-rx,-ry,rx*2,ry*2,rx);else{c.beginPath();c.ellipse(0,0,rx,ry,0,0,TAU);}c.strokeStyle=pc(OUT);c.lineWidth=3;c.stroke();
   if(sp.arts.length){
     const by=ry*.36+5,kx=Math.sqrt(Math.max(0,1-(by/ry)**2))*rx,a0=ART[sp.arts[0]][1],a1=ART[sp.arts[sp.arts.length-1]][1];
     c.lineCap='round';c.lineWidth=5;c.strokeStyle=pc(OUT);c.beginPath();c.moveTo(kx,by);c.lineTo(kx+8,by+14);c.moveTo(kx,by);c.lineTo(kx+2,by+17);c.stroke();
@@ -237,7 +253,19 @@ function eye1(c,x,y,r,ex,back,lid){
 }
 function face(c,sp,ex,time){
   const hr=sp.hr,E=sp.eye||[hr*.38,-hr*.12,hr*.44],blink=((time+sp.ph*3)%4.3)<.12,e=(blink&&ex!==3)?4:ex;
+  if(sp.id==='dragon'){
+    // 큰 겹눈 두 개: 각 눈 안의 작은 점들은 낱눈의 무늬.
+    for(const x of [-12,12]){
+      c.beginPath();c.ellipse(x,-3,13,18,0,0,TAU);fs(c,'#146979',1.8);
+      if(!SIL){c.save();c.clip();c.fillStyle='#76e5df';
+        for(let y=-17;y<15;y+=6)for(let dx=-10;dx<=10;dx+=6){c.beginPath();c.arc(x+dx,y,1.3,0,TAU);c.fill()}
+        c.fillStyle='#e8ffff';c.beginPath();c.ellipse(x+3,-11,4,6,.3,0,TAU);c.fill();c.restore();
+        if(e===3||e===4){c.strokeStyle=OUT;c.lineWidth=2.4;c.beginPath();c.moveTo(x-7,1);c.quadraticCurveTo(x,-5,x+7,1);c.stroke()}
+      }
+    }
+  }else{
   eye1(c,E[0]-E[2]*.95,E[1]-E[2]*.12,E[2]*.78,e,true,sp.hc);eye1(c,E[0],E[1],E[2],e,false,sp.hc);
+  }
   if(SIL)return;
   const m=sp.mouth||[hr*.62,hr*.42];c.strokeStyle=sp.dark?'#f3e7cf':OUT;c.lineWidth=2.4;c.lineCap='round';
   if(ex===2){c.fillStyle='#5a1f1a';c.beginPath();c.ellipse(m[0],m[1],hr*.1,hr*.14,0,0,TAU);c.fill();c.stroke()}
