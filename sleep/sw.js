@@ -1,5 +1,5 @@
 // 밤의 쉼표: 앱으로 설치했을 때 인터넷이 없어도 화면이 열리게 해 주는 작은 도우미
-const CACHE = 'bam-swimpyo-v2';
+const CACHE = 'bam-swimpyo-v3';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
