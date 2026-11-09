@@ -3872,7 +3872,10 @@ async function lockScreen() {
 }
 function unlockScreen() { try { wakeLock && wakeLock.release(); } catch (e) {} wakeLock = null; }
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && R && !R.ended && !R.stopped) lockScreen();
+  if (document.visibilityState === 'visible' && R && !R.ended && !R.stopped) {
+    lockScreen();
+    if (R.held && R.engine && R.engine.ctx) { try { R.engine.ctx.resume(); } catch (e) {} }
+  }
 });
 
 function startSession(s, T, music, nature) {
@@ -3883,7 +3886,7 @@ function startSession(s, T, music, nature) {
   // 소리와 목소리는 버튼을 누른 이 순간에 열어야 휴대폰이 허락해 줘요
   try { run.engine = new Engine(); run.engine.ctx.resume(); } catch (e) { run.engine = null; }
   if (TTS) { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = 'ko-KR'; speechSynthesis.speak(u); } catch (e) {} }
-  if (run.engine) { run.engine.setSound(music, nature); run.engine.fadeIn(8); }
+  if (run.engine) { run.engine.setSound(music, nature); run.engine.fadeIn(8); watchAudio(run); }
   else run.engine = { setSound() {}, fadeIn() {}, fadeOut() {}, bowl() {}, setMusicVol() {}, close() {}, ctx: null };
 
   $('#pTitle').textContent = s.title;
@@ -3930,6 +3933,29 @@ function closePlayer() {
   document.body.style.overflow = '';
   refreshBankState();
 }
+function watchAudio(run) {
+  const ctx = run.engine && run.engine.ctx; if (!ctx) return;
+  ctx.onstatechange = () => {
+    if (run !== R || run.stopped || run.ended) return;
+    if (ctx.state !== 'running') {
+      if (run.paused) return;   // 직접 멈춘 경우
+      run.active += (performance.now() - run.last) / 1000; run.paused = true; run.pauseGen++; run.held = true;
+      if (TTS) { try { speechSynthesis.cancel(); } catch (e) {} }
+      $('#pPause').textContent = '이어 듣기'; $('#player').classList.add('paused');
+      setNote('다른 소리 때문에 휴대폰이 잠깐 멈췄어요. 끝나면 그 자리부터 이어서 들려 드려요.');
+      clearInterval(run.retry);
+      run.retry = setInterval(() => {
+        if (run !== R || run.stopped || !run.held) { clearInterval(run.retry); return; }
+        try { ctx.resume(); } catch (e) {}
+      }, 1500);
+    } else if (run.held) {
+      run.held = false; clearInterval(run.retry);
+      run.last = performance.now(); run.paused = false;
+      $('#pPause').textContent = '일시정지'; $('#player').classList.remove('paused');
+      setNote('');
+    }
+  };
+}
 function togglePause() {
   if (!R || R.ended) return;
   const p = $('#player');
@@ -3939,7 +3965,7 @@ function togglePause() {
     if (R.engine.ctx) R.engine.ctx.suspend();
     $('#pPause').textContent = '이어 듣기'; p.classList.add('paused');
   } else {
-    R.last = performance.now(); R.paused = false;
+    R.last = performance.now(); R.paused = false; R.held = false; clearInterval(R.retry); setNote('');
     if (R.engine.ctx) R.engine.ctx.resume();
     $('#pPause').textContent = '일시정지'; p.classList.remove('paused');
   }
